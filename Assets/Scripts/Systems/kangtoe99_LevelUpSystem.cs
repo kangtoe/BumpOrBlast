@@ -21,7 +21,6 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [Header("Upgrade Values (Fixed Amounts)")]
     [SerializeField] private float damageIncrement = 5f;
     [SerializeField] private float speedIncrement = 1f;
-    [SerializeField] private float healthIncrement = 20f;
     [SerializeField] private int ammoIncrement = 2;
 
     [Header("UI")]
@@ -29,7 +28,6 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [SerializeField] private GameObject levelUpPanel;
     [SerializeField] private Button damageButton;
     [SerializeField] private Button speedButton;
-    [SerializeField] private Button healthButton;
     [SerializeField] private Button ammoButton;
     [SerializeField] private Button confirmButton;
 
@@ -72,10 +70,6 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         if (speedButton != null)
         {
             speedButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseSpeed));
-        }
-        if (healthButton != null)
-        {
-            healthButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseMaxHealth));
         }
         if (ammoButton != null)
         {
@@ -128,13 +122,13 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     {
         currentLevel++;
         previousLevelScore = nextLevelScore;
-        nextLevelScore = previousLevelScore + scorePerLevel;
 
-        // 체력 완전 회복
-        if (player != null)
-        {
-            player.Heal(player.GetMaxHealth());
-        }
+        // 레벨이 올라갈수록 필요한 점수가 증가
+        // Level 1→2: baseScore (100)
+        // Level 2→3: baseScore + scorePerLevel (150)
+        // Level 3→4: baseScore + 2*scorePerLevel (200)
+        int requiredScore = baseScore + (currentLevel - 1) * scorePerLevel;
+        nextLevelScore = previousLevelScore + requiredScore;
 
         Debug.Log($"Level Up! Now Level {currentLevel}");
 
@@ -174,14 +168,6 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             SetButtonText(speedButton, $"Speed +{speedIncrement}\n{current:F1} → {upgraded:F1}");
         }
 
-        // Max Health 버튼
-        if (healthButton != null && player != null)
-        {
-            float current = player.GetMaxHealth();
-            float upgraded = current + healthIncrement;
-            SetButtonText(healthButton, $"Max Health +{healthIncrement}\n{current:F0} → {upgraded:F0}");
-        }
-
         // Max Ammo 버튼
         if (ammoButton != null && playerShooting != null)
         {
@@ -210,7 +196,6 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         // 모든 버튼을 기본 색상으로
         ResetButtonColor(damageButton);
         ResetButtonColor(speedButton);
-        ResetButtonColor(healthButton);
         ResetButtonColor(ammoButton);
 
         // 선택된 버튼만 하이라이트
@@ -220,7 +205,6 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             {
                 UpgradeType.IncreaseDamage => damageButton,
                 UpgradeType.IncreaseSpeed => speedButton,
-                UpgradeType.IncreaseMaxHealth => healthButton,
                 UpgradeType.IncreaseMaxAmmo => ammoButton,
                 _ => null
             };
@@ -289,18 +273,6 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
                 }
                 break;
 
-            case UpgradeType.IncreaseMaxHealth:
-                // 최대 체력 고정값 증가 및 회복
-                if (player != null)
-                {
-                    float currentMaxHealth = player.GetMaxHealth();
-                    float newMaxHealth = currentMaxHealth + healthIncrement;
-                    player.SetMaxHealth(newMaxHealth);
-                    player.Heal(newMaxHealth); // 완전 회복
-                    Debug.Log($"Max Health increased to {newMaxHealth} (+{healthIncrement})");
-                }
-                break;
-
             case UpgradeType.IncreaseMaxAmmo:
                 // 탄창 크기 고정값 증가
                 if (playerShooting != null)
@@ -323,6 +295,5 @@ public enum UpgradeType
 {
     IncreaseDamage,
     IncreaseSpeed,
-    IncreaseMaxHealth,
     IncreaseMaxAmmo
 }

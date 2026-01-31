@@ -121,7 +121,6 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     public void IncreaseMaxAmmo(int amount)
     {
         maxAmmo += amount;
-        currentAmmo = maxAmmo;
     }
 
     public float GetBulletDamage() => bulletDamage;
@@ -129,5 +128,12 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     public void SetBulletDamage(float newDamage)
     {
         bulletDamage = newDamage;
+    }
+
+    public float GetReloadTime() => reloadTime;
+
+    public void SetReloadTime(float newReloadTime)
+    {
+        reloadTime = Mathf.Max(0.1f, newReloadTime); // 최소 0.1초
     }
 }
