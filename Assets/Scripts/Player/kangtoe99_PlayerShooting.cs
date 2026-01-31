@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class kangtoe99_PlayerShooting : MonoBehaviour
 {
@@ -12,8 +13,12 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     [SerializeField] private int maxAmmo = 10;
     [SerializeField] private float reloadTime = 2f;
 
+    [Header("UI")]
+    [SerializeField] private Text ammoText;
+
     private int currentAmmo;
     private bool isReloading = false;
+    private float reloadTimeRemaining = 0f;
 
     private void Start()
     {
@@ -22,6 +27,8 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
 
     private void Update()
     {
+        UpdateAmmoUI();
+
         if (isReloading)
             return;
 
@@ -30,11 +37,26 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
             Shoot();
         }
 
-        // TODO: 재장전 기능 (R 키)
-        // if (Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmo)
-        // {
-        //     StartCoroutine(Reload());
-        // }
+        // R키로 재장전
+        if (Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmo)
+        {
+            StartCoroutine(Reload());
+        }
+    }
+
+    private void UpdateAmmoUI()
+    {
+        if (ammoText == null)
+            return;
+
+        if (isReloading)
+        {
+            ammoText.text = $"Reloading... {reloadTimeRemaining:F1}s";
+        }
+        else
+        {
+            ammoText.text = $"{currentAmmo}/{maxAmmo}";
+        }
     }
 
     private void Shoot()
@@ -60,24 +82,36 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         }
 
         currentAmmo--;
+
+        // 탄창이 비었으면 자동 재장전
+        if (currentAmmo <= 0)
+        {
+            StartCoroutine(Reload());
+        }
     }
 
-    // TODO: 재장전 코루틴
-    // private System.Collections.IEnumerator Reload()
-    // {
-    //     isReloading = true;
-    //     Debug.Log("Reloading...");
-    //
-    //     yield return new WaitForSeconds(reloadTime);
-    //
-    //     currentAmmo = maxAmmo;
-    //     isReloading = false;
-    //     Debug.Log("Reload Complete!");
-    // }
+    private System.Collections.IEnumerator Reload()
+    {
+        isReloading = true;
+        reloadTimeRemaining = reloadTime;
+        Debug.Log("Reloading...");
+
+        while (reloadTimeRemaining > 0)
+        {
+            reloadTimeRemaining -= Time.deltaTime;
+            yield return null;
+        }
+
+        currentAmmo = maxAmmo;
+        isReloading = false;
+        reloadTimeRemaining = 0f;
+        Debug.Log("Reload Complete!");
+    }
 
     public int GetCurrentAmmo() => currentAmmo;
     public int GetMaxAmmo() => maxAmmo;
     public bool IsReloading() => isReloading;
+    public float GetReloadTimeRemaining() => reloadTimeRemaining;
 
     public void IncreaseMaxAmmo(int amount)
     {
