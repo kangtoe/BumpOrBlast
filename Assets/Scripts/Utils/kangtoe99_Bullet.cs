@@ -2,13 +2,13 @@ using UnityEngine;
 
 public class kangtoe99_Bullet : MonoBehaviour
 {
-    [Header("Bullet Settings")]
-    [SerializeField] private float damage = 10f;
     [SerializeField] private float lifetime = 5f;
-
-    private Vector2 direction;
+    
+    private float damage = 10f;     
     private float speed;
     private float knockbackForce;
+
+    private Vector2 direction;
     private Rigidbody2D rb;
 
     private void Awake()
