@@ -26,17 +26,35 @@ public class kangtoe99_Enemy : kangtoe99_Character
 
     private void Update()
     {
-        ChasePlayer();
         CheckDespawnDistance();
+        RotateTowardsPlayer();
+    }
+
+    protected override void FixedUpdate()
+    {
+        // Character의 Move()를 호출하지 않고 직접 AddForce 사용
+        ChasePlayer();
     }
 
     private void ChasePlayer()
     {
+        if (player == null || rb == null) return;
+
+        Vector2 direction = (player.position - transform.position).normalized;
+        rb.AddForce(direction * moveForce);
+
+        // 최대 속도 제한
+        if (rb.linearVelocity.magnitude > maxSpeed)
+        {
+            rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
+        }
+    }
+
+    private void RotateTowardsPlayer()
+    {
         if (player == null) return;
 
         Vector2 direction = (player.position - transform.position).normalized;
-        moveDirection = direction;
-
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, angle - 90f);
     }
