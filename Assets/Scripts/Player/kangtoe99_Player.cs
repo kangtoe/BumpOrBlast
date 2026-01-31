@@ -22,6 +22,11 @@ public class kangtoe99_Player : kangtoe99_Character
         RotateTowardsMouse();
     }
 
+    private void LateUpdate()
+    {
+        WrapAroundScreen();
+    }
+
     private void HandleInput()
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
@@ -73,6 +78,48 @@ public class kangtoe99_Player : kangtoe99_Character
                 Vector2 hitPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : (Vector2)transform.position;
                 TakeDamage(enemy.GetDamage(), hitPoint);
             }
+        }
+    }
+
+    private void WrapAroundScreen()
+    {
+        if (mainCamera == null) return;
+
+        Vector3 viewportPosition = mainCamera.WorldToViewportPoint(transform.position);
+        bool teleported = false;
+
+        // 화면을 완전히 벗어났는지 확인하고 반대편으로 이동
+        if (viewportPosition.x > 1f)
+        {
+            // 오른쪽 경계를 벗어남 -> 왼쪽에서 등장
+            viewportPosition.x = 0f;
+            teleported = true;
+        }
+        else if (viewportPosition.x < 0f)
+        {
+            // 왼쪽 경계를 벗어남 -> 오른쪽에서 등장
+            viewportPosition.x = 1f;
+            teleported = true;
+        }
+
+        if (viewportPosition.y > 1f)
+        {
+            // 위쪽 경계를 벗어남 -> 아래쪽에서 등장
+            viewportPosition.y = 0f;
+            teleported = true;
+        }
+        else if (viewportPosition.y < 0f)
+        {
+            // 아래쪽 경계를 벗어남 -> 위쪽에서 등장
+            viewportPosition.y = 1f;
+            teleported = true;
+        }
+
+        if (teleported)
+        {
+            Vector3 newPosition = mainCamera.ViewportToWorldPoint(viewportPosition);
+            newPosition.z = transform.position.z; // Z 좌표는 유지
+            transform.position = newPosition;
         }
     }
 }
