@@ -16,9 +16,13 @@ PrefabInstance:
       propertyPath: maxHealth
       value: 300
       objectReference: {fileID: 0}
+    - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
+      propertyPath: moveForce
+      value: 50
+      objectReference: {fileID: 0}
     - target: {fileID: 4307073726107623797, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_Mass
-      value: 5
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 6665424404718431832, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalScale.y
