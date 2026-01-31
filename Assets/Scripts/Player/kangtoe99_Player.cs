@@ -44,6 +44,13 @@ public class kangtoe99_Player : kangtoe99_Character
     protected override void Die()
     {
         Debug.Log("Player Died!");
+
+        // 게임 오버 트리거
+        if (kangtoe99_GameManager.Instance != null)
+        {
+            kangtoe99_GameManager.Instance.TriggerGameOver();
+        }
+
         base.Die();
     }
 

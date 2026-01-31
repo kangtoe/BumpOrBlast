@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class kangtoe99_EnemySpawner : MonoBehaviour
 {
+    public static kangtoe99_EnemySpawner Instance { get; private set; }
+
     [Header("Spawner Settings")]
     [SerializeField] private GameObject[] enemyPrefabs; // 3종류의 적 프리팹
     [SerializeField] private Transform player;
@@ -14,9 +16,20 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
 
     private float currentSpawnInterval;
     private float spawnTimer;
+    private bool isSpawning = false;
 
-    private void Start()
+    private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         currentSpawnInterval = initialSpawnInterval;
         spawnTimer = currentSpawnInterval;
 
@@ -32,7 +45,7 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
 
     private void Update()
     {
-        if (player == null) return;
+        if (!isSpawning || player == null) return;
 
         spawnTimer -= Time.deltaTime;
 
@@ -73,6 +86,20 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
         Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * spawnDistance;
 
         return (Vector2)player.position + offset;
+    }
+
+    public void StartSpawning()
+    {
+        isSpawning = true;
+        currentSpawnInterval = initialSpawnInterval;
+        spawnTimer = currentSpawnInterval;
+        Debug.Log("Enemy spawning started!");
+    }
+
+    public void StopSpawning()
+    {
+        isSpawning = false;
+        Debug.Log("Enemy spawning stopped!");
     }
 
     // 디버그용
