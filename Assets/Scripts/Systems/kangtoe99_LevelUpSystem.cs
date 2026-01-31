@@ -18,6 +18,9 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [SerializeField] private kangtoe99_PlayerShooting playerShooting;
     private UpgradeType? selectedUpgrade = null;
 
+    // 각 업그레이드별 레벨 추적
+    private System.Collections.Generic.Dictionary<UpgradeType, int> upgradeLevels;
+
     [Header("Upgrade Values (Fixed Amounts)")]
     [SerializeField] private float damageIncrement = 5f;
     [SerializeField] private float speedIncrement = 1f;
@@ -47,6 +50,15 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 
         // 초기 레벨 설정
         nextLevelScore = baseScore;
+
+        // 업그레이드 레벨 초기화
+        upgradeLevels = new System.Collections.Generic.Dictionary<UpgradeType, int>
+        {
+            { UpgradeType.IncreaseDamage, 0 },
+            { UpgradeType.IncreaseSpeed, 0 },
+            { UpgradeType.IncreaseMaxAmmo, 0 },
+            { UpgradeType.IncreaseKnockback, 0 }
+        };
 
         // Player 참조 찾기
         if (player == null)
@@ -161,33 +173,37 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         // Damage 버튼
         if (damageButton != null && playerShooting != null)
         {
+            int level = upgradeLevels[UpgradeType.IncreaseDamage];
             float current = playerShooting.GetBulletDamage();
             float upgraded = current + damageIncrement;
-            SetButtonText(damageButton, $"Damage +{damageIncrement}\n{current:F1} → {upgraded:F1}");
+            SetButtonText(damageButton, $"Damage Lv.{level}\n{current:F1} → {upgraded:F1}");
         }
 
         // Speed 버튼
         if (speedButton != null && player != null)
         {
+            int level = upgradeLevels[UpgradeType.IncreaseSpeed];
             float current = player.GetMoveSpeed();
             float upgraded = current + speedIncrement;
-            SetButtonText(speedButton, $"Speed +{speedIncrement}\n{current:F1} → {upgraded:F1}");
+            SetButtonText(speedButton, $"Speed Lv.{level}\n{current:F1} → {upgraded:F1}");
         }
 
         // Max Ammo 버튼
         if (ammoButton != null && playerShooting != null)
         {
+            int level = upgradeLevels[UpgradeType.IncreaseMaxAmmo];
             int current = playerShooting.GetMaxAmmo();
             int upgraded = current + ammoIncrement;
-            SetButtonText(ammoButton, $"Max Ammo +{ammoIncrement}\n{current} → {upgraded}");
+            SetButtonText(ammoButton, $"Max Ammo Lv.{level}\n{current} → {upgraded}");
         }
 
         // Knockback 버튼 (넉백)
         if (knockbackButton != null && playerShooting != null)
         {
+            int level = upgradeLevels[UpgradeType.IncreaseKnockback];
             float current = playerShooting.GetBulletKnockback();
             float upgraded = current + knockbackIncrement;
-            SetButtonText(knockbackButton, $"Knockback +{knockbackIncrement}\n{current:F1} → {upgraded:F1}");
+            SetButtonText(knockbackButton, $"Knockback Lv.{level}\n{current:F1} → {upgraded:F1}");
         }
     }
 
@@ -265,6 +281,10 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 
     public void ApplyUpgrade(UpgradeType upgradeType)
     {
+        // 업그레이드 레벨 증가
+        upgradeLevels[upgradeType]++;
+        int currentLevel = upgradeLevels[upgradeType];
+
         switch (upgradeType)
         {
             case UpgradeType.IncreaseDamage:
@@ -274,7 +294,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
                     float currentDamage = playerShooting.GetBulletDamage();
                     float newDamage = currentDamage + damageIncrement;
                     playerShooting.SetBulletDamage(newDamage);
-                    Debug.Log($"Damage increased to {newDamage:F1} (+{damageIncrement})");
+                    Debug.Log($"Damage Lv.{currentLevel}: {currentDamage:F1} → {newDamage:F1}");
                 }
                 break;
 
@@ -285,7 +305,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
                     float currentSpeed = player.GetMoveSpeed();
                     float newSpeed = currentSpeed + speedIncrement;
                     player.SetMoveSpeed(newSpeed);
-                    Debug.Log($"Speed increased to {newSpeed:F1} (+{speedIncrement})");
+                    Debug.Log($"Speed Lv.{currentLevel}: {currentSpeed:F1} → {newSpeed:F1}");
                 }
                 break;
 
@@ -294,7 +314,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
                 if (playerShooting != null)
                 {
                     playerShooting.IncreaseMaxAmmo(ammoIncrement);
-                    Debug.Log($"Max Ammo increased by {ammoIncrement}");
+                    Debug.Log($"Max Ammo Lv.{currentLevel}: +{ammoIncrement}");
                 }
                 break;
 
@@ -305,7 +325,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
                     float currentKnockback = playerShooting.GetBulletKnockback();
                     playerShooting.IncreaseBulletKnockback(knockbackIncrement);
                     float newKnockback = playerShooting.GetBulletKnockback();
-                    Debug.Log($"Knockback increased: {currentKnockback:F1} → {newKnockback:F1}");
+                    Debug.Log($"Knockback Lv.{currentLevel}: {currentKnockback:F1} → {newKnockback:F1}");
                 }
                 break;
         }
@@ -316,6 +336,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 
     public int GetCurrentLevel() => currentLevel;
     public int GetNextLevelScore() => nextLevelScore;
+    public int GetUpgradeLevel(UpgradeType upgradeType) => upgradeLevels[upgradeType];
 }
 
 public enum UpgradeType
