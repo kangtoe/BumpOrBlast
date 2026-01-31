@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class kangtoe99_GameManager : MonoBehaviour
 {
@@ -15,6 +16,10 @@ public class kangtoe99_GameManager : MonoBehaviour
     [SerializeField] private Text startText;
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private Text gameOverText;
+
+    [Header("Game Over Settings")]
+    [SerializeField] private float slowMotionScale = 0.2f;
+    [SerializeField] private float timeRecoveryDuration = 1.5f;
 
     private void Awake()
     {
@@ -87,7 +92,6 @@ public class kangtoe99_GameManager : MonoBehaviour
         if (isGameOver) return;
 
         isGameOver = true;
-        Time.timeScale = 0f;
 
         // 적 스포너 중지
         if (kangtoe99_EnemySpawner.Instance != null)
@@ -95,6 +99,28 @@ public class kangtoe99_GameManager : MonoBehaviour
             kangtoe99_EnemySpawner.Instance.StopSpawning();
         }
 
+        // 슬로우 모션 효과 후 게임 오버 패널 표시
+        StartCoroutine(GameOverSequence());
+
+        Debug.Log("Game Over!");
+    }
+
+    private IEnumerator GameOverSequence()
+    {
+        // 즉시 슬로우 모션 시작하고 서서히 Time.timeScale을 1로 복원
+        float elapsedTime = 0f;
+        while (elapsedTime < timeRecoveryDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / timeRecoveryDuration;
+            Time.timeScale = Mathf.Lerp(slowMotionScale, 1f, t);
+            yield return null;
+        }
+
+        // 정확히 1로 설정
+        Time.timeScale = 1f;
+
+        // 게임 오버 패널 표시
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
@@ -111,8 +137,6 @@ public class kangtoe99_GameManager : MonoBehaviour
 
             gameOverText.text = $"Game Over\n\nScore: {finalScore}\nHigh Score: {highScore}\n\nPress R to Restart";
         }
-
-        Debug.Log("Game Over!");
     }
 
     private void RestartGame()
