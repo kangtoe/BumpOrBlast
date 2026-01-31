@@ -17,7 +17,11 @@ public class kangtoe99_Character : MonoBehaviour
 
     [Header("Visual")]
     [SerializeField] protected SpriteRenderer spriteRenderer;
-    protected Color originalColor;    
+    protected Color originalColor;
+
+    [Header("VFX")]
+    [SerializeField] protected GameObject hitParticlePrefab;
+    [SerializeField] protected GameObject deathParticlePrefab;    
 
     protected virtual void Awake()
     {
@@ -47,10 +51,18 @@ public class kangtoe99_Character : MonoBehaviour
         }
     }
 
-    public virtual void TakeDamage(float damage)
+    public virtual void TakeDamage(float damage, Vector2? hitPosition = null)
     {
         currentHealth -= damage;
         UpdateHealthColor();
+
+        // 피격 파티클 재생
+        if (hitParticlePrefab != null)
+        {
+            Vector3 spawnPosition = hitPosition.HasValue ? hitPosition.Value : transform.position;
+            GameObject hitVFX = Instantiate(hitParticlePrefab, spawnPosition, Quaternion.identity);
+            Destroy(hitVFX, 2f); // 2초 후 파티클 오브젝트 삭제
+        }
 
         if (currentHealth <= 0)
         {
@@ -84,6 +96,13 @@ public class kangtoe99_Character : MonoBehaviour
 
     protected virtual void Die()
     {
+        // 사망 파티클 재생
+        if (deathParticlePrefab != null)
+        {
+            GameObject deathVFX = Instantiate(deathParticlePrefab, transform.position, Quaternion.identity);
+            Destroy(deathVFX, 3f); // 3초 후 파티클 오브젝트 삭제
+        }
+
         Destroy(gameObject);
     }
 

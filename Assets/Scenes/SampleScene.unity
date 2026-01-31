@@ -1181,8 +1181,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1400295253
+  m_SortingLayer: 2
   m_SortingOrder: 2
   m_MaskInteraction: 0
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
@@ -1249,6 +1249,8 @@ MonoBehaviour:
   maxHealth: 100
   collisionKnockbackForce: 10
   spriteRenderer: {fileID: 824165783}
+  hitParticlePrefab: {fileID: 8453916313859941413, guid: fcb2d54071e449f409c23d619adbfa05, type: 3}
+  deathParticlePrefab: {fileID: 8453916313859941413, guid: 761b1bb3a62bd1843b9ef0cedff18ab7, type: 3}
   mainCamera: {fileID: 330585545}
 --- !u!50 &451658498
 Rigidbody2D:
@@ -1361,11 +1363,15 @@ MonoBehaviour:
   scorePerLevel: 10
   player: {fileID: 451658497}
   playerShooting: {fileID: 451658496}
+  damageIncrement: 5
+  speedIncrement: 1
+  reloadTimeDecrement: 0.2
+  ammoIncrement: 2
   expBar: {fileID: 747855026}
   levelUpPanel: {fileID: 720870597}
   damageButton: {fileID: 267559203}
   speedButton: {fileID: 1361691785}
-  healthButton: {fileID: 693514049}
+  reloadButton: {fileID: 693514049}
   ammoButton: {fileID: 184155268}
   confirmButton: {fileID: 575230066}
 --- !u!1 &507631936
@@ -2234,8 +2240,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1400295253
+  m_SortingLayer: 2
   m_SortingOrder: 3
   m_MaskInteraction: 0
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
@@ -3062,8 +3068,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1400295253
+  m_SortingLayer: 2
   m_SortingOrder: 2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
@@ -3260,8 +3266,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1400295253
+  m_SortingLayer: 2
   m_SortingOrder: 2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
@@ -3311,7 +3317,7 @@ MonoBehaviour:
   initialSpawnInterval: 3
   minSpawnInterval: 0.5
   intervalDecreaseRate: 0.05
-  spawnDistance: 15
+  spawnDistanceFromScreen: 2
 --- !u!4 &1930471000
 Transform:
   m_ObjectHideFlags: 0

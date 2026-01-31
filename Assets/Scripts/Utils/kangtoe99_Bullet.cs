@@ -41,7 +41,8 @@ public class kangtoe99_Bullet : MonoBehaviour
             if (enemy != null)
             {
                 Debug.Log($"Enemy hit! Damage: {damage}");
-                enemy.TakeDamage(damage);
+                // 총알의 현재 위치를 충돌 지점으로 사용
+                enemy.TakeDamage(damage, transform.position);
                 enemy.ApplyKnockback(direction, knockbackForce);
             }
             else

@@ -139,6 +139,8 @@ MonoBehaviour:
   maxHealth: 100
   collisionKnockbackForce: 3
   spriteRenderer: {fileID: 6901123927391957602}
+  hitParticlePrefab: {fileID: 8453916313859941413, guid: fcb2d54071e449f409c23d619adbfa05, type: 3}
+  deathParticlePrefab: {fileID: 8453916313859941413, guid: 761b1bb3a62bd1843b9ef0cedff18ab7, type: 3}
   damage: 10
   scoreValue: 10
   despawnDistance: 30
