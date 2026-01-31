@@ -14,12 +14,16 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     [SerializeField] private int maxAmmo = 10;
     [SerializeField] private float reloadTime = 2f;
 
+    [Header("Fire Rate Settings")]
+    [SerializeField] private float fireRate = 0.2f; // 발사 간격 (초 단위)
+
     [Header("UI")]
     [SerializeField] private Text ammoText;
 
     private int currentAmmo;
     private bool isReloading = false;
     private float reloadTimeRemaining = 0f;
+    private float nextFireTime = 0f;
 
     private void Start()
     {
@@ -37,7 +41,8 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         if (isReloading)
             return;
 
-        if (Input.GetMouseButtonDown(0))
+        // 자동 발사: 마우스 버튼을 누르고 있으면 연사
+        if (Input.GetMouseButton(0) && Time.time >= nextFireTime)
         {
             Shoot();
         }
@@ -87,6 +92,7 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         }
 
         currentAmmo--;
+        nextFireTime = Time.time + fireRate; // 다음 발사 가능 시간 설정
 
         // 탄창이 비었으면 자동 재장전
         if (currentAmmo <= 0)
@@ -135,5 +141,24 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     public void SetReloadTime(float newReloadTime)
     {
         reloadTime = Mathf.Max(0.1f, newReloadTime); // 최소 0.1초
+    }
+
+    public float GetFireRate() => fireRate;
+
+    public void SetFireRate(float newFireRate)
+    {
+        fireRate = Mathf.Max(0.05f, newFireRate); // 최소 0.05초 (초당 20발)
+    }
+
+    public float GetBulletKnockback() => bulletKnockback;
+
+    public void SetBulletKnockback(float newKnockback)
+    {
+        bulletKnockback = Mathf.Max(0f, newKnockback);
+    }
+
+    public void IncreaseBulletKnockback(float amount)
+    {
+        bulletKnockback += amount;
     }
 }
