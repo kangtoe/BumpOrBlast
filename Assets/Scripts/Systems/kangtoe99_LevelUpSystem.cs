@@ -22,6 +22,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [SerializeField] private float damageIncrement = 5f;
     [SerializeField] private float speedIncrement = 1f;
     [SerializeField] private int ammoIncrement = 2;
+    [SerializeField] private float knockbackIncrement = 2f; // 넉백 증가량
 
     [Header("UI")]
     [SerializeField] private Image expBar;
@@ -29,6 +30,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [SerializeField] private Button damageButton;
     [SerializeField] private Button speedButton;
     [SerializeField] private Button ammoButton;
+    [SerializeField] private Button knockbackButton;
     [SerializeField] private Button confirmButton;
 
     private void Awake()
@@ -74,6 +76,10 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         if (ammoButton != null)
         {
             ammoButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseMaxAmmo));
+        }
+        if (knockbackButton != null)
+        {
+            knockbackButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseKnockback));
         }
         if (confirmButton != null)
         {
@@ -175,6 +181,14 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             int upgraded = current + ammoIncrement;
             SetButtonText(ammoButton, $"Max Ammo +{ammoIncrement}\n{current} → {upgraded}");
         }
+
+        // Knockback 버튼 (넉백)
+        if (knockbackButton != null && playerShooting != null)
+        {
+            float current = playerShooting.GetBulletKnockback();
+            float upgraded = current + knockbackIncrement;
+            SetButtonText(knockbackButton, $"Knockback +{knockbackIncrement}\n{current:F1} → {upgraded:F1}");
+        }
     }
 
     private void HidePanel()
@@ -197,6 +211,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         ResetButtonColor(damageButton);
         ResetButtonColor(speedButton);
         ResetButtonColor(ammoButton);
+        ResetButtonColor(knockbackButton);
 
         // 선택된 버튼만 하이라이트
         if (selectedUpgrade.HasValue)
@@ -206,6 +221,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
                 UpgradeType.IncreaseDamage => damageButton,
                 UpgradeType.IncreaseSpeed => speedButton,
                 UpgradeType.IncreaseMaxAmmo => ammoButton,
+                UpgradeType.IncreaseKnockback => knockbackButton,
                 _ => null
             };
 
@@ -281,6 +297,17 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
                     Debug.Log($"Max Ammo increased by {ammoIncrement}");
                 }
                 break;
+
+            case UpgradeType.IncreaseKnockback:
+                // 탄환 넉백 증가
+                if (playerShooting != null)
+                {
+                    float currentKnockback = playerShooting.GetBulletKnockback();
+                    playerShooting.IncreaseBulletKnockback(knockbackIncrement);
+                    float newKnockback = playerShooting.GetBulletKnockback();
+                    Debug.Log($"Knockback increased: {currentKnockback:F1} → {newKnockback:F1}");
+                }
+                break;
         }
 
         // 게임 재개
@@ -295,5 +322,6 @@ public enum UpgradeType
 {
     IncreaseDamage,
     IncreaseSpeed,
-    IncreaseMaxAmmo
+    IncreaseMaxAmmo,
+    IncreaseKnockback
 }
