@@ -54,7 +54,12 @@ public class kangtoe99_Enemy : kangtoe99_Character
 
     protected override void Die()
     {
-        // TODO: 점수 시스템 연동
+        // 점수 추가
+        if (kangtoe99_ScoreSystem.Instance != null)
+        {
+            kangtoe99_ScoreSystem.Instance.AddScore(scoreValue);
+        }
+
         Debug.Log($"Enemy died! Score: {scoreValue}");
         base.Die();
     }

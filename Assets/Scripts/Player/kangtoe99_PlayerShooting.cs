@@ -6,6 +6,7 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     [Header("Shooting Settings")]
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private Transform firePoint;
+    [SerializeField] private float bulletDamage = 10f;
     [SerializeField] private float bulletSpeed = 20f;
     [SerializeField] private float bulletKnockback = 5f;
 
@@ -78,7 +79,7 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         kangtoe99_Bullet bulletScript = bullet.GetComponent<kangtoe99_Bullet>();
         if (bulletScript != null)
         {
-            bulletScript.Initialize(firePoint.up, bulletSpeed, bulletKnockback);
+            bulletScript.Initialize(firePoint.up, bulletSpeed, bulletKnockback, bulletDamage);
         }
 
         currentAmmo--;

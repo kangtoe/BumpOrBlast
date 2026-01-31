@@ -16,11 +16,12 @@ public class kangtoe99_Bullet : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    public void Initialize(Vector2 dir, float bulletSpeed, float knockback)
+    public void Initialize(Vector2 dir, float bulletSpeed, float knockback, float bulletDamage)
     {
         direction = dir.normalized;
         speed = bulletSpeed;
         knockbackForce = knockback;
+        damage = bulletDamage;
 
         if (rb != null)
         {
