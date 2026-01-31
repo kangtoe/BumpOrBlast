@@ -41,6 +41,12 @@ public class kangtoe99_Player : kangtoe99_Character
         transform.rotation = Quaternion.Euler(0, 0, angle - 90f);
     }
 
+    public override void TakeDamage(float damage, Vector2? hitPosition = null)
+    {
+        // 기본 피격 처리 (데미지, 파티클 등)
+        base.TakeDamage(damage, hitPosition);
+    }
+
     protected override void Die()
     {
         Debug.Log("Player Died!");
@@ -63,7 +69,9 @@ public class kangtoe99_Player : kangtoe99_Character
             kangtoe99_Enemy enemy = collision.gameObject.GetComponent<kangtoe99_Enemy>();
             if (enemy != null)
             {
-                TakeDamage(enemy.GetDamage());
+                // 충돌 지점 계산 (첫 번째 접촉점 사용)
+                Vector2 hitPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : (Vector2)transform.position;
+                TakeDamage(enemy.GetDamage(), hitPoint);
             }
         }
     }
