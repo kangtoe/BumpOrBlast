@@ -1,0 +1,28 @@
+# Unity generated folders
+Library/
+Temp/
+Logs/
+obj/
+Builds/
+UserSettings/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+
+# Unity generated project files (lots of these!)
+*.csproj
+*.sln
+*.slnx
+*.unityproj
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+
+# Unity meta files (can cause slowness with many files)
+**/*.meta
+
+# Large asset folders (uncomment if needed)
+# Assets/StreamingAssets/
