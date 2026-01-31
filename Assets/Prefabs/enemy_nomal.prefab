@@ -134,8 +134,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60cbab4990c0d054a82c380f6547abe9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_Enemy
-  moveForce: 30
-  maxSpeed: 3
+  moveForce: 4
+  maxSpeed: 10
   maxHealth: 100
   collisionKnockbackForce: 3
   spriteRenderer: {fileID: 6901123927391957602}
