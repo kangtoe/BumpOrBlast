@@ -97,6 +97,8 @@ public class kangtoe99_Character : MonoBehaviour
         currentHealth = Mathf.Min(currentHealth, maxHealth);
     }
 
+    public float GetMoveSpeed() => maxSpeed;
+
     public void SetMoveSpeed(float newSpeed)
     {
         maxSpeed = newSpeed;

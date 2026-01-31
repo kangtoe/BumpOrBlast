@@ -30,6 +30,10 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     {
         UpdateAmmoUI();
 
+        // 게임 일시 정지 중에는 사격 및 재장전 무시
+        if (Time.timeScale == 0f)
+            return;
+
         if (isReloading)
             return;
 
@@ -118,5 +122,12 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     {
         maxAmmo += amount;
         currentAmmo = maxAmmo;
+    }
+
+    public float GetBulletDamage() => bulletDamage;
+
+    public void SetBulletDamage(float newDamage)
+    {
+        bulletDamage = newDamage;
     }
 }

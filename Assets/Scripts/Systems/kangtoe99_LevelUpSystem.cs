@@ -1,0 +1,322 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
+
+public class kangtoe99_LevelUpSystem : MonoBehaviour
+{
+    public static kangtoe99_LevelUpSystem Instance { get; private set; }
+
+    [Header("Level Settings")]
+    [SerializeField] private int baseScore = 100;
+    [SerializeField] private int scorePerLevel = 50;
+    private int currentLevel = 1;
+    private int nextLevelScore;
+    private int previousLevelScore = 0;
+
+    [Header("Upgrade Options")]
+    [SerializeField] private kangtoe99_Player player;
+    [SerializeField] private kangtoe99_PlayerShooting playerShooting;
+    private UpgradeType? selectedUpgrade = null;
+
+    [Header("UI")]
+    [SerializeField] private Image expBar;
+    [SerializeField] private GameObject levelUpPanel;
+    [SerializeField] private Button damageButton;
+    [SerializeField] private Button speedButton;
+    [SerializeField] private Button healthButton;
+    [SerializeField] private Button ammoButton;
+    [SerializeField] private Button confirmButton;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // 초기 레벨 설정
+        nextLevelScore = baseScore;
+
+        // Player 참조 찾기
+        if (player == null)
+        {
+            player = FindFirstObjectByType<kangtoe99_Player>();
+        }
+        if (playerShooting == null)
+        {
+            playerShooting = FindFirstObjectByType<kangtoe99_PlayerShooting>();
+        }
+
+        // 패널 숨기기
+        if (levelUpPanel != null)
+        {
+            levelUpPanel.SetActive(false);
+        }
+
+        // 버튼 이벤트 연결
+        if (damageButton != null)
+        {
+            damageButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseDamage));
+        }
+        if (speedButton != null)
+        {
+            speedButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseSpeed));
+        }
+        if (healthButton != null)
+        {
+            healthButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseMaxHealth));
+        }
+        if (ammoButton != null)
+        {
+            ammoButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseMaxAmmo));
+        }
+        if (confirmButton != null)
+        {
+            confirmButton.onClick.AddListener(ConfirmUpgrade);
+            SetButtonText(confirmButton, "Confirm");
+        }
+    }
+
+    private void SetButtonText(Button button, string text)
+    {
+        Text buttonText = button.GetComponentInChildren<Text>();
+        if (buttonText != null)
+        {
+            buttonText.text = text;
+        }
+    }
+
+    private void Update()
+    {
+        CheckLevelUp();
+        UpdateExpBar();
+    }
+
+    private void UpdateExpBar()
+    {
+        if (expBar == null || kangtoe99_ScoreSystem.Instance == null) return;
+
+        int currentScore = kangtoe99_ScoreSystem.Instance.GetCurrentScore();
+        float progress = (float)(currentScore - previousLevelScore) / (nextLevelScore - previousLevelScore);
+        expBar.fillAmount = Mathf.Clamp01(progress);
+    }
+
+    private void CheckLevelUp()
+    {
+        if (kangtoe99_ScoreSystem.Instance == null) return;
+
+        int currentScore = kangtoe99_ScoreSystem.Instance.GetCurrentScore();
+
+        if (currentScore >= nextLevelScore)
+        {
+            LevelUp();
+        }
+    }
+
+    private void LevelUp()
+    {
+        currentLevel++;
+        previousLevelScore = nextLevelScore;
+        nextLevelScore = previousLevelScore + scorePerLevel;
+
+        // 체력 완전 회복
+        if (player != null)
+        {
+            player.Heal(player.GetMaxHealth());
+        }
+
+        Debug.Log($"Level Up! Now Level {currentLevel}");
+
+        // 게임 일시 정지
+        Time.timeScale = 0f;
+
+        // 레벨업 패널 표시
+        ShowPanel();
+    }
+
+    private void ShowPanel()
+    {
+        if (levelUpPanel != null)
+        {
+            selectedUpgrade = null;
+            UpdateButtonTexts();
+            UpdateButtonHighlight();
+            levelUpPanel.SetActive(true);
+        }
+    }
+
+    private void UpdateButtonTexts()
+    {
+        // Damage 버튼
+        if (damageButton != null && playerShooting != null)
+        {
+            float current = playerShooting.GetBulletDamage();
+            float upgraded = current * 1.2f;
+            SetButtonText(damageButton, $"Damage +20%\n{current:F1} → {upgraded:F1}");
+        }
+
+        // Speed 버튼
+        if (speedButton != null && player != null)
+        {
+            float current = player.GetMoveSpeed();
+            float upgraded = current * 1.2f;
+            SetButtonText(speedButton, $"Speed +20%\n{current:F1} → {upgraded:F1}");
+        }
+
+        // Max Health 버튼
+        if (healthButton != null && player != null)
+        {
+            float current = player.GetMaxHealth();
+            float upgraded = current * 1.2f;
+            SetButtonText(healthButton, $"Max Health +20%\n{current:F0} → {upgraded:F0}");
+        }
+
+        // Max Ammo 버튼
+        if (ammoButton != null && playerShooting != null)
+        {
+            int current = playerShooting.GetMaxAmmo();
+            int upgraded = current + 2;
+            SetButtonText(ammoButton, $"Max Ammo +2\n{current} → {upgraded}");
+        }
+    }
+
+    private void HidePanel()
+    {
+        if (levelUpPanel != null)
+        {
+            levelUpPanel.SetActive(false);
+        }
+    }
+
+    private void SelectUpgradeOption(UpgradeType upgradeType)
+    {
+        selectedUpgrade = upgradeType;
+        UpdateButtonHighlight();
+    }
+
+    private void UpdateButtonHighlight()
+    {
+        // 모든 버튼을 기본 색상으로
+        ResetButtonColor(damageButton);
+        ResetButtonColor(speedButton);
+        ResetButtonColor(healthButton);
+        ResetButtonColor(ammoButton);
+
+        // 선택된 버튼만 하이라이트
+        if (selectedUpgrade.HasValue)
+        {
+            Button selectedButton = selectedUpgrade.Value switch
+            {
+                UpgradeType.IncreaseDamage => damageButton,
+                UpgradeType.IncreaseSpeed => speedButton,
+                UpgradeType.IncreaseMaxHealth => healthButton,
+                UpgradeType.IncreaseMaxAmmo => ammoButton,
+                _ => null
+            };
+
+            if (selectedButton != null)
+            {
+                HighlightButton(selectedButton);
+            }
+        }
+    }
+
+    private void ResetButtonColor(Button button)
+    {
+        if (button == null) return;
+        ColorBlock colors = button.colors;
+        colors.normalColor = Color.white;
+        button.colors = colors;
+    }
+
+    private void HighlightButton(Button button)
+    {
+        if (button == null) return;
+        ColorBlock colors = button.colors;
+        colors.normalColor = Color.yellow;
+        colors.selectedColor = Color.yellow;
+        colors.pressedColor = Color.yellow;
+        button.colors = colors;
+    }
+
+    private void ConfirmUpgrade()
+    {
+        if (!selectedUpgrade.HasValue)
+        {
+            Debug.LogWarning("No upgrade selected!");
+            return;
+        }
+
+        ApplyUpgrade(selectedUpgrade.Value);
+        selectedUpgrade = null;
+        HidePanel();
+    }
+
+    public void ApplyUpgrade(UpgradeType upgradeType)
+    {
+        switch (upgradeType)
+        {
+            case UpgradeType.IncreaseDamage:
+                // 탄환 피해량 20% 증가
+                if (playerShooting != null)
+                {
+                    float currentDamage = playerShooting.GetBulletDamage();
+                    float newDamage = currentDamage * 1.2f;
+                    playerShooting.SetBulletDamage(newDamage);
+                    Debug.Log($"Damage increased to {newDamage:F1}");
+                }
+                break;
+
+            case UpgradeType.IncreaseSpeed:
+                // 이동속도 20% 증가
+                if (player != null)
+                {
+                    float currentSpeed = player.GetMoveSpeed();
+                    float newSpeed = currentSpeed * 1.2f;
+                    player.SetMoveSpeed(newSpeed);
+                    Debug.Log($"Speed increased to {newSpeed:F1}");
+                }
+                break;
+
+            case UpgradeType.IncreaseMaxHealth:
+                // 최대 체력 20% 증가 및 회복
+                if (player != null)
+                {
+                    float currentMaxHealth = player.GetMaxHealth();
+                    float newMaxHealth = currentMaxHealth * 1.2f;
+                    player.SetMaxHealth(newMaxHealth);
+                    player.Heal(newMaxHealth); // 완전 회복
+                    Debug.Log($"Max Health increased to {newMaxHealth}");
+                }
+                break;
+
+            case UpgradeType.IncreaseMaxAmmo:
+                // 탄창 크기 +2 증가
+                if (playerShooting != null)
+                {
+                    playerShooting.IncreaseMaxAmmo(2);
+                    Debug.Log("Max Ammo increased by 2");
+                }
+                break;
+        }
+
+        // 게임 재개
+        Time.timeScale = 1f;
+    }
+
+    public int GetCurrentLevel() => currentLevel;
+    public int GetNextLevelScore() => nextLevelScore;
+}
+
+public enum UpgradeType
+{
+    IncreaseDamage,
+    IncreaseSpeed,
+    IncreaseMaxHealth,
+    IncreaseMaxAmmo
+}

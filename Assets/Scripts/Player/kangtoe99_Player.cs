@@ -15,6 +15,9 @@ public class kangtoe99_Player : kangtoe99_Character
 
     private void Update()
     {
+        // 게임 일시 정지 중에는 입력 무시
+        if (Time.timeScale == 0f) return;
+
         HandleInput();
         RotateTowardsMouse();
     }
