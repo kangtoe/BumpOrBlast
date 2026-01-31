@@ -18,6 +18,12 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [SerializeField] private kangtoe99_PlayerShooting playerShooting;
     private UpgradeType? selectedUpgrade = null;
 
+    [Header("Upgrade Values (Fixed Amounts)")]
+    [SerializeField] private float damageIncrement = 5f;
+    [SerializeField] private float speedIncrement = 1f;
+    [SerializeField] private float healthIncrement = 20f;
+    [SerializeField] private int ammoIncrement = 2;
+
     [Header("UI")]
     [SerializeField] private Image expBar;
     [SerializeField] private GameObject levelUpPanel;
@@ -156,32 +162,32 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         if (damageButton != null && playerShooting != null)
         {
             float current = playerShooting.GetBulletDamage();
-            float upgraded = current * 1.2f;
-            SetButtonText(damageButton, $"Damage +20%\n{current:F1} → {upgraded:F1}");
+            float upgraded = current + damageIncrement;
+            SetButtonText(damageButton, $"Damage +{damageIncrement}\n{current:F1} → {upgraded:F1}");
         }
 
         // Speed 버튼
         if (speedButton != null && player != null)
         {
             float current = player.GetMoveSpeed();
-            float upgraded = current * 1.2f;
-            SetButtonText(speedButton, $"Speed +20%\n{current:F1} → {upgraded:F1}");
+            float upgraded = current + speedIncrement;
+            SetButtonText(speedButton, $"Speed +{speedIncrement}\n{current:F1} → {upgraded:F1}");
         }
 
         // Max Health 버튼
         if (healthButton != null && player != null)
         {
             float current = player.GetMaxHealth();
-            float upgraded = current * 1.2f;
-            SetButtonText(healthButton, $"Max Health +20%\n{current:F0} → {upgraded:F0}");
+            float upgraded = current + healthIncrement;
+            SetButtonText(healthButton, $"Max Health +{healthIncrement}\n{current:F0} → {upgraded:F0}");
         }
 
         // Max Ammo 버튼
         if (ammoButton != null && playerShooting != null)
         {
             int current = playerShooting.GetMaxAmmo();
-            int upgraded = current + 2;
-            SetButtonText(ammoButton, $"Max Ammo +2\n{current} → {upgraded}");
+            int upgraded = current + ammoIncrement;
+            SetButtonText(ammoButton, $"Max Ammo +{ammoIncrement}\n{current} → {upgraded}");
         }
     }
 
@@ -262,45 +268,45 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         switch (upgradeType)
         {
             case UpgradeType.IncreaseDamage:
-                // 탄환 피해량 20% 증가
+                // 탄환 피해량 고정값 증가
                 if (playerShooting != null)
                 {
                     float currentDamage = playerShooting.GetBulletDamage();
-                    float newDamage = currentDamage * 1.2f;
+                    float newDamage = currentDamage + damageIncrement;
                     playerShooting.SetBulletDamage(newDamage);
-                    Debug.Log($"Damage increased to {newDamage:F1}");
+                    Debug.Log($"Damage increased to {newDamage:F1} (+{damageIncrement})");
                 }
                 break;
 
             case UpgradeType.IncreaseSpeed:
-                // 이동속도 20% 증가
+                // 이동속도 고정값 증가
                 if (player != null)
                 {
                     float currentSpeed = player.GetMoveSpeed();
-                    float newSpeed = currentSpeed * 1.2f;
+                    float newSpeed = currentSpeed + speedIncrement;
                     player.SetMoveSpeed(newSpeed);
-                    Debug.Log($"Speed increased to {newSpeed:F1}");
+                    Debug.Log($"Speed increased to {newSpeed:F1} (+{speedIncrement})");
                 }
                 break;
 
             case UpgradeType.IncreaseMaxHealth:
-                // 최대 체력 20% 증가 및 회복
+                // 최대 체력 고정값 증가 및 회복
                 if (player != null)
                 {
                     float currentMaxHealth = player.GetMaxHealth();
-                    float newMaxHealth = currentMaxHealth * 1.2f;
+                    float newMaxHealth = currentMaxHealth + healthIncrement;
                     player.SetMaxHealth(newMaxHealth);
                     player.Heal(newMaxHealth); // 완전 회복
-                    Debug.Log($"Max Health increased to {newMaxHealth}");
+                    Debug.Log($"Max Health increased to {newMaxHealth} (+{healthIncrement})");
                 }
                 break;
 
             case UpgradeType.IncreaseMaxAmmo:
-                // 탄창 크기 +2 증가
+                // 탄창 크기 고정값 증가
                 if (playerShooting != null)
                 {
-                    playerShooting.IncreaseMaxAmmo(2);
-                    Debug.Log("Max Ammo increased by 2");
+                    playerShooting.IncreaseMaxAmmo(ammoIncrement);
+                    Debug.Log($"Max Ammo increased by {ammoIncrement}");
                 }
                 break;
         }

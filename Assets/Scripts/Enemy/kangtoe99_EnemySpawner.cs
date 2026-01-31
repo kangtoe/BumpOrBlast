@@ -12,7 +12,9 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     [SerializeField] private float initialSpawnInterval = 3f;
     [SerializeField] private float minSpawnInterval = 0.5f;
     [SerializeField] private float intervalDecreaseRate = 0.05f;
-    [SerializeField] private float spawnDistance = 15f;
+    [SerializeField] private float spawnDistanceFromScreen = 2f; // 화면 밖 거리
+
+    private Camera mainCamera;
 
     private float currentSpawnInterval;
     private float spawnTimer;
@@ -32,6 +34,13 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
 
         currentSpawnInterval = initialSpawnInterval;
         spawnTimer = currentSpawnInterval;
+
+        // 메인 카메라 찾기
+        mainCamera = Camera.main;
+        if (mainCamera == null)
+        {
+            Debug.LogError("Main Camera not found!");
+        }
 
         if (player == null)
         {
@@ -82,10 +91,47 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
 
     private Vector2 GetRandomSpawnPosition()
     {
-        float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-        Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * spawnDistance;
+        if (mainCamera == null) return player.position;
 
-        return (Vector2)player.position + offset;
+        // 화면 경계를 월드 좌표로 계산
+        float cameraHeight = mainCamera.orthographicSize;
+        float cameraWidth = cameraHeight * mainCamera.aspect;
+
+        Vector3 cameraPos = mainCamera.transform.position;
+
+        // 랜덤하게 4개 방향 중 하나 선택 (위, 아래, 왼쪽, 오른쪽)
+        int side = Random.Range(0, 4);
+        Vector2 spawnPosition = Vector2.zero;
+
+        switch (side)
+        {
+            case 0: // 위쪽
+                spawnPosition = new Vector2(
+                    Random.Range(cameraPos.x - cameraWidth, cameraPos.x + cameraWidth),
+                    cameraPos.y + cameraHeight + spawnDistanceFromScreen
+                );
+                break;
+            case 1: // 아래쪽
+                spawnPosition = new Vector2(
+                    Random.Range(cameraPos.x - cameraWidth, cameraPos.x + cameraWidth),
+                    cameraPos.y - cameraHeight - spawnDistanceFromScreen
+                );
+                break;
+            case 2: // 왼쪽
+                spawnPosition = new Vector2(
+                    cameraPos.x - cameraWidth - spawnDistanceFromScreen,
+                    Random.Range(cameraPos.y - cameraHeight, cameraPos.y + cameraHeight)
+                );
+                break;
+            case 3: // 오른쪽
+                spawnPosition = new Vector2(
+                    cameraPos.x + cameraWidth + spawnDistanceFromScreen,
+                    Random.Range(cameraPos.y - cameraHeight, cameraPos.y + cameraHeight)
+                );
+                break;
+        }
+
+        return spawnPosition;
     }
 
     public void StartSpawning()
@@ -105,9 +151,27 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     // 디버그용
     private void OnDrawGizmosSelected()
     {
-        if (player == null) return;
+        Camera cam = mainCamera != null ? mainCamera : Camera.main;
+        if (cam == null) return;
 
+        float cameraHeight = cam.orthographicSize;
+        float cameraWidth = cameraHeight * cam.aspect;
+        Vector3 cameraPos = cam.transform.position;
+
+        // 카메라 뷰포트 (녹색)
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireCube(
+            new Vector3(cameraPos.x, cameraPos.y, 0),
+            new Vector3(cameraWidth * 2, cameraHeight * 2, 0)
+        );
+
+        // 스폰 영역 (빨간색)
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(player.position, spawnDistance);
+        float outerWidth = cameraWidth + spawnDistanceFromScreen;
+        float outerHeight = cameraHeight + spawnDistanceFromScreen;
+        Gizmos.DrawWireCube(
+            new Vector3(cameraPos.x, cameraPos.y, 0),
+            new Vector3(outerWidth * 2, outerHeight * 2, 0)
+        );
     }
 }
