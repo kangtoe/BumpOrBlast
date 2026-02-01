@@ -18,7 +18,7 @@
 # /[Aa]ssets/AssetStoreTools*
 
 # Exclude the whole Packages folder but keep the manifest files
-/[Pp]ackages/
+/[Pp]ackages/*
 !/[Pp]ackages/manifest.json
 !/[Pp]ackages/packages-lock.json
 
