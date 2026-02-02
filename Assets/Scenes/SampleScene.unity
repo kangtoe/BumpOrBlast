@@ -1328,7 +1328,7 @@ MonoBehaviour:
   hitParticlePrefab: {fileID: 8453916313859941413, guid: fcb2d54071e449f409c23d619adbfa05, type: 3}
   deathParticlePrefab: {fileID: 8453916313859941413, guid: 761b1bb3a62bd1843b9ef0cedff18ab7, type: 3}
   hitSound: {fileID: 8300000, guid: d374ec2186de7234bb3fe0828ee1d823, type: 3}
-  deathSound: {fileID: 8300000, guid: cab7b87e49683304cb8fd53b765359a9, type: 3}
+  deathSound: {fileID: 8300000, guid: 6fa1ec0d403c99c45ae0f883cb913c6c, type: 3}
   mainCamera: {fileID: 330585545}
 --- !u!50 &451658498
 Rigidbody2D:
@@ -4382,6 +4382,9 @@ MonoBehaviour:
   minSpawnInterval: 0.5
   intervalDecreaseRate: 0.05
   spawnDistanceFromScreen: 2
+  initialHealthMultiplier: 1
+  maxHealthMultiplier: 5
+  healthMultiplierIncreaseRate: 0.02
 --- !u!4 &1930471000
 Transform:
   m_ObjectHideFlags: 0

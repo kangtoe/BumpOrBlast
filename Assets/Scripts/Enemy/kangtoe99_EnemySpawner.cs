@@ -14,11 +14,17 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     [SerializeField] private float intervalDecreaseRate = 0.05f;
     [SerializeField] private float spawnDistanceFromScreen = 2f; // 화면 밖 거리
 
+    [Header("Health Multiplier Settings")]
+    [SerializeField] private float initialHealthMultiplier = 1f;
+    [SerializeField] private float maxHealthMultiplier = 5f;
+    [SerializeField] private float healthMultiplierIncreaseRate = 0.02f;
+
     private Camera mainCamera;
 
     private float currentSpawnInterval;
     private float spawnTimer;
     private bool isSpawning = false;
+    private float currentHealthMultiplier;
 
     private void Awake()
     {
@@ -34,6 +40,7 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
 
         currentSpawnInterval = initialSpawnInterval;
         spawnTimer = currentSpawnInterval;
+        currentHealthMultiplier = initialHealthMultiplier;
 
         // 메인 카메라 찾기
         mainCamera = Camera.main;
@@ -68,6 +75,12 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
                 currentSpawnInterval - intervalDecreaseRate,
                 minSpawnInterval
             );
+
+            // 난이도 증가: 적 체력 배율 증가
+            currentHealthMultiplier = Mathf.Min(
+                currentHealthMultiplier + healthMultiplierIncreaseRate,
+                maxHealthMultiplier
+            );
         }
     }
 
@@ -86,7 +99,16 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
         GameObject randomPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
 
         // 적 생성
-        Instantiate(randomPrefab, spawnPosition, Quaternion.identity);
+        GameObject enemyObj = Instantiate(randomPrefab, spawnPosition, Quaternion.identity);
+
+        // 체력 배율 적용
+        kangtoe99_Character character = enemyObj.GetComponent<kangtoe99_Character>();
+        if (character != null)
+        {
+            float newMaxHealth = character.GetMaxHealth() * currentHealthMultiplier;
+            character.SetMaxHealth(newMaxHealth);
+            character.Heal(newMaxHealth); // 현재 체력을 최대 체력으로 설정
+        }
     }
 
     private Vector2 GetRandomSpawnPosition()
@@ -138,6 +160,7 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     {
         isSpawning = true;
         currentSpawnInterval = initialSpawnInterval;
+        currentHealthMultiplier = initialHealthMultiplier;
         spawnTimer = 0; // 첫 스폰은 즉시 실행
         Debug.Log("Enemy spawning started!");
     }
