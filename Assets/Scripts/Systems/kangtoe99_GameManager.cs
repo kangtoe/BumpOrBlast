@@ -21,6 +21,12 @@ public class kangtoe99_GameManager : MonoBehaviour
     [SerializeField] private float slowMotionScale = 0.2f;
     [SerializeField] private float timeRecoveryDuration = 1.5f;
 
+    [Header("Help")]
+    [SerializeField] private GameObject helpObject;
+    [SerializeField] private KeyCode helpToggleKey = KeyCode.H;
+    [SerializeField] private AudioClip helpOnSound;
+    [SerializeField] private AudioClip helpOffSound;
+
     [Header("SFX")]
     [SerializeField] private AudioClip sceneStartSound;
     [SerializeField] private AudioClip gameStartSound;
@@ -80,6 +86,12 @@ public class kangtoe99_GameManager : MonoBehaviour
         if (isGameOver && Input.GetKeyDown(KeyCode.R))
         {
             RestartGame();
+        }
+
+        // 도움말 토글
+        if (Input.GetKeyDown(helpToggleKey))
+        {
+            ToggleHelp();
         }
     }
 
@@ -175,4 +187,16 @@ public class kangtoe99_GameManager : MonoBehaviour
 
     public bool IsGameStarted() => isGameStarted;
     public bool IsGameOver() => isGameOver;
+
+    private void ToggleHelp()
+    {
+        if (helpObject == null) return;
+
+        bool willBeActive = !helpObject.activeSelf;
+        helpObject.SetActive(willBeActive);
+
+        AudioClip clip = willBeActive ? helpOnSound : helpOffSound;
+        if (clip != null)
+            AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position);
+    }
 }
