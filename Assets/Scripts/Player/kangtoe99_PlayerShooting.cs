@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class kangtoe99_PlayerShooting : MonoBehaviour
 {
@@ -17,8 +16,8 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     [Header("Fire Rate Settings")]
     [SerializeField] private float fireRate = 0.2f; // 발사 간격 (초 단위)
 
-    [Header("UI")]
-    [SerializeField] private Text ammoText;
+    [Header("Ammo UI Manager")]
+    [SerializeField] private kangtoe99_AmmoUIManager ammoUIManager;
 
     [Header("SFX")]
     [SerializeField] private AudioClip shootSound;
@@ -34,12 +33,15 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     private void Start()
     {
         currentAmmo = maxAmmo;
+
+        if (ammoUIManager != null)
+        {
+            ammoUIManager.InitializeAmmoUI(maxAmmo, maxAmmo);
+        }
     }
 
     private void Update()
     {
-        UpdateAmmoUI();
-
         // 게임 일시 정지 중에는 사격 및 재장전 무시
         if (Time.timeScale == 0f)
             return;
@@ -64,21 +66,6 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmo)
         {
             StartCoroutine(Reload());
-        }
-    }
-
-    private void UpdateAmmoUI()
-    {
-        if (ammoText == null)
-            return;
-
-        if (isReloading)
-        {
-            ammoText.text = $"Reloading... {reloadTimeRemaining:F1}s";
-        }
-        else
-        {
-            ammoText.text = $"{currentAmmo}/{maxAmmo}";
         }
     }
 
@@ -113,6 +100,11 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
 
         currentAmmo--;
         nextFireTime = Time.time + fireRate; // 다음 발사 가능 시간 설정
+
+        if (ammoUIManager != null)
+        {
+            ammoUIManager.OnShoot(firePoint.position);
+        }
     }
 
     private System.Collections.IEnumerator Reload()
@@ -124,6 +116,11 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         if (reloadStartSound != null)
         {
             AudioSource.PlayClipAtPoint(reloadStartSound, Camera.main.transform.position);
+        }
+
+        if (ammoUIManager != null)
+        {
+            ammoUIManager.OnReloadStart(reloadTime);
         }
 
         while (reloadTimeRemaining > 0)
@@ -151,6 +148,11 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     public void IncreaseMaxAmmo(int amount)
     {
         maxAmmo += amount;
+
+        if (ammoUIManager != null)
+        {
+            ammoUIManager.InitializeAmmoUI(currentAmmo, maxAmmo);
+        }
     }
 
     public float GetBulletDamage() => bulletDamage;
