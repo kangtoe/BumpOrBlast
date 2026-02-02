@@ -138,7 +138,7 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     {
         isSpawning = true;
         currentSpawnInterval = initialSpawnInterval;
-        spawnTimer = currentSpawnInterval;
+        spawnTimer = 0; // 첫 스폰은 즉시 실행
         Debug.Log("Enemy spawning started!");
     }
 
