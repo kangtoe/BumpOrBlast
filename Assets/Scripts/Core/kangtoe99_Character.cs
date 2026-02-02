@@ -21,13 +21,17 @@ public class kangtoe99_Character : MonoBehaviour
 
     [Header("VFX")]
     [SerializeField] protected GameObject hitParticlePrefab;
-    [SerializeField] protected GameObject deathParticlePrefab;    
+    [SerializeField] protected GameObject deathParticlePrefab;
+
+    [Header("SFX")]
+    [SerializeField] protected AudioClip hitSound;
+    [SerializeField] protected AudioClip deathSound;    
 
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         currentHealth = maxHealth;
-        
+
         if (spriteRenderer != null)
         {
             originalColor = spriteRenderer.color;
@@ -55,6 +59,12 @@ public class kangtoe99_Character : MonoBehaviour
     {
         currentHealth -= damage;
         UpdateHealthColor();
+
+        // 피격 사운드 재생
+        if (hitSound != null)
+        {
+            AudioSource.PlayClipAtPoint(hitSound, Camera.main.transform.position);
+        }
 
         // 피격 파티클 재생
         if (hitParticlePrefab != null)
@@ -96,6 +106,12 @@ public class kangtoe99_Character : MonoBehaviour
 
     protected virtual void Die()
     {
+        // 사망 사운드 재생
+        if (deathSound != null)
+        {
+            AudioSource.PlayClipAtPoint(deathSound, Camera.main.transform.position);
+        }
+
         // 사망 파티클 재생
         if (deathParticlePrefab != null)
         {

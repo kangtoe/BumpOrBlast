@@ -20,6 +20,12 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     [Header("UI")]
     [SerializeField] private Text ammoText;
 
+    [Header("SFX")]
+    [SerializeField] private AudioClip shootSound;
+    [SerializeField] private AudioClip emptyClickSound;
+    [SerializeField] private AudioClip reloadStartSound;
+    [SerializeField] private AudioClip reloadCompleteSound;
+
     private int currentAmmo;
     private bool isReloading = false;
     private float reloadTimeRemaining = 0f;
@@ -39,7 +45,14 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
             return;
 
         if (isReloading)
+        {
+            // 재장전 중 사격 시도 시 빈 탄창 사운드
+            if (Input.GetMouseButtonDown(0) && emptyClickSound != null)
+            {
+                AudioSource.PlayClipAtPoint(emptyClickSound, Camera.main.transform.position);
+            }
             return;
+        }
 
         // 자동 발사: 마우스 버튼을 누르고 있으면 연사
         if (Input.GetMouseButton(0) && Time.time >= nextFireTime)
@@ -71,9 +84,10 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
 
     private void Shoot()
     {
+        // 탄창이 비었으면 자동 재장전 시작
         if (currentAmmo <= 0)
         {
-            Debug.Log("No Ammo!");
+            StartCoroutine(Reload());
             return;
         }
 
@@ -91,21 +105,26 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
             bulletScript.Initialize(firePoint.up, bulletSpeed, bulletKnockback, bulletDamage);
         }
 
+        // 발사 사운드 재생
+        if (shootSound != null)
+        {
+            AudioSource.PlayClipAtPoint(shootSound, Camera.main.transform.position);
+        }
+
         currentAmmo--;
         nextFireTime = Time.time + fireRate; // 다음 발사 가능 시간 설정
-
-        // 탄창이 비었으면 자동 재장전
-        if (currentAmmo <= 0)
-        {
-            StartCoroutine(Reload());
-        }
     }
 
     private System.Collections.IEnumerator Reload()
     {
         isReloading = true;
         reloadTimeRemaining = reloadTime;
-        Debug.Log("Reloading...");
+
+        // 재장전 시작 사운드
+        if (reloadStartSound != null)
+        {
+            AudioSource.PlayClipAtPoint(reloadStartSound, Camera.main.transform.position);
+        }
 
         while (reloadTimeRemaining > 0)
         {
@@ -116,7 +135,12 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         currentAmmo = maxAmmo;
         isReloading = false;
         reloadTimeRemaining = 0f;
-        Debug.Log("Reload Complete!");
+
+        // 재장전 완료 사운드
+        if (reloadCompleteSound != null)
+        {
+            AudioSource.PlayClipAtPoint(reloadCompleteSound, Camera.main.transform.position);
+        }
     }
 
     public int GetCurrentAmmo() => currentAmmo;

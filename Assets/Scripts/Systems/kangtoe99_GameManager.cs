@@ -21,6 +21,11 @@ public class kangtoe99_GameManager : MonoBehaviour
     [SerializeField] private float slowMotionScale = 0.2f;
     [SerializeField] private float timeRecoveryDuration = 1.5f;
 
+    [Header("SFX")]
+    [SerializeField] private AudioClip sceneStartSound;
+    [SerializeField] private AudioClip gameStartSound;
+    [SerializeField] private AudioClip gameOverSound;
+
     private void Awake()
     {
         if (Instance == null)
@@ -54,6 +59,15 @@ public class kangtoe99_GameManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        // 씬 시작 사운드 재생
+        if (sceneStartSound != null)
+        {
+            AudioSource.PlayClipAtPoint(sceneStartSound, Camera.main.transform.position);
+        }
+    }
+
     private void Update()
     {
         // 게임 시작 대기 중
@@ -72,6 +86,12 @@ public class kangtoe99_GameManager : MonoBehaviour
     private void StartGame()
     {
         isGameStarted = true;
+
+        // 게임 시작 사운드 재생
+        if (gameStartSound != null)
+        {
+            AudioSource.PlayClipAtPoint(gameStartSound, Camera.main.transform.position);
+        }
 
         if (startPanel != null)
         {
@@ -97,6 +117,12 @@ public class kangtoe99_GameManager : MonoBehaviour
         if (kangtoe99_EnemySpawner.Instance != null)
         {
             kangtoe99_EnemySpawner.Instance.StopSpawning();
+        }
+
+        // 게임 오버 사운드 재생
+        if (gameOverSound != null)
+        {
+            AudioSource.PlayClipAtPoint(gameOverSound, Camera.main.transform.position);
         }
 
         // 슬로우 모션 효과 후 게임 오버 패널 표시

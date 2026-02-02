@@ -1169,6 +1169,10 @@ MonoBehaviour:
   reloadTime: 2
   fireRate: 0.2
   ammoText: {fileID: 1227666306}
+  shootSound: {fileID: 8300000, guid: 1743f0d445b86480b8ecfdbc8c84a5f9, type: 3}
+  emptyClickSound: {fileID: 8300000, guid: eb8b85795fa4cfd4882479bbe3adb6df, type: 3}
+  reloadStartSound: {fileID: 8300000, guid: 57c18d5ac3727274980bfc9da0fb160d, type: 3}
+  reloadCompleteSound: {fileID: 8300000, guid: 4f8b4205a895a2c498a5949e14377460, type: 3}
 --- !u!114 &451658497
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1188,6 +1192,8 @@ MonoBehaviour:
   spriteRenderer: {fileID: 824165783}
   hitParticlePrefab: {fileID: 8453916313859941413, guid: fcb2d54071e449f409c23d619adbfa05, type: 3}
   deathParticlePrefab: {fileID: 8453916313859941413, guid: 761b1bb3a62bd1843b9ef0cedff18ab7, type: 3}
+  hitSound: {fileID: 8300000, guid: d374ec2186de7234bb3fe0828ee1d823, type: 3}
+  deathSound: {fileID: 8300000, guid: cab7b87e49683304cb8fd53b765359a9, type: 3}
   mainCamera: {fileID: 330585545}
 --- !u!50 &451658498
 Rigidbody2D:
@@ -1304,6 +1310,8 @@ MonoBehaviour:
   speedIncrement: 1
   ammoIncrement: 2
   knockbackIncrement: 2
+  levelUpSound: {fileID: 8300000, guid: e6b430653926b204f96bfefe75ff43af, type: 3}
+  upgradeSound: {fileID: 8300000, guid: 0d019d0f738854a439586afbb9717223, type: 3}
   expBar: {fileID: 747855026}
   levelUpPanel: {fileID: 720870597}
   damageButton: {fileID: 267559203}
@@ -2170,6 +2178,9 @@ MonoBehaviour:
   gameOverText: {fileID: 1236093952}
   slowMotionScale: 0.1
   timeRecoveryDuration: 1
+  sceneStartSound: {fileID: 8300000, guid: 66d8309498b3a20459f0c959cfd73586, type: 3}
+  gameStartSound: {fileID: 8300000, guid: 42f99ac49aab4b648b1d08ea6bc7dcad, type: 3}
+  gameOverSound: {fileID: 8300000, guid: b9ef78d4e6aa669428c4d1d922882c51, type: 3}
 --- !u!4 &907612787
 Transform:
   m_ObjectHideFlags: 0

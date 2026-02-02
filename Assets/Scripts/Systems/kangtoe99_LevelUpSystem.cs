@@ -27,6 +27,11 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [SerializeField] private int ammoIncrement = 2;
     [SerializeField] private float knockbackIncrement = 2f; // 넉백 증가량
 
+    [Header("SFX")]
+    [SerializeField] private AudioClip levelUpSound;
+    [SerializeField] private AudioClip upgradeSound;
+    private AudioSource audioSource;
+
     [Header("UI")]
     [SerializeField] private Image expBar;
     [SerializeField] private GameObject levelUpPanel;
@@ -47,6 +52,10 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
+        // AudioSource 설정
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
 
         // 초기 레벨 설정
         nextLevelScore = baseScore;
@@ -149,6 +158,12 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         nextLevelScore = previousLevelScore + requiredScore;
 
         Debug.Log($"Level Up! Now Level {currentLevel}");
+
+        // 레벨 업 사운드 재생
+        if (levelUpSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(levelUpSound);
+        }
 
         // 게임 일시 정지
         Time.timeScale = 0f;
@@ -272,6 +287,12 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         {
             Debug.LogWarning("No upgrade selected!");
             return;
+        }
+
+        // 업그레이드 사운드 재생
+        if (upgradeSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(upgradeSound);
         }
 
         ApplyUpgrade(selectedUpgrade.Value);
