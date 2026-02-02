@@ -119,12 +119,6 @@ public class kangtoe99_GameManager : MonoBehaviour
             kangtoe99_EnemySpawner.Instance.StopSpawning();
         }
 
-        // 게임 오버 사운드 재생
-        if (gameOverSound != null)
-        {
-            AudioSource.PlayClipAtPoint(gameOverSound, Camera.main.transform.position);
-        }
-
         // 슬로우 모션 효과 후 게임 오버 패널 표시
         StartCoroutine(GameOverSequence());
 
@@ -150,6 +144,12 @@ public class kangtoe99_GameManager : MonoBehaviour
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
+        }
+
+        // 게임 오버 사운드 재생
+        if (gameOverSound != null)
+        {
+            AudioSource.PlayClipAtPoint(gameOverSound, Camera.main.transform.position);
         }
 
         if (gameOverText != null)

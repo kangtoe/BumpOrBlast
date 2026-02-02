@@ -9,7 +9,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [Header("Level Settings")]
     [SerializeField] private int baseScore = 100;
     [SerializeField] private int scorePerLevel = 50;
-    private int currentLevel = 1;
+    private int currentLevel = 0;
     private int nextLevelScore;
     private int previousLevelScore = 0;
 
@@ -21,11 +21,14 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     // 각 업그레이드별 레벨 추적
     private System.Collections.Generic.Dictionary<UpgradeType, int> upgradeLevels;
 
-    [Header("Upgrade Values (Fixed Amounts)")]
-    [SerializeField] private float damageIncrement = 5f;
-    [SerializeField] private float speedIncrement = 1f;
-    [SerializeField] private int ammoIncrement = 2;
-    [SerializeField] private float knockbackIncrement = 2f; // 넉백 증가량
+    [Header("Upgrade Values (Percent Increase)")]
+    private const float UpgradePercentIncrease = 0.20f; // 모든 업그레이드 20% 증가
+
+    // 기본값 저장 (선형 증가 계산용)
+    private float baseBulletDamage;
+    private float baseFireRate;
+    private int baseMaxAmmo;
+    private float baseReloadTime;
 
     [Header("SFX")]
     [SerializeField] private AudioClip levelUpSound;
@@ -34,11 +37,12 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private Image expBar;
+    [SerializeField] private Text levelText;
     [SerializeField] private GameObject levelUpPanel;
     [SerializeField] private Button damageButton;
-    [SerializeField] private Button speedButton;
+    [SerializeField] private Button fireRateButton;
     [SerializeField] private Button ammoButton;
-    [SerializeField] private Button knockbackButton;
+    [SerializeField] private Button reloadButton;
     [SerializeField] private Button confirmButton;
 
     private void Awake()
@@ -64,9 +68,9 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         upgradeLevels = new System.Collections.Generic.Dictionary<UpgradeType, int>
         {
             { UpgradeType.IncreaseDamage, 0 },
-            { UpgradeType.IncreaseSpeed, 0 },
+            { UpgradeType.IncreaseFireRate, 0 },
             { UpgradeType.IncreaseMaxAmmo, 0 },
-            { UpgradeType.IncreaseKnockback, 0 }
+            { UpgradeType.IncreaseReloadSpeed, 0 }
         };
 
         // Player 참조 찾기
@@ -79,28 +83,40 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             playerShooting = FindFirstObjectByType<kangtoe99_PlayerShooting>();
         }
 
+        // 기본값 저장 (선형 증가 계산용)
+        if (playerShooting != null)
+        {
+            baseBulletDamage = playerShooting.GetBulletDamage();
+            baseFireRate = playerShooting.GetFireRate();
+            baseMaxAmmo = playerShooting.GetMaxAmmo();
+            baseReloadTime = playerShooting.GetReloadTime();
+        }
+
         // 패널 숨기기
         if (levelUpPanel != null)
         {
             levelUpPanel.SetActive(false);
         }
 
+        // 초기 레벨 텍스트 업데이트
+        UpdateLevelText();
+
         // 버튼 이벤트 연결
         if (damageButton != null)
         {
             damageButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseDamage));
         }
-        if (speedButton != null)
+        if (fireRateButton != null)
         {
-            speedButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseSpeed));
+            fireRateButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseFireRate));
         }
         if (ammoButton != null)
         {
             ammoButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseMaxAmmo));
         }
-        if (knockbackButton != null)
+        if (reloadButton != null)
         {
-            knockbackButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseKnockback));
+            reloadButton.onClick.AddListener(() => SelectUpgradeOption(UpgradeType.IncreaseReloadSpeed));
         }
         if (confirmButton != null)
         {
@@ -133,6 +149,14 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         expBar.fillAmount = Mathf.Clamp01(progress);
     }
 
+    private void UpdateLevelText()
+    {
+        if (levelText != null)
+        {
+            levelText.text = $"Lv.{currentLevel}";
+        }
+    }
+
     private void CheckLevelUp()
     {
         if (kangtoe99_ScoreSystem.Instance == null) return;
@@ -158,6 +182,9 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         nextLevelScore = previousLevelScore + requiredScore;
 
         Debug.Log($"Level Up! Now Level {currentLevel}");
+
+        // 레벨 텍스트 업데이트
+        UpdateLevelText();
 
         // 레벨 업 사운드 재생
         if (levelUpSound != null && audioSource != null)
@@ -185,40 +212,40 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 
     private void UpdateButtonTexts()
     {
-        // Damage 버튼
+        // Damage 버튼 (데미지 증가)
         if (damageButton != null && playerShooting != null)
         {
             int level = upgradeLevels[UpgradeType.IncreaseDamage];
-            float current = playerShooting.GetBulletDamage();
-            float upgraded = current + damageIncrement;
+            float current = baseBulletDamage * (1f + level * UpgradePercentIncrease);
+            float upgraded = baseBulletDamage * (1f + (level + 1) * UpgradePercentIncrease);
             SetButtonText(damageButton, $"Damage Lv.{level}\n{current:F1} → {upgraded:F1}");
         }
 
-        // Speed 버튼
-        if (speedButton != null && player != null)
+        // Fire Rate 버튼 (연사속도 증가 = 발사 간격 감소, 속도 기반 계산)
+        if (fireRateButton != null && playerShooting != null)
         {
-            int level = upgradeLevels[UpgradeType.IncreaseSpeed];
-            float current = player.GetMoveSpeed();
-            float upgraded = current + speedIncrement;
-            SetButtonText(speedButton, $"Speed Lv.{level}\n{current:F1} → {upgraded:F1}");
+            int level = upgradeLevels[UpgradeType.IncreaseFireRate];
+            float current = baseFireRate / (1f + level * UpgradePercentIncrease);
+            float upgraded = baseFireRate / (1f + (level + 1) * UpgradePercentIncrease);
+            SetButtonText(fireRateButton, $"Fire Rate Lv.{level}\n{current:F2}s → {upgraded:F2}s");
         }
 
-        // Max Ammo 버튼
+        // Max Ammo 버튼 (탄창 크기 증가)
         if (ammoButton != null && playerShooting != null)
         {
             int level = upgradeLevels[UpgradeType.IncreaseMaxAmmo];
-            int current = playerShooting.GetMaxAmmo();
-            int upgraded = current + ammoIncrement;
+            int current = Mathf.RoundToInt(baseMaxAmmo * (1f + level * UpgradePercentIncrease));
+            int upgraded = Mathf.RoundToInt(baseMaxAmmo * (1f + (level + 1) * UpgradePercentIncrease));
             SetButtonText(ammoButton, $"Max Ammo Lv.{level}\n{current} → {upgraded}");
         }
 
-        // Knockback 버튼 (넉백)
-        if (knockbackButton != null && playerShooting != null)
+        // Reload Speed 버튼 (재장전 속도 증가 = 재장전 시간 감소, 속도 기반 계산)
+        if (reloadButton != null && playerShooting != null)
         {
-            int level = upgradeLevels[UpgradeType.IncreaseKnockback];
-            float current = playerShooting.GetBulletKnockback();
-            float upgraded = current + knockbackIncrement;
-            SetButtonText(knockbackButton, $"Knockback Lv.{level}\n{current:F1} → {upgraded:F1}");
+            int level = upgradeLevels[UpgradeType.IncreaseReloadSpeed];
+            float current = baseReloadTime / (1f + level * UpgradePercentIncrease);
+            float upgraded = baseReloadTime / (1f + (level + 1) * UpgradePercentIncrease);
+            SetButtonText(reloadButton, $"Reload Lv.{level}\n{current:F2}s → {upgraded:F2}s");
         }
     }
 
@@ -240,9 +267,9 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     {
         // 모든 버튼을 기본 색상으로
         ResetButtonColor(damageButton);
-        ResetButtonColor(speedButton);
+        ResetButtonColor(fireRateButton);
         ResetButtonColor(ammoButton);
-        ResetButtonColor(knockbackButton);
+        ResetButtonColor(reloadButton);
 
         // 선택된 버튼만 하이라이트
         if (selectedUpgrade.HasValue)
@@ -250,9 +277,9 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             Button selectedButton = selectedUpgrade.Value switch
             {
                 UpgradeType.IncreaseDamage => damageButton,
-                UpgradeType.IncreaseSpeed => speedButton,
+                UpgradeType.IncreaseFireRate => fireRateButton,
                 UpgradeType.IncreaseMaxAmmo => ammoButton,
-                UpgradeType.IncreaseKnockback => knockbackButton,
+                UpgradeType.IncreaseReloadSpeed => reloadButton,
                 _ => null
             };
 
@@ -304,49 +331,52 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     {
         // 업그레이드 레벨 증가
         upgradeLevels[upgradeType]++;
-        int currentLevel = upgradeLevels[upgradeType];
+        int level = upgradeLevels[upgradeType];
 
         switch (upgradeType)
         {
             case UpgradeType.IncreaseDamage:
-                // 탄환 피해량 고정값 증가
+                // 탄환 피해량: 기본값 * (1 + 레벨 * 증가율)
                 if (playerShooting != null)
                 {
-                    float currentDamage = playerShooting.GetBulletDamage();
-                    float newDamage = currentDamage + damageIncrement;
+                    float prevDamage = baseBulletDamage * (1f + (level - 1) * UpgradePercentIncrease);
+                    float newDamage = baseBulletDamage * (1f + level * UpgradePercentIncrease);
                     playerShooting.SetBulletDamage(newDamage);
-                    Debug.Log($"Damage Lv.{currentLevel}: {currentDamage:F1} → {newDamage:F1}");
+                    Debug.Log($"Damage Lv.{level}: {prevDamage:F1} → {newDamage:F1} (+{UpgradePercentIncrease * 100f:F0}%)");
                 }
                 break;
 
-            case UpgradeType.IncreaseSpeed:
-                // 이동속도 고정값 증가
-                if (player != null)
+            case UpgradeType.IncreaseFireRate:
+                // 연사속도: 기본값 / (1 + 레벨 * 증가율) - 속도 기반 계산
+                if (playerShooting != null)
                 {
-                    float currentSpeed = player.GetMoveSpeed();
-                    float newSpeed = currentSpeed + speedIncrement;
-                    player.SetMoveSpeed(newSpeed);
-                    Debug.Log($"Speed Lv.{currentLevel}: {currentSpeed:F1} → {newSpeed:F1}");
+                    float prevFireRate = baseFireRate / (1f + (level - 1) * UpgradePercentIncrease);
+                    float newFireRate = baseFireRate / (1f + level * UpgradePercentIncrease);
+                    playerShooting.SetFireRate(newFireRate);
+                    Debug.Log($"Fire Rate Lv.{level}: {prevFireRate:F2}s → {newFireRate:F2}s (+{UpgradePercentIncrease * 100f:F0}%)");
                 }
                 break;
 
             case UpgradeType.IncreaseMaxAmmo:
-                // 탄창 크기 고정값 증가
+                // 탄창 크기: 기본값 * (1 + 레벨 * 증가율)
                 if (playerShooting != null)
                 {
-                    playerShooting.IncreaseMaxAmmo(ammoIncrement);
-                    Debug.Log($"Max Ammo Lv.{currentLevel}: +{ammoIncrement}");
+                    int prevAmmo = Mathf.RoundToInt(baseMaxAmmo * (1f + (level - 1) * UpgradePercentIncrease));
+                    int newAmmo = Mathf.RoundToInt(baseMaxAmmo * (1f + level * UpgradePercentIncrease));
+                    int ammoIncrease = newAmmo - playerShooting.GetMaxAmmo();
+                    playerShooting.IncreaseMaxAmmo(ammoIncrease);
+                    Debug.Log($"Max Ammo Lv.{level}: {prevAmmo} → {newAmmo} (+{UpgradePercentIncrease * 100f:F0}%)");
                 }
                 break;
 
-            case UpgradeType.IncreaseKnockback:
-                // 탄환 넉백 증가
+            case UpgradeType.IncreaseReloadSpeed:
+                // 재장전 속도: 기본값 / (1 + 레벨 * 증가율) - 속도 기반 계산
                 if (playerShooting != null)
                 {
-                    float currentKnockback = playerShooting.GetBulletKnockback();
-                    playerShooting.IncreaseBulletKnockback(knockbackIncrement);
-                    float newKnockback = playerShooting.GetBulletKnockback();
-                    Debug.Log($"Knockback Lv.{currentLevel}: {currentKnockback:F1} → {newKnockback:F1}");
+                    float prevReload = baseReloadTime / (1f + (level - 1) * UpgradePercentIncrease);
+                    float newReload = baseReloadTime / (1f + level * UpgradePercentIncrease);
+                    playerShooting.SetReloadTime(newReload);
+                    Debug.Log($"Reload Lv.{level}: {prevReload:F2}s → {newReload:F2}s (+{UpgradePercentIncrease * 100f:F0}%)");
                 }
                 break;
         }
@@ -362,8 +392,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 
 public enum UpgradeType
 {
-    IncreaseDamage,
-    IncreaseSpeed,
-    IncreaseMaxAmmo,
-    IncreaseKnockback
+    IncreaseDamage,      // 데미지 증가
+    IncreaseFireRate,    // 연사속도 증가
+    IncreaseMaxAmmo,     // 탄창 크기 증가
+    IncreaseReloadSpeed  // 재장전 속도 증가
 }
