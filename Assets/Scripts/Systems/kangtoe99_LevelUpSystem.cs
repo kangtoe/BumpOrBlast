@@ -295,6 +295,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         if (button == null) return;
         ColorBlock colors = button.colors;
         colors.normalColor = Color.white;
+        colors.selectedColor = Color.white;
+        colors.pressedColor = Color.white;
         button.colors = colors;
     }
 
