@@ -42,8 +42,8 @@ public class kangtoe99_Player : kangtoe99_Character
         Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         Vector2 direction = (mousePosition - transform.position).normalized;
 
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, angle - 90f);
+        float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+        RotateTowards(targetAngle);
     }
 
     public override void TakeDamage(float damage, Vector2? hitPosition = null)
@@ -120,6 +120,12 @@ public class kangtoe99_Player : kangtoe99_Character
             Vector3 newPosition = mainCamera.ViewportToWorldPoint(viewportPosition);
             newPosition.z = transform.position.z; // Z 좌표는 유지
             transform.position = newPosition;
+
+            // 텔레포트 후 마우스 방향으로 즉시 회전
+            Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 direction = (mousePosition - newPosition).normalized;
+            float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+            SetRotationImmediate(targetAngle);
         }
     }
 }

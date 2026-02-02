@@ -8,6 +8,9 @@ public class kangtoe99_Character : MonoBehaviour
     protected Rigidbody2D rb;
     protected Vector2 moveDirection;
 
+    [Header("Rotation")]
+    [SerializeField] protected float maxRotationSpeed = 180f; // 초당 최대 회전 각도
+
     [Header("Health")]
     [SerializeField] protected float maxHealth = 100f;
     protected float currentHealth;
@@ -41,6 +44,24 @@ public class kangtoe99_Character : MonoBehaviour
     protected virtual void FixedUpdate()
     {
         Move();
+    }
+
+    /// <summary>
+    /// 목표 각도를 향해 제한된 속도로 회전합니다.
+    /// </summary>
+    protected void RotateTowards(float targetAngle)
+    {
+        float currentAngle = transform.eulerAngles.z;
+        float newAngle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, maxRotationSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Euler(0f, 0f, newAngle);
+    }
+
+    /// <summary>
+    /// 즉시 해당 각도로 회전합니다.
+    /// </summary>
+    protected void SetRotationImmediate(float angle)
+    {
+        transform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
     protected virtual void Move()

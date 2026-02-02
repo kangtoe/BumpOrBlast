@@ -121,7 +121,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!114 &2994297190264864704
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,6 +136,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_Enemy
   moveForce: 4
   maxSpeed: 10
+  maxRotationSpeed: 180
   maxHealth: 100
   collisionKnockbackForce: 3
   spriteRenderer: {fileID: 6901123927391957602}

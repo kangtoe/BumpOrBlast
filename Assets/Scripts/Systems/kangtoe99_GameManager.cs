@@ -161,7 +161,7 @@ public class kangtoe99_GameManager : MonoBehaviour
                 ? kangtoe99_ScoreSystem.Instance.GetHighScore()
                 : 0;
 
-            gameOverText.text = $"Game Over\n\nScore: {finalScore}\nHigh Score: {highScore}\n\nPress R to Restart";
+            gameOverText.text = $"Game Over\n\nScore: {finalScore}\nHigh Score: {highScore}\n\nPress [R] to Restart";
         }
     }
 

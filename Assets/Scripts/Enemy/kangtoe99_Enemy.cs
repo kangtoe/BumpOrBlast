@@ -55,8 +55,8 @@ public class kangtoe99_Enemy : kangtoe99_Character
         if (player == null) return;
 
         Vector2 direction = (player.position - transform.position).normalized;
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, angle - 90f);
+        float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+        RotateTowards(targetAngle);
     }
 
     private void CheckDespawnDistance()
