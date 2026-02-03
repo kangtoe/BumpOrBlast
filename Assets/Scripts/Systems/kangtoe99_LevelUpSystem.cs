@@ -218,7 +218,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             int level = upgradeLevels[UpgradeType.IncreaseDamage];
             float current = baseBulletDamage * (1f + level * UpgradePercentIncrease);
             float upgraded = baseBulletDamage * (1f + (level + 1) * UpgradePercentIncrease);
-            SetButtonText(damageButton, $"Damage Lv.{level}\n{current:F1} → {upgraded:F1}");
+            SetButtonText(damageButton, $"Damage Lv.{level}\n{current:F1} > {upgraded:F1}");
         }
 
         // Fire Rate 버튼 (연사속도 증가 = 발사 간격 감소, 속도 기반 계산)
@@ -227,7 +227,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             int level = upgradeLevels[UpgradeType.IncreaseFireRate];
             float current = baseFireRate / (1f + level * UpgradePercentIncrease);
             float upgraded = baseFireRate / (1f + (level + 1) * UpgradePercentIncrease);
-            SetButtonText(fireRateButton, $"Fire Rate Lv.{level}\n{current:F2}s → {upgraded:F2}s");
+            SetButtonText(fireRateButton, $"Fire Rate Lv.{level}\n{current:F2}s > {upgraded:F2}s");
         }
 
         // Max Ammo 버튼 (탄창 크기 증가)
@@ -236,7 +236,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             int level = upgradeLevels[UpgradeType.IncreaseMaxAmmo];
             int current = Mathf.RoundToInt(baseMaxAmmo * (1f + level * UpgradePercentIncrease));
             int upgraded = Mathf.RoundToInt(baseMaxAmmo * (1f + (level + 1) * UpgradePercentIncrease));
-            SetButtonText(ammoButton, $"Max Ammo Lv.{level}\n{current} → {upgraded}");
+            SetButtonText(ammoButton, $"Max Ammo Lv.{level}\n{current} > {upgraded}");
         }
 
         // Reload Speed 버튼 (재장전 속도 증가 = 재장전 시간 감소, 속도 기반 계산)
@@ -245,7 +245,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             int level = upgradeLevels[UpgradeType.IncreaseReloadSpeed];
             float current = baseReloadTime / (1f + level * UpgradePercentIncrease);
             float upgraded = baseReloadTime / (1f + (level + 1) * UpgradePercentIncrease);
-            SetButtonText(reloadButton, $"Reload Lv.{level}\n{current:F2}s → {upgraded:F2}s");
+            SetButtonText(reloadButton, $"Reload Lv.{level}\n{current:F2}s > {upgraded:F2}s");
         }
     }
 
