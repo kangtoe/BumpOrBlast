@@ -1,4 +1,4 @@
-# JungleKrafton
+# PrimitiveShooter
 
 2D 탑다운 슈터 게임 프로젝트
 
