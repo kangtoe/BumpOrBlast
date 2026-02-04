@@ -122,6 +122,12 @@ public class kangtoe99_GameOverUI : MonoBehaviour
             ? kangtoe99_LevelUpSystem.Instance.GetCurrentLevel()
             : 1;
 
+        // 크로스헤어 비활성화
+        if (kangtoe99_CrosshairUI.Instance != null)
+        {
+            kangtoe99_CrosshairUI.Instance.gameObject.SetActive(false);
+        }
+
         myRankIndex = AddLeaderboardEntry(score, currentLevel);
         ShowLeaderboard();
     }
