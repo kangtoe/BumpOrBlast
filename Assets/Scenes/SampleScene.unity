@@ -2078,8 +2078,12 @@ MonoBehaviour:
   xpOrbPrefab: {fileID: 4991588376140438129, guid: 4d38b8888e8f88f47bcfa7eda386f3a3, type: 3}
   healthPackPrefab: {fileID: 6915107874435773169, guid: 23725fcf233e9504cb1b931381f2ecef, type: 3}
   bombPrefab: {fileID: 6714754364648959643, guid: 9c0476005d349db499e231f112829dbd, type: 3}
-  healthPackDropRate: 0.1
+  healthPackDropRate: 0.25
   bombDropRate: 0.1
+  minEnemiesForBomb: 12
+  bombCooldown: 180
+  healthPackHealthThreshold: 0.5
+  healthPackCooldown: 120
 --- !u!4 &631712723
 Transform:
   m_ObjectHideFlags: 0
