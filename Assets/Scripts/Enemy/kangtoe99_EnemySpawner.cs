@@ -116,8 +116,10 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
         if (mainCamera == null) return player.position;
 
         // 화면 경계를 월드 좌표로 계산
+        // AspectRatioController가 적용된 경우 실제 렌더링 비율을 사용
         float cameraHeight = mainCamera.orthographicSize;
-        float cameraWidth = cameraHeight * mainCamera.aspect;
+        float effectiveAspect = kangtoe99_AspectRatioController.GetEffectiveAspectRatio(mainCamera);
+        float cameraWidth = cameraHeight * effectiveAspect;
 
         Vector3 cameraPos = mainCamera.transform.position;
 
@@ -178,7 +180,8 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
         if (cam == null) return;
 
         float cameraHeight = cam.orthographicSize;
-        float cameraWidth = cameraHeight * cam.aspect;
+        float effectiveAspect = kangtoe99_AspectRatioController.GetEffectiveAspectRatio(cam);
+        float cameraWidth = cameraHeight * effectiveAspect;
         Vector3 cameraPos = cam.transform.position;
 
         // 카메라 뷰포트 (녹색)
