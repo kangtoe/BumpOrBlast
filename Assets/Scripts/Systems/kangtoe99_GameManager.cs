@@ -15,7 +15,7 @@ public class kangtoe99_GameManager : MonoBehaviour
     [SerializeField] private GameObject startPanel;
     [SerializeField] private Text startText;
     [SerializeField] private GameObject gameOverPanel;
-    [SerializeField] private Text gameOverText;
+    [SerializeField] private kangtoe99_GameOverUI gameOverUI;
 
     [Header("Game Over Settings")]
     [SerializeField] private float slowMotionScale = 0.2f;
@@ -164,16 +164,13 @@ public class kangtoe99_GameManager : MonoBehaviour
             AudioSource.PlayClipAtPoint(gameOverSound, Camera.main.transform.position);
         }
 
-        if (gameOverText != null)
-        {
-            int finalScore = kangtoe99_ScoreSystem.Instance != null
-                ? kangtoe99_ScoreSystem.Instance.GetCurrentScore()
-                : 0;
-            int highScore = kangtoe99_ScoreSystem.Instance != null
-                ? kangtoe99_ScoreSystem.Instance.GetHighScore()
-                : 0;
+        int finalScore = kangtoe99_ScoreSystem.Instance != null
+            ? kangtoe99_ScoreSystem.Instance.GetCurrentScore()
+            : 0;
 
-            gameOverText.text = $"Game Over\n\nScore: {finalScore}\nHigh Score: {highScore}\n\nPress [R] to Restart";
+        if (gameOverUI != null)
+        {
+            gameOverUI.ShowGameOver(finalScore);
         }
     }
 
