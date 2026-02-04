@@ -44,6 +44,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [SerializeField] private Button ammoButton;
     [SerializeField] private Button reloadButton;
     [SerializeField] private Button confirmButton;
+    [SerializeField] private Color defaultColor = Color.white;
+    [SerializeField] private Color selectedColor = Color.green;
 
     private void Awake()
     {
@@ -294,20 +296,32 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     {
         if (button == null) return;
         ColorBlock colors = button.colors;
-        colors.normalColor = Color.white;
-        colors.selectedColor = Color.white;
-        colors.pressedColor = Color.white;
+        colors.normalColor = defaultColor;
+        colors.selectedColor = defaultColor;
+        colors.pressedColor = defaultColor;
         button.colors = colors;
+
+        Text buttonText = button.GetComponentInChildren<Text>();
+        if (buttonText != null)
+        {
+            buttonText.color = defaultColor;
+        }
     }
 
     private void HighlightButton(Button button)
     {
         if (button == null) return;
         ColorBlock colors = button.colors;
-        colors.normalColor = Color.green;
-        colors.selectedColor = Color.green;
-        colors.pressedColor = Color.green;
+        colors.normalColor = selectedColor;
+        colors.selectedColor = selectedColor;
+        colors.pressedColor = selectedColor;
         button.colors = colors;
+
+        Text buttonText = button.GetComponentInChildren<Text>();
+        if (buttonText != null)
+        {
+            buttonText.color = selectedColor;
+        }
     }
 
     private void ConfirmUpgrade()
