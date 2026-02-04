@@ -91,8 +91,7 @@ public class kangtoe99_Character : MonoBehaviour
         if (hitParticlePrefab != null)
         {
             Vector3 spawnPosition = hitPosition.HasValue ? hitPosition.Value : transform.position;
-            GameObject hitVFX = Instantiate(hitParticlePrefab, spawnPosition, Quaternion.identity);
-            Destroy(hitVFX, 2f); // 2초 후 파티클 오브젝트 삭제
+            Instantiate(hitParticlePrefab, spawnPosition, Quaternion.identity);
         }
 
         if (currentHealth <= 0)

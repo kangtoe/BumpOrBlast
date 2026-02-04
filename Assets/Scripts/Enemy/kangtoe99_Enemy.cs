@@ -72,10 +72,10 @@ public class kangtoe99_Enemy : kangtoe99_Character
 
     protected override void Die()
     {
-        // 점수 추가
-        if (kangtoe99_ScoreSystem.Instance != null)
+        // 아이템 드롭 (경험치는 아이템으로만 획득)
+        if (kangtoe99_ItemDropSystem.Instance != null)
         {
-            kangtoe99_ScoreSystem.Instance.AddScore(scoreValue);
+            kangtoe99_ItemDropSystem.Instance.TryDropItem(transform.position, transform.up, scoreValue);
         }
 
         Debug.Log($"Enemy died! Score: {scoreValue}");
