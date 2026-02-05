@@ -1,4 +1,4 @@
-# PrimitiveShooter - 게임 디자인 문서
+# BumpOrBlast - 게임 디자인 문서
 
 ## 게임 개요
 - **장르**: 2D 탑다운 슈터 (Top-down Shooter)

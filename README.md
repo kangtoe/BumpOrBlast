@@ -1,6 +1,8 @@
-# PrimitiveShooter
+# BumpOrBlast
 
 2D 탑다운 슈터 게임 프로젝트
+
+**[플레이하기](https://kangtoe99.itch.io/bumporblast)**
 
 ## 게임 소개
 플레이어는 끊임없이 몰려오는 적들을 물리치며 최대한 오래 생존해야 합니다.
