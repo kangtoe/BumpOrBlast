@@ -2080,9 +2080,9 @@ MonoBehaviour:
   bombPrefab: {fileID: 6714754364648959643, guid: 9c0476005d349db499e231f112829dbd, type: 3}
   healthPackDropRate: 0.25
   bombDropRate: 0.1
-  minEnemiesForBomb: 12
+  minEnemiesForBomb: 10
   bombCooldown: 180
-  healthPackHealthThreshold: 0.5
+  healthPackHealthThreshold: 0.6
   healthPackCooldown: 120
 --- !u!4 &631712723
 Transform:
