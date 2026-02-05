@@ -65,7 +65,7 @@ public class kangtoe99_CrosshairUI : MonoBehaviour
 
     private void CreateTexture()
     {
-        crosshairTexture = new Texture2D(1, 1);
+        crosshairTexture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
         crosshairTexture.SetPixel(0, 0, Color.white);
         crosshairTexture.Apply();
     }
@@ -98,7 +98,12 @@ public class kangtoe99_CrosshairUI : MonoBehaviour
 
     private void DrawCrosshair(Vector2 center, Color color, float outlineOffset)
     {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        // WebGL 빌드에서만 linear 변환 적용 (이중 gamma 보정 상쇄)
+        GUI.color = color.linear;
+#else
         GUI.color = color;
+#endif
 
         float thickness = lineThickness + outlineOffset * 2;
         float length = lineLength + outlineOffset * 2;
