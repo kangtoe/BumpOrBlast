@@ -1494,7 +1494,7 @@ MonoBehaviour:
   bulletSpeed: 20
   bulletKnockback: 6
   maxAmmo: 10
-  reloadTime: 2
+  reloadTime: 1.5
   fireRate: 0.2
   ammoUIManager: {fileID: 1716895379}
   shootSound: {fileID: 8300000, guid: 1743f0d445b86480b8ecfdbc8c84a5f9, type: 3}
@@ -1537,7 +1537,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDamping: 1
+  m_LinearDamping: 2
   m_AngularDamping: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
@@ -2078,12 +2078,12 @@ MonoBehaviour:
   xpOrbPrefab: {fileID: 4991588376140438129, guid: 4d38b8888e8f88f47bcfa7eda386f3a3, type: 3}
   healthPackPrefab: {fileID: 6915107874435773169, guid: 23725fcf233e9504cb1b931381f2ecef, type: 3}
   bombPrefab: {fileID: 6714754364648959643, guid: 9c0476005d349db499e231f112829dbd, type: 3}
-  healthPackDropRate: 0.25
-  bombDropRate: 0.1
-  minEnemiesForBomb: 10
-  bombCooldown: 180
+  healthPackDropRate: 0.5
+  bombDropRate: 0.5
+  minEnemiesForBomb: 15
+  bombCooldown: 120
   healthPackHealthThreshold: 0.6
-  healthPackCooldown: 120
+  healthPackCooldown: 90
 --- !u!4 &631712723
 Transform:
   m_ObjectHideFlags: 0
@@ -5232,13 +5232,13 @@ MonoBehaviour:
   - {fileID: 6136649435194348503, guid: 2858ac27c2ec108409afb3cb4f4b2477, type: 3}
   - {fileID: 684994416705669148, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
   player: {fileID: 451658495}
-  initialSpawnInterval: 3
+  initialSpawnInterval: 1.5
   minSpawnInterval: 0.5
-  intervalDecreaseRate: 0.05
+  intervalDecreaseRate: 0.01
   spawnDistanceFromScreen: 2
   initialHealthMultiplier: 1
-  maxHealthMultiplier: 5
-  healthMultiplierIncreaseRate: 0.02
+  maxHealthMultiplier: 4
+  healthMultiplierIncreaseRate: 0.01
 --- !u!4 &1930471000
 Transform:
   m_ObjectHideFlags: 0

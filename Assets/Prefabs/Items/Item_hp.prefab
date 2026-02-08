@@ -178,7 +178,7 @@ MonoBehaviour:
   pulseSpeed: 10
   pulseAmount: 0.05
   pickupSound: {fileID: 8300000, guid: 66d8309498b3a20459f0c959cfd73586, type: 3}
-  healAmount: 50
+  healAmount: 100
 --- !u!1 &1676146397299706402
 GameObject:
   m_ObjectHideFlags: 0
