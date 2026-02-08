@@ -72,7 +72,13 @@ public class kangtoe99_Enemy : kangtoe99_Character
 
     protected override void Die()
     {
-        // 아이템 드롭 (경험치는 아이템으로만 획득)
+        // 적 격파 시 즉시 점수 획득
+        if (kangtoe99_ScoreSystem.Instance != null)
+        {
+            kangtoe99_ScoreSystem.Instance.AddScore(scoreValue);
+        }
+
+        // 아이템 드롭
         if (kangtoe99_ItemDropSystem.Instance != null)
         {
             kangtoe99_ItemDropSystem.Instance.TryDropItem(transform.position, transform.up, scoreValue);
