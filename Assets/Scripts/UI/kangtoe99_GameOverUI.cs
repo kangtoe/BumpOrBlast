@@ -1,24 +1,6 @@
 using UnityEngine;
-using System.Collections.Generic;
-
-[System.Serializable]
-public class LeaderboardEntry
-{
-    public int score;
-    public int level;
-
-    public LeaderboardEntry(int score, int level)
-    {
-        this.score = score;
-        this.level = level;
-    }
-}
-
-[System.Serializable]
-public class LeaderboardData
-{
-    public List<LeaderboardEntry> entries = new List<LeaderboardEntry>();
-}
+using UnityEngine.UI;
+using System.Collections;
 
 public class kangtoe99_GameOverUI : MonoBehaviour
 {
@@ -30,17 +12,17 @@ public class kangtoe99_GameOverUI : MonoBehaviour
     [Header("My Rank Display")]
     [SerializeField] private kangtoe99_LeaderboardEntry myRankEntry;
 
+    [Header("Player Name")]
+    [SerializeField] private InputField nameInput;
+    [SerializeField] private string defaultPlayerName = "Player";
+
     [Header("Settings")]
-    [SerializeField] private int maxLeaderboardEntries = 10;
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color highlightColor = Color.yellow;
 
-    // Leaderboard Data
-    private const string LEADERBOARD_KEY = "Leaderboard";
-    private LeaderboardData leaderboardData;
-
     // State
     private int myRankIndex = -1;
+    private int myRankId = -1;
     private int currentScore;
     private int currentLevel;
 
@@ -55,63 +37,7 @@ public class kangtoe99_GameOverUI : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
-        LoadLeaderboard();
     }
-
-    #region Leaderboard Data Management
-
-    private void LoadLeaderboard()
-    {
-        string json = PlayerPrefs.GetString(LEADERBOARD_KEY, "");
-        if (!string.IsNullOrEmpty(json))
-        {
-            leaderboardData = JsonUtility.FromJson<LeaderboardData>(json);
-        }
-        else
-        {
-            leaderboardData = new LeaderboardData();
-        }
-    }
-
-    private void SaveLeaderboard()
-    {
-        string json = JsonUtility.ToJson(leaderboardData);
-        PlayerPrefs.SetString(LEADERBOARD_KEY, json);
-        PlayerPrefs.Save();
-    }
-
-    private int AddLeaderboardEntry(int score, int level)
-    {
-        LeaderboardEntry newEntry = new LeaderboardEntry(score, level);
-
-        // 같은 점수보다 뒤에 삽입 (나중에 등록된 기록이 낮은 순위)
-        int insertIndex = 0;
-        for (int i = 0; i < leaderboardData.entries.Count; i++)
-        {
-            if (score <= leaderboardData.entries[i].score)
-            {
-                insertIndex = i + 1;
-            }
-            else
-            {
-                break;
-            }
-        }
-        leaderboardData.entries.Insert(insertIndex, newEntry);
-
-        // 최대 엔트리 수 제한
-        if (leaderboardData.entries.Count > maxLeaderboardEntries)
-        {
-            leaderboardData.entries.RemoveAt(leaderboardData.entries.Count - 1);
-        }
-
-        SaveLeaderboard();
-
-        return insertIndex;
-    }
-
-    #endregion
 
     #region UI Display
 
@@ -128,39 +54,104 @@ public class kangtoe99_GameOverUI : MonoBehaviour
             kangtoe99_CrosshairUI.Instance.gameObject.SetActive(false);
         }
 
-        myRankIndex = AddLeaderboardEntry(score, currentLevel);
-        ShowLeaderboard();
+        // 서버에 랭킹 저장
+        SubmitRankToServer();
     }
 
-    private void ShowLeaderboard()
+    private void SubmitRankToServer()
     {
-        if (rankEntries != null)
+        if (kangtoe99_RankApi.Instance == null) return;
+
+        string playerName = (nameInput != null && !string.IsNullOrEmpty(nameInput.text))
+            ? nameInput.text
+            : defaultPlayerName;
+
+        StartCoroutine(kangtoe99_RankApi.Instance.CreateRank(
+            currentLevel,
+            playerName,
+            currentScore,
+            onSuccess: (rankData) =>
+            {
+                Debug.Log($"Rank created - id: {rankData.id}, name: {rankData.name}, level: {rankData.level}, score: {rankData.score}");
+                myRankId = rankData.id;
+
+                // 내 순위 조회 → 전체 랭킹 조회
+                StartCoroutine(FetchMyRankAndLeaderboard());
+            },
+            onError: (error) =>
+            {
+                Debug.LogWarning($"랭킹 서버 저장 실패: {error}");
+            }
+        ));
+    }
+
+    private IEnumerator FetchMyRankAndLeaderboard()
+    {
+        // 1. 내 순위 조회
+        bool myRankDone = false;
+        StartCoroutine(kangtoe99_RankApi.Instance.GetMyRank(
+            myRankId,
+            onSuccess: (myRank) =>
+            {
+                Debug.Log($"My rank: {myRank.rank} / {myRank.total}");
+                myRankIndex = myRank.rank - 1;
+                myRankDone = true;
+            },
+            onError: (error) =>
+            {
+                Debug.LogWarning($"내 순위 조회 실패: {error}");
+                myRankDone = true;
+            }
+        ));
+
+        // 2. 전체 랭킹 조회
+        RankData[] allRanks = null;
+        bool allRanksDone = false;
+        StartCoroutine(kangtoe99_RankApi.Instance.GetAllRanks(
+            onSuccess: (ranks) =>
+            {
+                allRanks = ranks;
+                allRanksDone = true;
+            },
+            onError: (error) =>
+            {
+                Debug.LogWarning($"전체 랭킹 조회 실패: {error}");
+                allRanksDone = true;
+            }
+        ));
+
+        // 두 요청 모두 완료될 때까지 대기
+        yield return new WaitUntil(() => myRankDone && allRanksDone);
+
+        // 리더보드 UI 갱신
+        ShowLeaderboard(allRanks);
+    }
+
+    private void ShowLeaderboard(RankData[] allRanks)
+    {
+        if (rankEntries == null) return;
+
+        for (int i = 0; i < rankEntries.Length; i++)
         {
-            List<LeaderboardEntry> entries = leaderboardData.entries;
+            if (rankEntries[i] == null) continue;
 
-            // 고정 엔트리에 데이터 설정
-            for (int i = 0; i < rankEntries.Length; i++)
+            if (allRanks != null && i < allRanks.Length)
             {
-                if (rankEntries[i] == null) continue;
-
-                if (i < entries.Count)
-                {
-                    rankEntries[i].SetData(i + 1, entries[i].level, entries[i].score);
-                    rankEntries[i].SetColor(i == myRankIndex ? highlightColor : normalColor);
-                }
-                else
-                {
-                    rankEntries[i].SetEmpty(i + 1);
-                    rankEntries[i].SetColor(normalColor);
-                }
+                rankEntries[i].SetData(i + 1, allRanks[i].level, allRanks[i].score);
+                rankEntries[i].SetColor(allRanks[i].id == myRankId ? highlightColor : normalColor);
             }
-
-            // 내 순위 항상 표시
-            if (myRankEntry != null)
+            else
             {
-                myRankEntry.SetData(myRankIndex + 1, currentLevel, currentScore);
-                myRankEntry.SetColor(highlightColor);
+                rankEntries[i].SetEmpty(i + 1);
+                rankEntries[i].SetColor(normalColor);
             }
+        }
+
+        // 내 순위 항상 표시
+        if (myRankEntry != null && myRankIndex >= 0)
+        {
+            myRankEntry.SetData(myRankIndex + 1, currentLevel, currentScore);
+            myRankEntry.SetColor(highlightColor);
         }
     }
 
