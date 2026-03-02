@@ -140,10 +140,11 @@ public class kangtoe99_GameManager : MonoBehaviour
     private IEnumerator GameOverSequence()
     {
         // 즉시 슬로우 모션 시작하고 서서히 Time.timeScale을 1로 복원
+        Time.timeScale = slowMotionScale;
         float elapsedTime = 0f;
         while (elapsedTime < timeRecoveryDuration)
         {
-            elapsedTime += Time.deltaTime;
+            elapsedTime += Time.unscaledDeltaTime;
             float t = elapsedTime / timeRecoveryDuration;
             Time.timeScale = Mathf.Lerp(slowMotionScale, 1f, t);
             yield return null;
@@ -176,6 +177,7 @@ public class kangtoe99_GameManager : MonoBehaviour
 
     private void RestartGame()
     {
+        StopAllCoroutines();
         Time.timeScale = 1f;
         isGameOver = false;
         isGameStarted = false;
