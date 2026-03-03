@@ -37,14 +37,14 @@ public class UpdateRankRequest
 [System.Serializable]
 public class RankDataArray
 {
-    public RankData[] items;
+    public RankData[] data;
 }
 
 public class kangtoe99_RankApi : MonoBehaviour
 {
     public static kangtoe99_RankApi Instance { get; private set; }
 
-    [SerializeField] private string baseUrl = "https://bob-ranking-api.devman11.xyz";
+    private const string baseUrl = "https://bob-ranking-api.devman11.xyz";
 
     private void Awake()
     {
@@ -136,10 +136,9 @@ public class kangtoe99_RankApi : MonoBehaviour
             yield break;
         }
 
-        // JsonUtility는 최상위 배열을 파싱할 수 없으므로 래핑
-        var json = "{\"items\":" + request.downloadHandler.text + "}";
-        var array = JsonUtility.FromJson<RankDataArray>(json);
-        onSuccess?.Invoke(array.items);
+        Debug.Log($"GetAllRanks response: {request.downloadHandler.text}");
+        var array = JsonUtility.FromJson<RankDataArray>(request.downloadHandler.text);
+        onSuccess?.Invoke(array.data);
     }
 
     // PATCH /rank/:id

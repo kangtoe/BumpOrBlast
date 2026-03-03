@@ -5,14 +5,20 @@ public class kangtoe99_LeaderboardEntry : MonoBehaviour
 {
     [SerializeField] private Image backgroundImage;
     [SerializeField] private Text rankText;
+    [SerializeField] private Text nameText;
     [SerializeField] private Text levelText;
     [SerializeField] private Text scoreText;
 
-    public void SetData(int rank, int level, int score)
+    public void SetData(int rank, string name, int level, int score)
     {
         if (rankText != null)
         {
             rankText.text = $"#{rank}";
+        }
+
+        if (nameText != null)
+        {
+            nameText.text = name;
         }
 
         if (levelText != null)
@@ -39,6 +45,11 @@ public class kangtoe99_LeaderboardEntry : MonoBehaviour
         if (rankText != null)
         {
             rankText.text = $"#{rank}";
+        }
+
+        if (nameText != null)
+        {
+            nameText.text = "-";
         }
 
         if (levelText != null)

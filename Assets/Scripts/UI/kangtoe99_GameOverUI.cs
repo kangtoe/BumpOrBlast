@@ -129,15 +129,20 @@ public class kangtoe99_GameOverUI : MonoBehaviour
 
     private void ShowLeaderboard(RankData[] allRanks)
     {
+        Debug.Log($"ShowLeaderboard - rankEntries: {rankEntries?.Length}, allRanks: {allRanks?.Length}");
         if (rankEntries == null) return;
 
         for (int i = 0; i < rankEntries.Length; i++)
         {
-            if (rankEntries[i] == null) continue;
+            if (rankEntries[i] == null)
+            {
+                Debug.LogWarning($"rankEntries[{i}] is null");
+                continue;
+            }
 
             if (allRanks != null && i < allRanks.Length)
             {
-                rankEntries[i].SetData(i + 1, allRanks[i].level, allRanks[i].score);
+                rankEntries[i].SetData(i + 1, allRanks[i].name, allRanks[i].level, allRanks[i].score);
                 rankEntries[i].SetColor(allRanks[i].id == myRankId ? highlightColor : normalColor);
             }
             else
@@ -150,7 +155,10 @@ public class kangtoe99_GameOverUI : MonoBehaviour
         // 내 순위 항상 표시
         if (myRankEntry != null && myRankIndex >= 0)
         {
-            myRankEntry.SetData(myRankIndex + 1, currentLevel, currentScore);
+            string playerName = (nameInput != null && !string.IsNullOrEmpty(nameInput.text))
+                ? nameInput.text
+                : defaultPlayerName;
+            myRankEntry.SetData(myRankIndex + 1, playerName, currentLevel, currentScore);
             myRankEntry.SetColor(highlightColor);
         }
     }
