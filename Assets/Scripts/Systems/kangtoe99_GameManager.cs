@@ -13,9 +13,12 @@ public class kangtoe99_GameManager : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private GameObject startPanel;
-    [SerializeField] private Text startText;
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private kangtoe99_GameOverUI gameOverUI;
+
+    [Header("Player Name")]
+    [SerializeField] private InputField nameInput;
+    public string PlayerName { get; private set; }
 
     [Header("Game Over Settings")]
     [SerializeField] private float slowMotionScale = 0.2f;
@@ -47,15 +50,23 @@ public class kangtoe99_GameManager : MonoBehaviour
         // 게임 시작 전 상태
         isGameStarted = false;
 
+        // 기본 이름 생성 (플레이스홀더에 표기)
+        PlayerName = "user" + Random.Range(1000, 10000);
+        if (nameInput != null)
+        {
+            nameInput.text = "";
+            if (nameInput.placeholder != null)
+            {
+                Text placeholderText = nameInput.placeholder.GetComponent<Text>();
+                if (placeholderText != null)
+                    placeholderText.text = PlayerName;
+            }
+        }
+
         // 시작 패널 표시
         if (startPanel != null)
         {
             startPanel.SetActive(true);
-        }
-
-        if (startText != null)
-        {
-            startText.text = "Press [Any Key] to Start!";
         }
 
         // 게임오버 패널 숨기기
@@ -76,8 +87,8 @@ public class kangtoe99_GameManager : MonoBehaviour
 
     private void Update()
     {
-        // 게임 시작 대기 중
-        if (!isGameStarted && Input.anyKeyDown)
+        // 게임 시작 대기 중 (Enter 키로만 시작)
+        if (!isGameStarted && Input.GetKeyDown(KeyCode.Return))
         {
             StartGame();
         }
@@ -98,6 +109,12 @@ public class kangtoe99_GameManager : MonoBehaviour
     private void StartGame()
     {
         isGameStarted = true;
+
+        // 입력된 이름 저장
+        if (nameInput != null && !string.IsNullOrEmpty(nameInput.text))
+        {
+            PlayerName = nameInput.text;
+        }
 
         // 게임 시작 사운드 재생
         if (gameStartSound != null)

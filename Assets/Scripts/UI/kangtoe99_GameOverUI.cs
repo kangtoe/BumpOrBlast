@@ -12,19 +12,24 @@ public class kangtoe99_GameOverUI : MonoBehaviour
     [Header("My Rank Display")]
     [SerializeField] private kangtoe99_LeaderboardEntry myRankEntry;
 
-    [Header("Player Name")]
-    [SerializeField] private InputField nameInput;
-    [SerializeField] private string defaultPlayerName = "Player";
+    [Header("Pagination")]
+    [SerializeField] private Button prevButton;
+    [SerializeField] private Button nextButton;
+    [SerializeField] private Text pageText;
 
     [Header("Settings")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color highlightColor = Color.yellow;
+
+    private const int entriesPerPage = 5;
 
     // State
     private int myRankIndex = -1;
     private int myRankId = -1;
     private int currentScore;
     private int currentLevel;
+    private RankData[] allRanksData;
+    private int currentPage = 0;
 
     private void Awake()
     {
@@ -37,6 +42,14 @@ public class kangtoe99_GameOverUI : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+    }
+
+    private void Start()
+    {
+        if (prevButton != null)
+            prevButton.onClick.AddListener(OnPrevPage);
+        if (nextButton != null)
+            nextButton.onClick.AddListener(OnNextPage);
     }
 
     #region UI Display
@@ -62,9 +75,9 @@ public class kangtoe99_GameOverUI : MonoBehaviour
     {
         if (kangtoe99_RankApi.Instance == null) return;
 
-        string playerName = (nameInput != null && !string.IsNullOrEmpty(nameInput.text))
-            ? nameInput.text
-            : defaultPlayerName;
+        string playerName = kangtoe99_GameManager.Instance != null
+            ? kangtoe99_GameManager.Instance.PlayerName
+            : "Player";
 
         StartCoroutine(kangtoe99_RankApi.Instance.CreateRank(
             currentLevel,
@@ -132,34 +145,76 @@ public class kangtoe99_GameOverUI : MonoBehaviour
         Debug.Log($"ShowLeaderboard - rankEntries: {rankEntries?.Length}, allRanks: {allRanks?.Length}");
         if (rankEntries == null) return;
 
-        for (int i = 0; i < rankEntries.Length; i++)
-        {
-            if (rankEntries[i] == null)
-            {
-                Debug.LogWarning($"rankEntries[{i}] is null");
-                continue;
-            }
-
-            if (allRanks != null && i < allRanks.Length)
-            {
-                rankEntries[i].SetData(i + 1, allRanks[i].name, allRanks[i].level, allRanks[i].score);
-                rankEntries[i].SetColor(allRanks[i].id == myRankId ? highlightColor : normalColor);
-            }
-            else
-            {
-                rankEntries[i].SetEmpty(i + 1);
-                rankEntries[i].SetColor(normalColor);
-            }
-        }
+        allRanksData = allRanks;
+        currentPage = 0;
+        ShowPage(currentPage);
 
         // 내 순위 항상 표시
         if (myRankEntry != null && myRankIndex >= 0)
         {
-            string playerName = (nameInput != null && !string.IsNullOrEmpty(nameInput.text))
-                ? nameInput.text
-                : defaultPlayerName;
+            string playerName = kangtoe99_GameManager.Instance != null
+                ? kangtoe99_GameManager.Instance.PlayerName
+                : "Player";
             myRankEntry.SetData(myRankIndex + 1, playerName, currentLevel, currentScore);
             myRankEntry.SetColor(highlightColor);
+        }
+    }
+
+    private void ShowPage(int page)
+    {
+        int startIndex = page * entriesPerPage;
+
+        for (int i = 0; i < rankEntries.Length; i++)
+        {
+            if (rankEntries[i] == null) continue;
+
+            int dataIndex = startIndex + i;
+            if (allRanksData != null && dataIndex < allRanksData.Length)
+            {
+                rankEntries[i].SetData(dataIndex + 1, allRanksData[dataIndex].name, allRanksData[dataIndex].level, allRanksData[dataIndex].score);
+                rankEntries[i].SetColor(allRanksData[dataIndex].id == myRankId ? highlightColor : normalColor);
+            }
+            else
+            {
+                rankEntries[i].SetEmpty(startIndex + i + 1);
+                rankEntries[i].SetColor(normalColor);
+            }
+        }
+
+        // 페이지네이션 UI 업데이트
+        int totalPages = allRanksData != null
+            ? Mathf.Max(1, Mathf.CeilToInt((float)allRanksData.Length / entriesPerPage))
+            : 1;
+
+        if (pageText != null)
+            pageText.text = $"{page + 1} / {totalPages}";
+
+        if (prevButton != null)
+            prevButton.interactable = page > 0;
+
+        if (nextButton != null)
+            nextButton.interactable = page < totalPages - 1;
+    }
+
+    public void OnPrevPage()
+    {
+        if (currentPage > 0)
+        {
+            currentPage--;
+            ShowPage(currentPage);
+        }
+    }
+
+    public void OnNextPage()
+    {
+        int totalPages = allRanksData != null
+            ? Mathf.Max(1, Mathf.CeilToInt((float)allRanksData.Length / entriesPerPage))
+            : 1;
+
+        if (currentPage < totalPages - 1)
+        {
+            currentPage++;
+            ShowPage(currentPage);
         }
     }
 
