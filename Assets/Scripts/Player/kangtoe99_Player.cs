@@ -56,13 +56,26 @@ public class kangtoe99_Player : kangtoe99_Character
     {
         Debug.Log("Player Died!");
 
-        // 게임 오버 트리거
+        // 사망 사운드를 타임스케일 변경 전에 먼저 재생 (끊김 방지)
+        if (deathSound != null)
+        {
+            AudioSource.PlayClipAtPoint(deathSound, Camera.main.transform.position);
+        }
+
+        // 게임 오버 트리거 (여기서 타임스케일이 변경됨)
         if (kangtoe99_GameManager.Instance != null)
         {
             kangtoe99_GameManager.Instance.TriggerGameOver();
         }
 
-        base.Die();
+        // 사망 파티클 재생 (슬로우 모션 적용됨)
+        if (deathParticlePrefab != null)
+        {
+            GameObject deathVFX = Instantiate(deathParticlePrefab, transform.position, Quaternion.identity);
+            Destroy(deathVFX, 3f);
+        }
+
+        Destroy(gameObject);
     }
 
     protected override void OnCollisionEnter2D(Collision2D collision)
