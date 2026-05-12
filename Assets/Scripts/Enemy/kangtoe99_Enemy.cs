@@ -5,6 +5,7 @@ public class kangtoe99_Enemy : kangtoe99_Character
     [Header("Enemy Settings")]
     [SerializeField] private float damage = 10f;
     [SerializeField] private int scoreValue = 10;
+    [SerializeField] private float despawnDistance = 30f;
 
     private Transform player;
 
@@ -31,7 +32,17 @@ public class kangtoe99_Enemy : kangtoe99_Character
 
     private void Update()
     {
+        CheckDespawnDistance();
         RotateTowardsPlayer();
+    }
+
+    private void CheckDespawnDistance()
+    {
+        if (player == null) return;
+        if (Vector2.Distance(transform.position, player.position) > despawnDistance)
+        {
+            Destroy(gameObject);
+        }
     }
 
     protected override void FixedUpdate()

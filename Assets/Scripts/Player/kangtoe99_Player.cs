@@ -3,6 +3,9 @@ using UnityEngine;
 [RequireComponent(typeof(kangtoe99_PlayerStats))]
 public class kangtoe99_Player : kangtoe99_Character
 {
+    [Header("Camera (for screen wrap-around)")]
+    [SerializeField] private Camera mainCamera;
+
     private kangtoe99_IRotationInput rotationInput;
     private kangtoe99_PlayerStats stats;
 
@@ -13,15 +16,15 @@ public class kangtoe99_Player : kangtoe99_Character
         stats = GetComponent<kangtoe99_PlayerStats>();
         base.Awake();
 
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
+
         rotationInput = GetComponent<kangtoe99_IRotationInput>();
         if (rotationInput == null)
         {
-            Debug.LogWarning("[kangtoe99_Player] kangtoe99_IRotationInput 구현체가 필요합니다. PlayerCharacter에 kangtoe99_MouseRotationInput 컴포넌트를 추가하세요.");
-        }
-
-        if (rb != null && rb.interpolation != RigidbodyInterpolation2D.Interpolate)
-        {
-            Debug.LogWarning($"[kangtoe99_Player] Rigidbody2D.interpolation이 '{rb.interpolation}'입니다. 카메라 추적 떨림 방지를 위해 'Interpolate'로 설정하세요.");
+            Debug.LogWarning("[kangtoe99_Player] kangtoe99_IRotationInput 구현체가 필요합니다.");
         }
 
         if (stats != null)
@@ -62,6 +65,11 @@ public class kangtoe99_Player : kangtoe99_Character
         HandleRotation();
     }
 
+    private void LateUpdate()
+    {
+        WrapAroundScreen();
+    }
+
     private void HandleInput()
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
@@ -78,6 +86,53 @@ public class kangtoe99_Player : kangtoe99_Character
 
         float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
         RotateTowards(targetAngle);
+    }
+
+    private void WrapAroundScreen()
+    {
+        if (mainCamera == null) return;
+
+        Vector3 viewportPosition = mainCamera.WorldToViewportPoint(transform.position);
+        bool teleported = false;
+
+        if (viewportPosition.x > 1f)
+        {
+            viewportPosition.x = 0f;
+            teleported = true;
+        }
+        else if (viewportPosition.x < 0f)
+        {
+            viewportPosition.x = 1f;
+            teleported = true;
+        }
+
+        if (viewportPosition.y > 1f)
+        {
+            viewportPosition.y = 0f;
+            teleported = true;
+        }
+        else if (viewportPosition.y < 0f)
+        {
+            viewportPosition.y = 1f;
+            teleported = true;
+        }
+
+        if (teleported)
+        {
+            Vector3 newPosition = mainCamera.ViewportToWorldPoint(viewportPosition);
+            newPosition.z = transform.position.z;
+            transform.position = newPosition;
+
+            if (rotationInput != null)
+            {
+                Vector2 direction = rotationInput.GetTargetDirection(newPosition);
+                if (direction.sqrMagnitude >= 0.0001f)
+                {
+                    float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+                    SetRotationImmediate(angle);
+                }
+            }
+        }
     }
 
     protected override float GetEffectiveMoveForce()
