@@ -1,11 +1,16 @@
 using UnityEngine;
 
+[RequireComponent(typeof(kangtoe99_PlayerStats))]
 public class kangtoe99_Player : kangtoe99_Character
 {
     private kangtoe99_IRotationInput rotationInput;
+    private kangtoe99_PlayerStats stats;
+
+    public kangtoe99_PlayerStats Stats => stats;
 
     protected override void Awake()
     {
+        stats = GetComponent<kangtoe99_PlayerStats>();
         base.Awake();
 
         rotationInput = GetComponent<kangtoe99_IRotationInput>();
@@ -17,6 +22,34 @@ public class kangtoe99_Player : kangtoe99_Character
         if (rb != null && rb.interpolation != RigidbodyInterpolation2D.Interpolate)
         {
             Debug.LogWarning($"[kangtoe99_Player] Rigidbody2D.interpolation이 '{rb.interpolation}'입니다. 카메라 추적 떨림 방지를 위해 'Interpolate'로 설정하세요.");
+        }
+
+        if (stats != null)
+        {
+            SetMaxHealth(stats.GetFinal(kangtoe99_StatType.MaxHP));
+            stats.OnStatChanged += OnStatChanged;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (stats != null)
+        {
+            stats.OnStatChanged -= OnStatChanged;
+        }
+    }
+
+    private void OnStatChanged(kangtoe99_StatType stat)
+    {
+        if (stat == kangtoe99_StatType.MaxHP)
+        {
+            float prevMax = GetMaxHealth();
+            float newMax = stats.GetFinal(kangtoe99_StatType.MaxHP);
+            SetMaxHealth(newMax);
+            if (newMax > prevMax)
+            {
+                Heal(newMax - prevMax);
+            }
         }
     }
 
@@ -46,6 +79,15 @@ public class kangtoe99_Player : kangtoe99_Character
         float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
         RotateTowards(targetAngle);
     }
+
+    protected override float GetEffectiveMoveForce()
+        => stats != null ? stats.GetFinal(kangtoe99_StatType.MoveForce) : base.GetEffectiveMoveForce();
+
+    protected override float GetEffectiveMaxSpeed()
+        => stats != null ? stats.GetFinal(kangtoe99_StatType.MoveSpeed) : base.GetEffectiveMaxSpeed();
+
+    protected override float GetEffectiveMaxRotationSpeed()
+        => stats != null ? stats.GetFinal(kangtoe99_StatType.RotationSpeed) : base.GetEffectiveMaxRotationSpeed();
 
     protected override void Die()
     {

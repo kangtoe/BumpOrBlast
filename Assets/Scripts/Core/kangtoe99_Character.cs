@@ -52,7 +52,7 @@ public class kangtoe99_Character : MonoBehaviour
     protected void RotateTowards(float targetAngle)
     {
         float currentAngle = transform.eulerAngles.z;
-        float newAngle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, maxRotationSpeed * Time.deltaTime);
+        float newAngle = Mathf.MoveTowardsAngle(currentAngle, targetAngle, GetEffectiveMaxRotationSpeed() * Time.deltaTime);
         transform.rotation = Quaternion.Euler(0f, 0f, newAngle);
     }
 
@@ -66,15 +66,18 @@ public class kangtoe99_Character : MonoBehaviour
 
     protected virtual void Move()
     {
-        // 힘을 가해서 이동
-        rb.AddForce(moveDirection * moveForce);
+        rb.AddForce(moveDirection * GetEffectiveMoveForce());
 
-        // 최대 속도 제한
-        if (rb.linearVelocity.magnitude > maxSpeed)
+        float maxSpd = GetEffectiveMaxSpeed();
+        if (rb.linearVelocity.magnitude > maxSpd)
         {
-            rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
+            rb.linearVelocity = rb.linearVelocity.normalized * maxSpd;
         }
     }
+
+    protected virtual float GetEffectiveMoveForce() => moveForce;
+    protected virtual float GetEffectiveMaxSpeed() => maxSpeed;
+    protected virtual float GetEffectiveMaxRotationSpeed() => maxRotationSpeed;
 
     public virtual void TakeDamage(float damage, Vector2? hitPosition = null)
     {

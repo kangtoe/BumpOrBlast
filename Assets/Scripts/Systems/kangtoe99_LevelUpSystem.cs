@@ -14,7 +14,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 
     [Header("Upgrade Options")]
     [SerializeField] private kangtoe99_Player player;
-    [SerializeField] private kangtoe99_PlayerShooting playerShooting;
+    [SerializeField] private kangtoe99_PlayerStats playerStats;
     private UpgradeType? selectedUpgrade = null;
 
     private System.Collections.Generic.Dictionary<UpgradeType, int> upgradeLevels;
@@ -67,15 +67,19 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         {
             player = FindFirstObjectByType<kangtoe99_Player>();
         }
-        if (playerShooting == null)
+        if (playerStats == null && player != null)
         {
-            playerShooting = FindFirstObjectByType<kangtoe99_PlayerShooting>();
+            playerStats = player.Stats;
+        }
+        if (playerStats == null)
+        {
+            playerStats = FindFirstObjectByType<kangtoe99_PlayerStats>();
         }
 
-        if (playerShooting != null)
+        if (playerStats != null)
         {
-            baseBulletDamage = playerShooting.GetBulletDamage();
-            baseFireRate = playerShooting.GetFireRate();
+            baseBulletDamage = playerStats.GetBase(kangtoe99_StatType.Damage);
+            baseFireRate = playerStats.GetBase(kangtoe99_StatType.FireRate);
         }
 
         if (levelUpPanel != null)
@@ -178,7 +182,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 
     private void UpdateButtonTexts()
     {
-        if (damageButton != null && playerShooting != null)
+        if (damageButton != null && playerStats != null)
         {
             int level = upgradeLevels[UpgradeType.IncreaseDamage];
             float current = baseBulletDamage * (1f + level * UpgradePercentIncrease);
@@ -186,7 +190,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             SetButtonText(damageButton, $"Damage Lv.{level}\n{current:F1} > {upgraded:F1}");
         }
 
-        if (fireRateButton != null && playerShooting != null)
+        if (fireRateButton != null && playerStats != null)
         {
             int level = upgradeLevels[UpgradeType.IncreaseFireRate];
             float current = baseFireRate / (1f + level * UpgradePercentIncrease);
@@ -288,19 +292,19 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         switch (upgradeType)
         {
             case UpgradeType.IncreaseDamage:
-                if (playerShooting != null)
+                if (playerStats != null)
                 {
                     float newDamage = baseBulletDamage * (1f + level * UpgradePercentIncrease);
-                    playerShooting.SetBulletDamage(newDamage);
+                    playerStats.SetBase(kangtoe99_StatType.Damage, newDamage);
                     Debug.Log($"Damage Lv.{level}: → {newDamage:F1}");
                 }
                 break;
 
             case UpgradeType.IncreaseFireRate:
-                if (playerShooting != null)
+                if (playerStats != null)
                 {
                     float newFireRate = baseFireRate / (1f + level * UpgradePercentIncrease);
-                    playerShooting.SetFireRate(newFireRate);
+                    playerStats.SetBase(kangtoe99_StatType.FireRate, newFireRate);
                     Debug.Log($"Fire Rate Lv.{level}: → {newFireRate:F2}s");
                 }
                 break;
