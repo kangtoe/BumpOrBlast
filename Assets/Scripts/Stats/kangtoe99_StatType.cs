@@ -27,10 +27,6 @@ public enum kangtoe99_StatType
     RotationSpeed,
     Friction,
 
-    // Bump
-    BumpDamageDealtMul,
-    BumpDamageTakenMul,
-
     // 메타
     Luck,
     PickupRange

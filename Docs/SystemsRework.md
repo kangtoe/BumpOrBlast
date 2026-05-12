@@ -27,7 +27,7 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 - 탄창·재장전 → 에너지 시스템 (시간 자동 회복)
 - 분산된 수치(Player·PlayerShooting SerializeField) → 중앙 PlayerStats + Modifier
 - 일회성 드롭(XP/회복/폭탄)만 있던 진행 → 영구 효과 **아이템** 추가
-- LevelUpSystem 선택지 2종 → 다중 카테고리 풀 (스탯·아이템·Bump·회복)
+- LevelUpSystem 선택지 2종 → 다중 카테고리 풀 (스탯·아이템·회복)
 - 단일 적 타입 → **5등급 색상 분류** (Gray/Green/Blue/Purple/Orange)
 
 > 2026-05-12 재검토에서 폐기된 변경: 오픈 필드 + 카메라 추적 + 적 원주 리사이클. 카메라 고정 + 화면 wrap-around + 거리 초과 적 삭제(이전 동작)로 회귀.
@@ -50,6 +50,9 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 9. **아이템 5등급 색상 분류** (적과 동일 색계, 풀 구분 의미)
 10. **카메라 추적·오픈 필드 폐기** → 카메라 고정 + 화면 wrap-around + 거리 초과 적 삭제(이전 동작) 복원. `kangtoe99_CameraFollow`/`kangtoe99_GridBackground` 코드 삭제. `kangtoe99_EnemyRegistry`는 자동 조준 무기 등에서 사용 예정이라 유지.
 
+### 2026-05-13 결정
+11. **Bump 양방향 데미지 폐기** → 기존 동작(플레이어만 충돌 데미지 입음) 유지. Phase R5 폐기. `BumpDamageDealtMul`/`BumpDamageTakenMul` 스탯 enum·Defaults에서 완전 제거.
+
 ## 설계 확정 사항
 
 ### 1. 조작 체계
@@ -69,10 +72,8 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 - **추가 무기**: 업그레이드로 해금 — 자동 조준, 공전 드론, 장판 등
 - 모든 무기는 사격 시 **에너지 소모**, 에너지 부족 시 발사 불가
 
-### 4. Bump 데미지 (양방향 교환형)
-- 플레이어-적 충돌 시 양쪽 모두 데미지
-- 업그레이드로 `BumpDamageDealtMul`(주는 배율) / `BumpDamageTakenMul`(받는 배율) 독립 조정
-- Bump 빌드 = 무기 빌드와 별도 축
+### 4. Bump 충돌 처리
+- 충돌 시 **플레이어만 데미지를 받음** (기존 동작 유지). 2026-05-13 결정으로 양방향 교환·관련 스탯 모두 폐기.
 
 ### 5. 플랫폼 & 입력
 - **타겟**: PC 우선 출시, 모바일(세로) 대응 준비
@@ -120,8 +121,6 @@ IStatModifier
 | 이동 | MoveSpeed | 최대 이동 속도 |
 | 이동 | RotationSpeed | 초당 회전 각도 |
 | 이동 | Friction | LinearDamping 값 (높을수록 빨리 정지) |
-| Bump | BumpDamageDealtMul | 충돌로 주는 데미지 배율 |
-| Bump | BumpDamageTakenMul | 충돌로 받는 데미지 배율 |
 | 메타 | Luck | 드롭 확률 + 고급 선택지 등장률 |
 | 메타 | PickupRange | 드롭 자동 흡수 반경 |
 
@@ -212,7 +211,6 @@ TriggerEffectData (abstract ScriptableObject)
 |---|---|
 | 스탯 강화 (직접 modifier) | 무난한 풀 채움. 발사체·무기·이동·에너지 등 |
 | 아이템 획득 (영구) | maxStack 미만인 풀에서 추첨. Gray~Orange 풀별 가중치 |
-| Bump 빌드 | 충돌 데미지·받는 데미지·돌진 부스트 등 |
 | 회복 옵션 | HP 즉시 회복 (가끔 등장) |
 
 **규칙**:
@@ -233,10 +231,9 @@ TriggerEffectData (abstract ScriptableObject)
 ### 부분 수정
 | 파일 | 변경 내용 |
 |---|---|
-| [kangtoe99_Character.cs](../Assets/Scripts/Core/kangtoe99_Character.cs) | Bump 데미지 배율 필드 추가 (받는/주는) |
 | [kangtoe99_Player.cs](../Assets/Scripts/Player/kangtoe99_Player.cs) | PlayerStats 컴포넌트 의존 추가. 이동·회전 파라미터는 stats에서 조회 |
 | [kangtoe99_PlayerShooting.cs](../Assets/Scripts/Player/kangtoe99_PlayerShooting.cs) | 스탯·에너지 의존으로 전환. 발사 전 에너지 체크 |
-| [kangtoe99_LevelUpSystem.cs](../Assets/Scripts/Systems/kangtoe99_LevelUpSystem.cs) | 선택지 풀을 동적 풀로 확장. 스탯·아이템·Bump 카테고리 추가 |
+| [kangtoe99_LevelUpSystem.cs](../Assets/Scripts/Systems/kangtoe99_LevelUpSystem.cs) | 선택지 풀을 동적 풀로 확장. 스탯·아이템 카테고리 추가 |
 | [kangtoe99_ItemDropSystem.cs](../Assets/Scripts/Item/kangtoe99_ItemDropSystem.cs) | `kangtoe99_DropSystem`으로 리네임. 행운 스탯 반영 |
 | [kangtoe99_EnemySpawner.cs](../Assets/Scripts/Enemy/kangtoe99_EnemySpawner.cs) | 등급 스폰 확률 곡선 도입 |
 
@@ -277,10 +274,8 @@ TriggerEffectData (abstract ScriptableObject)
 3. UI: 탄창 UI 폐기 → 에너지 게이지
 4. **수용 기준**: 연사 시 에너지가 줄고, 멈추면 회복되며, 0일 때 발사 불가
 
-### Phase R5: Bump 데미지 시스템
-1. Character에 incoming/outgoing 배율 추가
-2. 양방향 데미지 적용 + 무적 프레임
-3. **수용 기준**: 적과 접촉 시 양쪽 HP 감소, 배율 modifier로 조정 가능
+### Phase R5: Bump 데미지 시스템 (2026-05-13 폐기)
+양방향 교환형 Bump 데미지 및 관련 스탯 모두 폐기. 기존 동작(플레이어만 데미지 받음) 유지.
 
 ### Phase R6: 아이템 시스템
 1. `kangtoe99_ItemData` SO + 등급 enum
@@ -297,7 +292,7 @@ TriggerEffectData (abstract ScriptableObject)
 
 ### Phase R8: LevelUpSystem 풀 확장
 1. 동적 선택지 풀 (카테고리별 가중치)
-2. 스탯 강화 / 아이템 / Bump / 회복 카테고리 통합
+2. 스탯 강화 / 아이템 / 회복 카테고리 통합
 3. 행운 스탯이 고등급 아이템 풀 확률에 반영
 4. 4지선다 UI 유지, 아이콘·등급 색상 표시
 5. **수용 기준**: 매 레벨업마다 다양한 카테고리가 등장, 빌드 다양성 체감
@@ -319,7 +314,6 @@ TriggerEffectData (abstract ScriptableObject)
 
 - **에너지 0일 때 빈클릭 사운드 유지 여부**
 - **아이템 트리거 효과 첫 풀에 어떤 효과들을 넣을지** (R6 구현 시 결정)
-- **Bump 무적 프레임 길이** (0.3s? 0.5s?)
 - **등급별 스폰 곡선 곡률** (선형/지수형)
 - **행운 스탯 효과 곱**: 1포인트당 드롭률 +X%, 고등급 가중치 +Y배 — 수치 미정
 - **카메라 부드러운 추적**: 현재 직접 lock, 추후 Cinemachine 검토

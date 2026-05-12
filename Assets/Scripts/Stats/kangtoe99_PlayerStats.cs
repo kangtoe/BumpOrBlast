@@ -38,9 +38,6 @@ public class kangtoe99_PlayerStats : MonoBehaviour
         { kangtoe99_StatType.RotationSpeed, 270f },
         { kangtoe99_StatType.Friction, 1f },
 
-        { kangtoe99_StatType.BumpDamageDealtMul, 1f },
-        { kangtoe99_StatType.BumpDamageTakenMul, 1f },
-
         { kangtoe99_StatType.Luck, 0f },
         { kangtoe99_StatType.PickupRange, 1.5f }
     };
