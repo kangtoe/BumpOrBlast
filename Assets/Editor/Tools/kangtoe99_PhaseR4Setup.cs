@@ -63,6 +63,10 @@ public static class kangtoe99_PhaseR4Setup
             bar = CreateEnergyBarUI(out int barChanges);
             changes += barChanges;
         }
+        else
+        {
+            changes += EnsureTickContainerAndCleanLegacyText(bar);
+        }
         if (bar != null)
         {
             changes += SetObjectReference(bar, "energySystem", energy);
@@ -118,25 +122,47 @@ public static class kangtoe99_PhaseR4Setup
         fillImg.fillAmount = 1f;
         StretchToParent(fill.GetComponent<RectTransform>());
 
-        // 텍스트
-        var textObj = CreateUIChild(bar.transform, "ValueText", typeof(Text));
-        var text = textObj.GetComponent<Text>();
-        text.alignment = TextAnchor.MiddleCenter;
-        text.color = Color.white;
-        text.text = "10/10";
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        text.fontSize = 16;
-        StretchToParent(textObj.GetComponent<RectTransform>());
+        // 눈금 컨테이너 (런타임에 N-1개의 Tick 자동 생성)
+        var tickContainer = CreateUIChild(bar.transform, "TickContainer", typeof(RectTransform));
+        StretchToParent(tickContainer.GetComponent<RectTransform>());
 
         // 컴포넌트 부착 + 슬롯 할당
         var ui = Undo.AddComponent<kangtoe99_EnergyBarUI>(bar);
         SetObjectReference(ui, "fillImage", fillImg);
-        SetObjectReference(ui, "valueText", text);
+        SetObjectReference(ui, "tickContainer", tickContainer.GetComponent<RectTransform>());
 
         Undo.RegisterCreatedObjectUndo(bar, "Create EnergyBar UI");
         Debug.Log("[PhaseR4Setup] EnergyBar UI 자동 생성 (Canvas 하위)");
         changes++;
         return ui;
+    }
+
+    private static int EnsureTickContainerAndCleanLegacyText(kangtoe99_EnergyBarUI bar)
+    {
+        int changes = 0;
+
+        // 기존 ValueText 자식 제거 (구버전 텍스트 게이지)
+        var legacy = bar.transform.Find("ValueText");
+        if (legacy != null)
+        {
+            Undo.DestroyObjectImmediate(legacy.gameObject);
+            Debug.Log("[PhaseR4Setup] 구버전 ValueText 자식 제거");
+            changes++;
+        }
+
+        // TickContainer 자식 보장
+        var tickContainer = bar.transform.Find("TickContainer") as RectTransform;
+        if (tickContainer == null)
+        {
+            var go = CreateUIChild(bar.transform, "TickContainer", typeof(RectTransform));
+            tickContainer = go.GetComponent<RectTransform>();
+            StretchToParent(tickContainer);
+            Undo.RegisterCreatedObjectUndo(go, "Create TickContainer");
+            changes++;
+        }
+
+        changes += SetObjectReference(bar, "tickContainer", tickContainer);
+        return changes;
     }
 
     private static GameObject CreateUIChild(Transform parent, string name, params System.Type[] components)
