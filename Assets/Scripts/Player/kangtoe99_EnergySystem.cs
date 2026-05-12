@@ -10,9 +10,13 @@ public class kangtoe99_EnergySystem : MonoBehaviour
     [SerializeField] private float fallbackMax = 10f;
     [SerializeField] private float fallbackRegen = 5f;
 
+    [Header("Firing Penalty")]
+    [Tooltip("사격 직후 인터벌 동안 적용되는 회복 속도 배율. 0=완전 차단, 1=영향 없음.")]
+    [SerializeField, Range(0f, 1f)] private float firingRegenMultiplier = 0.5f;
+
     private float current;
     private bool initialized;
-    private float suppressRegenUntil;
+    private float firingPenaltyUntil;
 
     public event Action<float, float> OnEnergyChanged;
 
@@ -61,12 +65,14 @@ public class kangtoe99_EnergySystem : MonoBehaviour
         if (!initialized) return;
         if (Time.timeScale == 0f) return;
         if (kangtoe99_GameManager.Instance != null && !kangtoe99_GameManager.Instance.IsGameStarted()) return;
-        if (Time.time < suppressRegenUntil) return;
 
         float max = Max;
         if (current >= max) return;
 
-        current = Mathf.Min(max, current + Regen * Time.deltaTime);
+        float regenMul = (Time.time < firingPenaltyUntil) ? firingRegenMultiplier : 1f;
+        if (regenMul <= 0f) return;
+
+        current = Mathf.Min(max, current + Regen * regenMul * Time.deltaTime);
         OnEnergyChanged?.Invoke(current, max);
     }
 
@@ -82,11 +88,11 @@ public class kangtoe99_EnergySystem : MonoBehaviour
         return true;
     }
 
-    // 사격 직후 인터벌 동안 회복을 막고 싶을 때 호출. 더 긴 억제는 덮어쓰지 않음(누적 안전).
-    public void SuppressRegen(float duration)
+    // 사격 직후 인터벌 동안 회복 속도에 firingRegenMultiplier 배율을 적용. 더 긴 패널티는 덮어쓰지 않음.
+    public void ApplyFiringPenalty(float duration)
     {
         if (duration <= 0f) return;
         float until = Time.time + duration;
-        if (until > suppressRegenUntil) suppressRegenUntil = until;
+        if (until > firingPenaltyUntil) firingPenaltyUntil = until;
     }
 }
