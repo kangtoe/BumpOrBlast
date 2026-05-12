@@ -10,7 +10,7 @@ public enum kangtoe99_StatType
     // 무기
     Damage,
     FireRate,
-    EnergyCostPerShot,
+    EnergyCost,
 
     // 에너지
     EnergyMax,
@@ -22,12 +22,11 @@ public enum kangtoe99_StatType
     BodyScale,
 
     // 이동
-    MoveSpeed,
     MoveForce,
     RotationSpeed,
     Friction,
 
     // 메타
     Luck,
-    PickupRange
+    Magnet
 }

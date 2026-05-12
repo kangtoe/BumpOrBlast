@@ -112,17 +112,17 @@ IStatModifier
 | 발사체 | Pierce | 관통 횟수 |
 | 무기 | Damage | 기본 데미지 |
 | 무기 | FireRate | 발사 간격(초) — 작을수록 빠름 |
-| 무기 | EnergyCostPerShot | 발당 에너지 소모 |
+| 무기 | EnergyCost | 발당 에너지 소모 |
 | 에너지 | EnergyMax | 최대 에너지 |
 | 에너지 | EnergyRegen | 초당 회복량 |
 | 기체 | MaxHP (Durability) | 최대 체력 |
 | 기체 | HPRegen (Repair) | 초당 자연 회복 |
 | 기체 | BodyScale | 기체 크기 (충돌 판정 영향) |
-| 이동 | MoveSpeed | 최대 이동 속도 |
+| 이동 | MoveForce | 추진력(AddForce 곱셈). 평형 속도는 drag와의 비율로 결정 |
 | 이동 | RotationSpeed | 초당 회전 각도 |
 | 이동 | Friction | LinearDamping 값 (높을수록 빨리 정지) |
 | 메타 | Luck | 드롭 확률 + 고급 선택지 등장률 |
-| 메타 | PickupRange | 드롭 자동 흡수 반경 |
+| 메타 | Magnet | 드롭 자동 흡수 반경 |
 
 ### 적용 흐름
 - `PlayerShooting` 등 소비자는 `stats.GetFinal(StatType.Damage)` 형태로 조회 (캐싱 가능)
@@ -311,6 +311,8 @@ TriggerEffectData (abstract ScriptableObject)
 - 세로 UI 재배치
 
 ## 미결정 사항
+
+- **maxSpeed 클램프 제거 (2026-05-13)**: Character.Move 및 Enemy.ChasePlayer의 `velocity.magnitude > maxSpd` 클램프 제거하고 drag(linearDamping)로만 평형 속도 결정. 프리팹의 drag와 moveForce 비율로 튜닝 필요. 플레이 테스트 후 감각이 어색하면 부활 검토.
 
 - **에너지 0일 때 빈클릭 사운드 유지 여부**
 - **아이템 트리거 효과 첫 풀에 어떤 효과들을 넣을지** (R6 구현 시 결정)

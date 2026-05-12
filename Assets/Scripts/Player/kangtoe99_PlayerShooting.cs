@@ -43,7 +43,7 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         float fireRate = stats != null ? stats.GetFinal(kangtoe99_StatType.FireRate) : fallbackFireRate;
         if (Input.GetMouseButton(0) && Time.time >= nextFireTime)
         {
-            float cost = stats != null ? stats.GetFinal(kangtoe99_StatType.EnergyCostPerShot) : fallbackEnergyCost;
+            float cost = stats != null ? stats.GetFinal(kangtoe99_StatType.EnergyCost) : fallbackEnergyCost;
             if (energy != null && !energy.TryConsume(cost))
             {
                 PlayEmptyClick();

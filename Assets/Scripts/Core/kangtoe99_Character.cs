@@ -64,19 +64,14 @@ public class kangtoe99_Character : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
+    // 평형 속도는 Rigidbody2D.linearDamping(drag)로만 결정. 충돌·외부 힘 시 일시적으로 maxSpeed를 초과할 수 있음.
+    // 감각이 어색하면 maxSpeed 클램프 부활 검토 (이전 구현: velocity.magnitude > maxSpd 시 normalized * maxSpd).
     protected virtual void Move()
     {
         rb.AddForce(moveDirection * GetEffectiveMoveForce());
-
-        float maxSpd = GetEffectiveMaxSpeed();
-        if (rb.linearVelocity.magnitude > maxSpd)
-        {
-            rb.linearVelocity = rb.linearVelocity.normalized * maxSpd;
-        }
     }
 
     protected virtual float GetEffectiveMoveForce() => moveForce;
-    protected virtual float GetEffectiveMaxSpeed() => maxSpeed;
     protected virtual float GetEffectiveMaxRotationSpeed() => maxRotationSpeed;
 
     public virtual void TakeDamage(float damage, Vector2? hitPosition = null)

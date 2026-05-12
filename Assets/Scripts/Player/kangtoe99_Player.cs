@@ -138,9 +138,6 @@ public class kangtoe99_Player : kangtoe99_Character
     protected override float GetEffectiveMoveForce()
         => stats != null ? stats.GetFinal(kangtoe99_StatType.MoveForce) : base.GetEffectiveMoveForce();
 
-    protected override float GetEffectiveMaxSpeed()
-        => stats != null ? stats.GetFinal(kangtoe99_StatType.MoveSpeed) : base.GetEffectiveMaxSpeed();
-
     protected override float GetEffectiveMaxRotationSpeed()
         => stats != null ? stats.GetFinal(kangtoe99_StatType.RotationSpeed) : base.GetEffectiveMaxRotationSpeed();
 

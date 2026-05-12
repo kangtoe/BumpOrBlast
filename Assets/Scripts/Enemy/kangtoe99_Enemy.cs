@@ -51,18 +51,13 @@ public class kangtoe99_Enemy : kangtoe99_Character
         ChasePlayer();
     }
 
+    // 평형 속도는 Rigidbody2D.linearDamping(drag)로만 결정. 프리팹의 drag와 moveForce 비율로 튜닝.
     private void ChasePlayer()
     {
         if (player == null || rb == null) return;
 
         Vector2 direction = (player.position - transform.position).normalized;
         rb.AddForce(direction * moveForce);
-
-        // 최대 속도 제한
-        if (rb.linearVelocity.magnitude > maxSpeed)
-        {
-            rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
-        }
     }
 
     private void RotateTowardsPlayer()

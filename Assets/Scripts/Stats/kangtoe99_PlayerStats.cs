@@ -24,7 +24,7 @@ public class kangtoe99_PlayerStats : MonoBehaviour
 
         { kangtoe99_StatType.Damage, 10f },
         { kangtoe99_StatType.FireRate, 0.35f },
-        { kangtoe99_StatType.EnergyCostPerShot, 1f },
+        { kangtoe99_StatType.EnergyCost, 1f },
 
         { kangtoe99_StatType.EnergyMax, 10f },
         { kangtoe99_StatType.EnergyRegen, 5f },
@@ -33,13 +33,12 @@ public class kangtoe99_PlayerStats : MonoBehaviour
         { kangtoe99_StatType.HPRegen, 0f },
         { kangtoe99_StatType.BodyScale, 1f },
 
-        { kangtoe99_StatType.MoveSpeed, 5f },
         { kangtoe99_StatType.MoveForce, 50f },
         { kangtoe99_StatType.RotationSpeed, 270f },
         { kangtoe99_StatType.Friction, 1f },
 
         { kangtoe99_StatType.Luck, 0f },
-        { kangtoe99_StatType.PickupRange, 1.5f }
+        { kangtoe99_StatType.Magnet, 1.5f }
     };
 
     private Dictionary<kangtoe99_StatType, float> baseValues;
