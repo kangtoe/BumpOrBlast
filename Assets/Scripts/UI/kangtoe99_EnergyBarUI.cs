@@ -16,8 +16,11 @@ public class kangtoe99_EnergyBarUI : MonoBehaviour
     [Header("Tick Settings")]
     [SerializeField] private Color tickColor = new Color(0f, 0f, 0f, 0.7f);
     [SerializeField] private float tickWidth = 2f;
+    [Tooltip("몇 포인트마다 눈금을 표시할지. 1이면 1포인트마다, 5면 5포인트마다.")]
+    [SerializeField, Min(1)] private int pointsPerTick = 1;
 
-    private int lastTickCount = -1;
+    private int lastTotalPoints = -1;
+    private int lastPointsPerTick = -1;
 
     private void Start()
     {
@@ -45,6 +48,20 @@ public class kangtoe99_EnergyBarUI : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        // 인스펙터에서 pointsPerTick 조절 시 다음 프레임에 즉시 반영
+        if (pointsPerTick != lastPointsPerTick && energySystem != null)
+        {
+            RebuildIfNeeded(energySystem.Max);
+        }
+    }
+
+    private void OnValidate()
+    {
+        if (pointsPerTick < 1) pointsPerTick = 1;
+    }
+
     private void UpdateUI(float currentValue, float maxValue)
     {
         if (fillImage != null && maxValue > 0f)
@@ -54,16 +71,24 @@ public class kangtoe99_EnergyBarUI : MonoBehaviour
             fillImage.color = ratio <= emptyThreshold ? emptyColor : normalColor;
         }
 
-        int tickCount = Mathf.Max(1, Mathf.RoundToInt(maxValue));
-        if (tickCount != lastTickCount)
+        RebuildIfNeeded(maxValue);
+    }
+
+    private void RebuildIfNeeded(float maxValue)
+    {
+        int totalPoints = Mathf.Max(1, Mathf.RoundToInt(maxValue));
+        int ppt = Mathf.Max(1, pointsPerTick);
+
+        if (totalPoints != lastTotalPoints || ppt != lastPointsPerTick)
         {
-            RebuildTicks(tickCount);
-            lastTickCount = tickCount;
+            RebuildTicks(totalPoints, ppt);
+            lastTotalPoints = totalPoints;
+            lastPointsPerTick = ppt;
         }
     }
 
-    // 칸 N개를 N-1개의 세로 분할선으로 표현 (좌우 끝은 배경 경계로 자연스럽게 마감)
-    private void RebuildTicks(int count)
+    // 칸 N개를 pointsPerTick 간격의 세로 분할선으로 표현 (좌우 끝은 배경 경계로 마감)
+    private void RebuildTicks(int totalPoints, int ppt)
     {
         if (tickContainer == null) return;
 
@@ -80,15 +105,16 @@ public class kangtoe99_EnergyBarUI : MonoBehaviour
             }
         }
 
-        if (count <= 1) return;
+        if (totalPoints <= 1 || ppt < 1) return;
 
-        for (int i = 1; i < count; i++)
+        for (int i = 1; i * ppt < totalPoints; i++)
         {
-            var tick = new GameObject($"Tick_{i}", typeof(RectTransform), typeof(Image));
+            int position = i * ppt;
+            var tick = new GameObject($"Tick_{position}", typeof(RectTransform), typeof(Image));
             tick.transform.SetParent(tickContainer, false);
 
             var rt = (RectTransform)tick.transform;
-            float xRatio = (float)i / count;
+            float xRatio = (float)position / totalPoints;
             rt.anchorMin = new Vector2(xRatio, 0f);
             rt.anchorMax = new Vector2(xRatio, 1f);
             rt.pivot = new Vector2(0.5f, 0.5f);
