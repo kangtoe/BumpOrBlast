@@ -29,6 +29,10 @@ PrefabInstance:
       value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
+      propertyPath: maxSpeed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: maxHealth
       value: 25
       objectReference: {fileID: 0}
@@ -39,6 +43,14 @@ PrefabInstance:
     - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: maxRotationSpeed
       value: 360
+      objectReference: {fileID: 0}
+    - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
+      propertyPath: collisionKnockbackForce
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4307073726107623797, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
+      propertyPath: m_Interpolate
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6665424404718431832, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalScale.x
