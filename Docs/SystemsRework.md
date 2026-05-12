@@ -331,7 +331,7 @@ TriggerEffectData (abstract ScriptableObject)
 
 [DevelopmentGuide.md](DevelopmentGuide.md)의 폴더 규약은 신규 작업부터 적용하되, 기존 평면 구조의 마이그레이션은 추후 검토:
 
-- `Assets/Editor/` 폴더는 2026-05-13 통째로 폐기됨. 향후 에디터 도구가 필요해질 때 가이드의 `Tools/` + `Validators/` 구조로 신설
+- `Assets/Editor/Tools/kangtoe99_SceneSetup.cs` 단일 영구 도구로 통합 (메뉴: `Tools > BumpOrBlast > Setup Scene`). 이전 Phase별 셋업 도구(R3/R4)는 폐기됨
 - `Assets/Prefabs/` 평면 → `Assets/Prefabs/<Category>/` (Player, Enemies, Items, Weapons, World, VFXs, Bosses)
 - `Assets/Data/<Category>/` 신설 (현재 SO 자산 인스턴스 없음, 클래스만 존재)
 
