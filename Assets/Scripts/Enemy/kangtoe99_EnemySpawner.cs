@@ -5,21 +5,24 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     public static kangtoe99_EnemySpawner Instance { get; private set; }
 
     [Header("Spawner Settings")]
-    [SerializeField] private GameObject[] enemyPrefabs; // 3종류의 적 프리팹
+    [SerializeField] private GameObject[] enemyPrefabs;
     [SerializeField] private Transform player;
 
     [Header("Spawn Settings")]
     [SerializeField] private float initialSpawnInterval = 3f;
     [SerializeField] private float minSpawnInterval = 0.5f;
     [SerializeField] private float intervalDecreaseRate = 0.05f;
-    [SerializeField] private float spawnDistanceFromScreen = 2f; // 화면 밖 거리
+
+    [Header("Open Field (Player-Centered)")]
+    [Tooltip("스폰 거리 — 플레이어 중심 원주. 카메라 뷰 바깥이어야 자연스러움")]
+    [SerializeField] private float spawnRadius = 18f;
+    [Tooltip("이 거리 초과 시 반대편 원주로 재배치 (무한 오픈 필드 효과)")]
+    [SerializeField] private float recycleRadius = 28f;
 
     [Header("Health Multiplier Settings")]
     [SerializeField] private float initialHealthMultiplier = 1f;
     [SerializeField] private float maxHealthMultiplier = 5f;
     [SerializeField] private float healthMultiplierIncreaseRate = 0.02f;
-
-    private Camera mainCamera;
 
     private float currentSpawnInterval;
     private float spawnTimer;
@@ -42,13 +45,6 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
         spawnTimer = currentSpawnInterval;
         currentHealthMultiplier = initialHealthMultiplier;
 
-        // 메인 카메라 찾기
-        mainCamera = Camera.main;
-        if (mainCamera == null)
-        {
-            Debug.LogError("Main Camera not found!");
-        }
-
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -63,24 +59,54 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     {
         if (!isSpawning || player == null) return;
 
-        spawnTimer -= Time.deltaTime;
+        RecycleFarEnemies();
 
+        spawnTimer -= Time.deltaTime;
         if (spawnTimer <= 0)
         {
             SpawnEnemy();
             spawnTimer = currentSpawnInterval;
 
-            // 난이도 증가: 스폰 간격 감소
             currentSpawnInterval = Mathf.Max(
                 currentSpawnInterval - intervalDecreaseRate,
                 minSpawnInterval
             );
 
-            // 난이도 증가: 적 체력 배율 증가
             currentHealthMultiplier = Mathf.Min(
                 currentHealthMultiplier + healthMultiplierIncreaseRate,
                 maxHealthMultiplier
             );
+        }
+    }
+
+    // 거리 초과 적을 플레이어 기준 반대편 원주로 재배치 (삭제 안 함 → 무한감)
+    private void RecycleFarEnemies()
+    {
+        float recycleRadiusSq = recycleRadius * recycleRadius;
+        Vector2 playerPos = player.position;
+        var enemies = kangtoe99_EnemyRegistry.ActiveEnemies;
+
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            var enemy = enemies[i];
+            if (enemy == null) continue;
+
+            Vector2 enemyPos = enemy.transform.position;
+            Vector2 offset = enemyPos - playerPos;
+            if (offset.sqrMagnitude <= recycleRadiusSq) continue;
+
+            // 반대 방향으로 스폰 반경 거리에 재배치
+            Vector2 oppositeDir = -offset.normalized;
+            Vector2 newPos = playerPos + oppositeDir * spawnRadius;
+
+            enemy.transform.position = newPos;
+
+            // 관성 초기화 (이전 추적 속도가 반대편에서 이상하게 작용 안 하도록)
+            var rb = enemy.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+            }
         }
     }
 
@@ -92,70 +118,27 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
             return;
         }
 
-        // 랜덤 위치 생성 (플레이어로부터 일정 거리)
         Vector2 spawnPosition = GetRandomSpawnPosition();
-
-        // 랜덤 적 프리팹 선택
         GameObject randomPrefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
-
-        // 적 생성
         GameObject enemyObj = Instantiate(randomPrefab, spawnPosition, Quaternion.identity);
 
-        // 체력 배율 적용
         kangtoe99_Character character = enemyObj.GetComponent<kangtoe99_Character>();
         if (character != null)
         {
             float newMaxHealth = character.GetMaxHealth() * currentHealthMultiplier;
             character.SetMaxHealth(newMaxHealth);
-            character.Heal(newMaxHealth); // 현재 체력을 최대 체력으로 설정
+            character.Heal(newMaxHealth);
         }
     }
 
+    // 플레이어 중심 원주상의 랜덤 위치
     private Vector2 GetRandomSpawnPosition()
     {
-        if (mainCamera == null) return player.position;
+        if (player == null) return Vector2.zero;
 
-        // 화면 경계를 월드 좌표로 계산
-        // AspectRatioController가 적용된 경우 실제 렌더링 비율을 사용
-        float cameraHeight = mainCamera.orthographicSize;
-        float effectiveAspect = kangtoe99_AspectRatioController.GetEffectiveAspectRatio(mainCamera);
-        float cameraWidth = cameraHeight * effectiveAspect;
-
-        Vector3 cameraPos = mainCamera.transform.position;
-
-        // 랜덤하게 4개 방향 중 하나 선택 (위, 아래, 왼쪽, 오른쪽)
-        int side = Random.Range(0, 4);
-        Vector2 spawnPosition = Vector2.zero;
-
-        switch (side)
-        {
-            case 0: // 위쪽
-                spawnPosition = new Vector2(
-                    Random.Range(cameraPos.x - cameraWidth, cameraPos.x + cameraWidth),
-                    cameraPos.y + cameraHeight + spawnDistanceFromScreen
-                );
-                break;
-            case 1: // 아래쪽
-                spawnPosition = new Vector2(
-                    Random.Range(cameraPos.x - cameraWidth, cameraPos.x + cameraWidth),
-                    cameraPos.y - cameraHeight - spawnDistanceFromScreen
-                );
-                break;
-            case 2: // 왼쪽
-                spawnPosition = new Vector2(
-                    cameraPos.x - cameraWidth - spawnDistanceFromScreen,
-                    Random.Range(cameraPos.y - cameraHeight, cameraPos.y + cameraHeight)
-                );
-                break;
-            case 3: // 오른쪽
-                spawnPosition = new Vector2(
-                    cameraPos.x + cameraWidth + spawnDistanceFromScreen,
-                    Random.Range(cameraPos.y - cameraHeight, cameraPos.y + cameraHeight)
-                );
-                break;
-        }
-
-        return spawnPosition;
+        float angle = Random.Range(0f, Mathf.PI * 2f);
+        Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * spawnRadius;
+        return (Vector2)player.position + offset;
     }
 
     public void StartSpawning()
@@ -163,7 +146,7 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
         isSpawning = true;
         currentSpawnInterval = initialSpawnInterval;
         currentHealthMultiplier = initialHealthMultiplier;
-        spawnTimer = 0; // 첫 스폰은 즉시 실행
+        spawnTimer = 0;
         Debug.Log("Enemy spawning started!");
     }
 
@@ -173,31 +156,16 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
         Debug.Log("Enemy spawning stopped!");
     }
 
-    // 디버그용
     private void OnDrawGizmosSelected()
     {
-        Camera cam = mainCamera != null ? mainCamera : Camera.main;
-        if (cam == null) return;
+        if (player == null) return;
 
-        float cameraHeight = cam.orthographicSize;
-        float effectiveAspect = kangtoe99_AspectRatioController.GetEffectiveAspectRatio(cam);
-        float cameraWidth = cameraHeight * effectiveAspect;
-        Vector3 cameraPos = cam.transform.position;
-
-        // 카메라 뷰포트 (녹색)
+        // 스폰 원주 (녹색)
         Gizmos.color = Color.green;
-        Gizmos.DrawWireCube(
-            new Vector3(cameraPos.x, cameraPos.y, 0),
-            new Vector3(cameraWidth * 2, cameraHeight * 2, 0)
-        );
+        Gizmos.DrawWireSphere(player.position, spawnRadius);
 
-        // 스폰 영역 (빨간색)
+        // 리사이클 경계 (빨간색)
         Gizmos.color = Color.red;
-        float outerWidth = cameraWidth + spawnDistanceFromScreen;
-        float outerHeight = cameraHeight + spawnDistanceFromScreen;
-        Gizmos.DrawWireCube(
-            new Vector3(cameraPos.x, cameraPos.y, 0),
-            new Vector3(outerWidth * 2, outerHeight * 2, 0)
-        );
+        Gizmos.DrawWireSphere(player.position, recycleRadius);
     }
 }

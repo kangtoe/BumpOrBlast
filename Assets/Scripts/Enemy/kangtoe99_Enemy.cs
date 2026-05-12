@@ -5,7 +5,6 @@ public class kangtoe99_Enemy : kangtoe99_Character
     [Header("Enemy Settings")]
     [SerializeField] private float damage = 10f;
     [SerializeField] private int scoreValue = 10;
-    [SerializeField] private float despawnDistance = 30f;
 
     private Transform player;
 
@@ -18,15 +17,20 @@ public class kangtoe99_Enemy : kangtoe99_Character
         {
             Debug.LogWarning("Enemy: Player not found! Make sure Player has 'Player' tag.");
         }
-        else
-        {
-            Debug.Log("Enemy: Player found!");
-        }
+    }
+
+    private void OnEnable()
+    {
+        kangtoe99_EnemyRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        kangtoe99_EnemyRegistry.Unregister(this);
     }
 
     private void Update()
     {
-        CheckDespawnDistance();
         RotateTowardsPlayer();
     }
 
@@ -57,17 +61,6 @@ public class kangtoe99_Enemy : kangtoe99_Character
         Vector2 direction = (player.position - transform.position).normalized;
         float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
         RotateTowards(targetAngle);
-    }
-
-    private void CheckDespawnDistance()
-    {
-        if (player == null) return;
-
-        float distance = Vector2.Distance(transform.position, player.position);
-        if (distance > despawnDistance)
-        {
-            Destroy(gameObject);
-        }
     }
 
     protected override void Die()
