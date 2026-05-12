@@ -4,17 +4,11 @@ using UnityEngine;
 
 public class kangtoe99_PlayerStats : MonoBehaviour
 {
-    [Serializable]
-    public struct BaseStatOverride
-    {
-        public kangtoe99_StatType stat;
-        public float value;
-    }
+    [Header("Base Stat Profile (SO)")]
+    [SerializeField] private kangtoe99_PlayerStatsData baseStatProfile;
 
-    [Header("Base Stat Overrides (인스펙터에서 기본값 덮어쓰기)")]
-    [SerializeField] private List<BaseStatOverride> overrides = new List<BaseStatOverride>();
-
-    private static readonly Dictionary<kangtoe99_StatType, float> Defaults = new Dictionary<kangtoe99_StatType, float>
+    // SO 없을 때만 사용하는 코드 fallback. 일반적으로 PlayerStatsData_Default.asset 할당 권장.
+    public static readonly Dictionary<kangtoe99_StatType, float> Defaults = new Dictionary<kangtoe99_StatType, float>
     {
         { kangtoe99_StatType.ProjectileCount, 1f },
         { kangtoe99_StatType.ProjectileSpeed, 20f },
@@ -49,9 +43,17 @@ public class kangtoe99_PlayerStats : MonoBehaviour
     private void Awake()
     {
         baseValues = new Dictionary<kangtoe99_StatType, float>(Defaults);
-        foreach (var o in overrides)
+
+        if (baseStatProfile != null)
         {
-            baseValues[o.stat] = o.value;
+            foreach (var entry in baseStatProfile.BaseStats)
+            {
+                baseValues[entry.stat] = entry.value;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[kangtoe99_PlayerStats] baseStatProfile(SO)이 할당되지 않아 코드 Defaults를 사용합니다. PlayerStatsData 자산을 할당하세요.");
         }
     }
 

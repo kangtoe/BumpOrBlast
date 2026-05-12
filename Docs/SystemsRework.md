@@ -85,11 +85,15 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 ## 스탯 시스템
 
 ### 구조
-중앙 `kangtoe99_PlayerStats` 컴포넌트가 모든 스탯의 단일 진리원천. 스탯별 base값을 보유하고 외부 modifier 리스트로 동적 보정.
+중앙 `kangtoe99_PlayerStats` 컴포넌트가 모든 스탯의 단일 진리원천. 기본값은 **`kangtoe99_PlayerStatsData` ScriptableObject**에서 읽어오고, 외부 modifier 리스트로 동적 보정.
 
 ```
+kangtoe99_PlayerStatsData (ScriptableObject — Assets/Data/Players/PlayerStatsData_*.asset)
+  └─ List<StatEntry { StatType stat, float value }> baseStats
+
 kangtoe99_PlayerStats (MonoBehaviour)
-  ├─ Dictionary<StatType, float> baseValues
+  ├─ baseStatProfile (SO 참조, 없으면 코드 Defaults fallback)
+  ├─ Dictionary<StatType, float> baseValues  ← Awake에서 SO 값으로 초기화
   ├─ List<IStatModifier> modifiers
   ├─ float GetFinal(StatType) — base + Σ(가산) → ×Π(배율)
   ├─ void AddModifier(IStatModifier)
@@ -101,6 +105,8 @@ IStatModifier
   ├─ float Value
   └─ object Source (디버깅/제거 용도 — 아이템/레벨업/일시버프 식별)
 ```
+
+캐릭터·세션별로 다른 base 프로파일을 만들고 싶다면 `PlayerStatsData_<Variant>.asset`을 추가 생성해 인스펙터에서 교체.
 
 ### 스탯 목록
 | 카테고리 | 스탯 | 비고 |
