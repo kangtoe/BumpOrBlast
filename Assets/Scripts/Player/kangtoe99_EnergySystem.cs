@@ -12,6 +12,7 @@ public class kangtoe99_EnergySystem : MonoBehaviour
 
     private float current;
     private bool initialized;
+    private float suppressRegenUntil;
 
     public event Action<float, float> OnEnergyChanged;
 
@@ -60,6 +61,7 @@ public class kangtoe99_EnergySystem : MonoBehaviour
         if (!initialized) return;
         if (Time.timeScale == 0f) return;
         if (kangtoe99_GameManager.Instance != null && !kangtoe99_GameManager.Instance.IsGameStarted()) return;
+        if (Time.time < suppressRegenUntil) return;
 
         float max = Max;
         if (current >= max) return;
@@ -78,5 +80,13 @@ public class kangtoe99_EnergySystem : MonoBehaviour
         current -= amount;
         OnEnergyChanged?.Invoke(current, Max);
         return true;
+    }
+
+    // 사격 직후 인터벌 동안 회복을 막고 싶을 때 호출. 더 긴 억제는 덮어쓰지 않음(누적 안전).
+    public void SuppressRegen(float duration)
+    {
+        if (duration <= 0f) return;
+        float until = Time.time + duration;
+        if (until > suppressRegenUntil) suppressRegenUntil = until;
     }
 }

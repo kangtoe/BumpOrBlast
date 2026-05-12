@@ -52,6 +52,7 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
             }
 
             Shoot();
+            if (energy != null) energy.SuppressRegen(fireRate);
             nextFireTime = Time.time + Mathf.Max(0.05f, fireRate);
         }
     }
