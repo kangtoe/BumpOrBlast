@@ -6,23 +6,32 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private Transform firePoint;
     [SerializeField] private kangtoe99_PlayerStats stats;
+    [SerializeField] private kangtoe99_EnergySystem energy;
 
     [Header("Fallback (stats 없을 때만 사용)")]
     [SerializeField] private float fallbackDamage = 10f;
     [SerializeField] private float fallbackFireRate = 0.35f;
     [SerializeField] private float fallbackBulletSpeed = 20f;
+    [SerializeField] private float fallbackEnergyCost = 1f;
     [SerializeField] private float bulletKnockback = 5f;
 
     [Header("SFX")]
     [SerializeField] private AudioClip shootSound;
+    [SerializeField] private AudioClip emptyClickSound;
+    [SerializeField] private float emptyClickCooldown = 0.3f;
 
     private float nextFireTime = 0f;
+    private float nextEmptyClickTime = 0f;
 
     private void Awake()
     {
         if (stats == null)
         {
             stats = GetComponent<kangtoe99_PlayerStats>();
+        }
+        if (energy == null)
+        {
+            energy = GetComponent<kangtoe99_EnergySystem>();
         }
     }
 
@@ -34,9 +43,25 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         float fireRate = stats != null ? stats.GetFinal(kangtoe99_StatType.FireRate) : fallbackFireRate;
         if (Input.GetMouseButton(0) && Time.time >= nextFireTime)
         {
+            float cost = stats != null ? stats.GetFinal(kangtoe99_StatType.EnergyCostPerShot) : fallbackEnergyCost;
+            if (energy != null && !energy.TryConsume(cost))
+            {
+                PlayEmptyClick();
+                nextFireTime = Time.time + Mathf.Max(0.05f, fireRate);
+                return;
+            }
+
             Shoot();
             nextFireTime = Time.time + Mathf.Max(0.05f, fireRate);
         }
+    }
+
+    private void PlayEmptyClick()
+    {
+        if (emptyClickSound == null) return;
+        if (Time.time < nextEmptyClickTime) return;
+        AudioSource.PlayClipAtPoint(emptyClickSound, Camera.main.transform.position);
+        nextEmptyClickTime = Time.time + emptyClickCooldown;
     }
 
     private void Shoot()
