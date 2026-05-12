@@ -296,6 +296,16 @@ TriggerEffectData (abstract ScriptableObject)
 - **카메라 부드러운 추적**: 현재 직접 lock, 추후 Cinemachine 검토
 - **구 문서 처리**: 리워크 완료 후 [GameDesign.md](GameDesign.md) / [TechnicalSpec.md](TechnicalSpec.md) 갱신
 
+### 폴더 구조 마이그레이션 (DevelopmentGuide 가이드 준수)
+
+[DevelopmentGuide.md](DevelopmentGuide.md)의 폴더 규약은 신규 작업부터 적용하되, 기존 평면 구조의 마이그레이션은 추후 검토:
+
+- `Assets/Editor/` 평면 → `Assets/Editor/Tools/` + `Assets/Editor/Validators/` 분리
+- `Assets/Prefabs/` 평면 → `Assets/Prefabs/<Category>/` (Player, Enemies, Items, Weapons, World, VFXs, Bosses)
+- `Assets/Data/<Category>/` 신설 (현재 SO 자산 인스턴스 없음, 클래스만 존재)
+
+**마이그레이션 시 주의**: `.meta` 파일 함께 이동해야 GUID 보존(인스펙터 참조 깨짐 방지). 시점은 Phase R6(아이템 SO 도입)~R7(적 5등급) 무렵 자산이 늘어나기 시작할 때가 자연스러움.
+
 ## 스크립트 명명 규칙 (유지)
 
 - 모든 신규 C# 클래스 파일에 `kangtoe99_` 접두어
