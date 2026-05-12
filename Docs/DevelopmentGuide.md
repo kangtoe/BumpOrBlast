@@ -16,16 +16,16 @@
 | [`GameDesign.md`](./GameDesign.md) | 게임 규칙, 전투, 진행, 레벨업 |
 | [`TechnicalSpec.md`](./TechnicalSpec.md) | 기술 구조, 스크립트 구성, 최적화 |
 | [`DevelopmentPlan.md`](./DevelopmentPlan.md) | 개발 단계별 계획 |
-| [`VampireSurvivorsRework.md`](./VampireSurvivorsRework.md) | 뱀파이어 서바이버 리워크 설계 + 단계별 로드맵 |
+| [`SystemsRework.md`](./SystemsRework.md) | 시스템 심화 설계(에너지·스탯·아이템·적 등급·오픈필드) + 단계별 로드맵 |
 | [`CommitGuide.md`](./CommitGuide.md) | 커밋 메시지 규약 |
 | [`DevelopmentGuide.md`](./DevelopmentGuide.md) | 본 문서 — 개발 방법론 인덱스 |
 
 **향후 추가 예정 (TBD)**:
-- `Upgrades.md` — 무기/패시브 종류와 레벨업 효과 (현재는 VampireSurvivorsRework에 포함)
-- `Items.md` — 아이템 시스템 (현재는 VampireSurvivorsRework에 포함)
-- `Enemy.md` — 적 시스템 (현재는 VampireSurvivorsRework에 포함)
+- `Upgrades.md` — 무기/패시브 종류와 레벨업 효과 (현재는 SystemsRework에 포함)
+- `Items.md` — 아이템 시스템 (현재는 SystemsRework에 포함)
+- `Enemy.md` — 적 시스템 (현재는 SystemsRework에 포함)
 - `EditorAutomation.md` — 에디터 자동화 카테고리
-- `Roadmap.md` — 전체 Phase 체크리스트 (현재는 VampireSurvivorsRework "단계별 구현 계획" 참조)
+- `Roadmap.md` — 전체 Phase 체크리스트 (현재는 SystemsRework "단계별 구현 계획" 참조)
 
 **기획 변경 시**: 관련 문서부터 업데이트 → 커밋 → 구현.
 
@@ -51,7 +51,7 @@
   ├── Tools/       # 진행 중 작업 툴 + 영구 유틸
   └── Validators/  # (필요 시) 씬/에셋 검증
   ```
-  현재 `Assets/Editor/` 평면 구조 (`kangtoe99_VSReworkSceneSetup.cs`, `kangtoe99_VSReworkBalanceTuning.cs`)는 추후 마이그레이션 검토 — [`VampireSurvivorsRework.md`](./VampireSurvivorsRework.md) 미결정 사항 참조
+  현재 `Assets/Editor/` 평면 구조 (`kangtoe99_VSReworkSceneSetup.cs`, `kangtoe99_VSReworkBalanceTuning.cs`)는 추후 마이그레이션 검토 — [`SystemsRework.md`](./SystemsRework.md) 미결정 사항 참조
 - 일회성 툴 파일 상단에 `// one-shot: 작업 완료 후 삭제` 주석 표기
 
 ## 4. UI
@@ -110,7 +110,7 @@
 
 ## 7. Phase 진행
 
-- Phase별 체크리스트: [`VampireSurvivorsRework.md`](./VampireSurvivorsRework.md) "단계별 구현 계획" 섹션 (Roadmap.md 분리는 TBD)
+- Phase별 체크리스트: [`SystemsRework.md`](./SystemsRework.md) "단계별 구현 계획" 섹션 (Roadmap.md 분리는 TBD)
 - 각 Phase 종료 시 **간단 회고** 후 다음 진입
   - 완성된 것 / 미룬 것 / 기획 변경 필요한 것 정리
 
