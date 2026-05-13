@@ -84,16 +84,18 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            // spread를 count개 슬롯으로 균등 분할 후 각 슬롯 안에서 랜덤 — 샷건 패턴
+            // 각도 슬롯은 위치 i의 반대편을 사용 — 양 끝 위치가 가운데를 향하도록 교차.
+            // i=0(가장 왼쪽 위치) → 가장 오른쪽 각도 슬롯, i=count-1(가장 오른쪽 위치) → 가장 왼쪽 각도 슬롯.
             float angleOffset = 0f;
             if (spread > 0f)
             {
                 float slotSize = spread / count;
-                float slotStart = -spread * 0.5f + slotSize * i;
+                int angleSlot = (count - 1) - i;
+                float slotStart = -spread * 0.5f + slotSize * angleSlot;
                 angleOffset = Random.Range(slotStart, slotStart + slotSize);
             }
 
-            // Count >= 2일 때 역V(∧) 시작 위치: 가운데는 firePoint, 양 끝은 좌우+뒤로
+            // Count >= 2일 때 ∧ 시작 위치: 가운데는 firePoint, 양 끝은 좌우 + 뒤로.
             Vector3 spawnPos = firePoint.position;
             if (count > 1)
             {
