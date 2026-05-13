@@ -1,27 +1,46 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PlayerStatsData_New", menuName = "BumpOrBlast/PlayerStatsData", order = 0)]
 public class kangtoe99_PlayerStatsData : ScriptableObject
 {
-    [Serializable]
-    public struct StatEntry
+    [SerializeField] private kangtoe99_StatMap baseStats = new kangtoe99_StatMap();
+
+    public kangtoe99_StatMap BaseStats
     {
-        public kangtoe99_StatType stat;
-        public float value;
+        get
+        {
+            EnsureInitialized();
+            return baseStats;
+        }
     }
 
-    [SerializeField] private List<StatEntry> baseStats = new List<StatEntry>();
-
-    public IReadOnlyList<StatEntry> BaseStats => baseStats;
-
-    public void SetBaseStats(IEnumerable<KeyValuePair<kangtoe99_StatType, float>> values)
+    private void OnEnable()
     {
-        baseStats.Clear();
-        foreach (var kv in values)
+        EnsureInitialized();
+    }
+
+    private void OnValidate()
+    {
+        baseStats?.EnsureSize();
+    }
+
+    // 자산이 처음 생성됐거나 enum 항목이 추가됐을 때 코드 Defaults로 초기화/보강.
+    private void EnsureInitialized()
+    {
+        if (baseStats == null)
         {
-            baseStats.Add(new StatEntry { stat = kv.Key, value = kv.Value });
+            baseStats = new kangtoe99_StatMap();
+            baseStats.CopyFrom(kangtoe99_PlayerStats.Defaults);
+            return;
+        }
+
+        int prevCount = baseStats.Count;
+        baseStats.EnsureSize();
+
+        // 새 자산: 모든 항목이 0이면 Defaults로 채움
+        if (prevCount == 0)
+        {
+            baseStats.CopyFrom(kangtoe99_PlayerStats.Defaults);
         }
     }
 }

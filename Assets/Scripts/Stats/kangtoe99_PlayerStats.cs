@@ -7,73 +7,77 @@ public class kangtoe99_PlayerStats : MonoBehaviour
     [Header("Base Stat Profile (SO)")]
     [SerializeField] private kangtoe99_PlayerStatsData baseStatProfile;
 
-    // SO 없을 때만 사용하는 코드 fallback. 일반적으로 PlayerStatsData_Default.asset 할당 권장.
-    public static readonly Dictionary<kangtoe99_StatType, float> Defaults = new Dictionary<kangtoe99_StatType, float>
-    {
-        { kangtoe99_StatType.ProjectileCount, 1f },
-        { kangtoe99_StatType.ProjectileSpeed, 20f },
-        { kangtoe99_StatType.ProjectileScale, 1f },
-        { kangtoe99_StatType.ProjectileSpread, 0f },
-        { kangtoe99_StatType.Pierce, 0f },
+    // 코드 fallback 기준값. SO 자산이 비어 있거나 미할당일 때 사용.
+    public static readonly kangtoe99_StatMap Defaults = new kangtoe99_StatMap(GetDefaultFor);
 
-        { kangtoe99_StatType.Damage, 10f },
-        { kangtoe99_StatType.FireRate, 0.35f },
-        { kangtoe99_StatType.EnergyCost, 1f },
-
-        { kangtoe99_StatType.EnergyMax, 10f },
-        { kangtoe99_StatType.EnergyRegen, 5f },
-
-        { kangtoe99_StatType.MaxHP, 100f },
-        { kangtoe99_StatType.HPRegen, 0f },
-        { kangtoe99_StatType.BodyScale, 1f },
-
-        { kangtoe99_StatType.MoveForce, 50f },
-        { kangtoe99_StatType.RotationSpeed, 270f },
-        { kangtoe99_StatType.Friction, 1f },
-
-        { kangtoe99_StatType.Luck, 0f },
-        { kangtoe99_StatType.Magnet, 1.5f }
-    };
-
-    private Dictionary<kangtoe99_StatType, float> baseValues;
+    private kangtoe99_StatMap baseValues;
     private List<kangtoe99_IStatModifier> modifiers = new List<kangtoe99_IStatModifier>();
 
     public event Action<kangtoe99_StatType> OnStatChanged;
+
+    private static float GetDefaultFor(kangtoe99_StatType stat)
+    {
+        switch (stat)
+        {
+            case kangtoe99_StatType.ProjectileCount: return 1f;
+            case kangtoe99_StatType.ProjectileSpeed: return 20f;
+            case kangtoe99_StatType.ProjectileScale: return 1f;
+            case kangtoe99_StatType.ProjectileSpread: return 0f;
+            case kangtoe99_StatType.Pierce: return 0f;
+
+            case kangtoe99_StatType.Damage: return 10f;
+            case kangtoe99_StatType.FireRate: return 0.35f;
+            case kangtoe99_StatType.EnergyCost: return 1f;
+
+            case kangtoe99_StatType.EnergyMax: return 10f;
+            case kangtoe99_StatType.EnergyRegen: return 5f;
+
+            case kangtoe99_StatType.MaxHP: return 100f;
+            case kangtoe99_StatType.HPRegen: return 0f;
+            case kangtoe99_StatType.BodyScale: return 1f;
+
+            case kangtoe99_StatType.MoveForce: return 50f;
+            case kangtoe99_StatType.RotationSpeed: return 270f;
+            case kangtoe99_StatType.Friction: return 1f;
+
+            case kangtoe99_StatType.Luck: return 0f;
+            case kangtoe99_StatType.Magnet: return 1.5f;
+
+            default: return 0f;
+        }
+    }
 
     private void Awake()
     {
         EnsureInitialized();
     }
 
-    // Player.Awake 등 다른 컴포넌트가 PlayerStats.Awake보다 먼저 GetFinal/GetBase를 호출하는 경우를 대비한 lazy init.
     private void EnsureInitialized()
     {
         if (baseValues != null) return;
 
-        baseValues = new Dictionary<kangtoe99_StatType, float>(Defaults);
+        baseValues = new kangtoe99_StatMap();
+        baseValues.CopyFrom(Defaults);
 
         if (baseStatProfile != null)
         {
-            foreach (var entry in baseStatProfile.BaseStats)
-            {
-                baseValues[entry.stat] = entry.value;
-            }
+            baseValues.CopyFrom(baseStatProfile.BaseStats);
         }
         else
         {
-            Debug.LogWarning("[kangtoe99_PlayerStats] baseStatProfile(SO)이 할당되지 않아 코드 Defaults를 사용합니다. PlayerStatsData 자산을 할당하세요.");
+            Debug.LogWarning("[kangtoe99_PlayerStats] baseStatProfile(SO)이 할당되지 않아 코드 Defaults를 사용합니다.");
         }
     }
 
     public float GetBase(kangtoe99_StatType stat)
     {
         EnsureInitialized();
-        return baseValues.TryGetValue(stat, out float v) ? v : 0f;
+        return baseValues[stat];
     }
 
     public void SetBase(kangtoe99_StatType stat, float value)
     {
-        if (baseValues == null) return;
+        EnsureInitialized();
         baseValues[stat] = value;
         OnStatChanged?.Invoke(stat);
     }

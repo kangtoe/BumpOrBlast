@@ -85,25 +85,27 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 ## 스탯 시스템
 
 ### 구조
-중앙 `kangtoe99_PlayerStats` 컴포넌트가 모든 스탯의 단일 진리원천. 기본값은 **`kangtoe99_PlayerStatsData` ScriptableObject**에서 읽어오고, 외부 modifier 리스트로 동적 보정.
+중앙 `kangtoe99_PlayerStats` 컴포넌트가 모든 스탯의 단일 진리원천. 기본값은 **`kangtoe99_PlayerStatsData` ScriptableObject**에서 읽어오고, 외부 modifier 리스트로 동적 보정. 스탯 컨테이너는 enum-keyed 배열(`StatMap`).
 
 ```
+kangtoe99_EnumMap<TEnum, TValue> (제너릭, Utils)
+  └─ TValue[] values  (enum int = array index, O(1) 접근)
+
+kangtoe99_StatMap : EnumMap<StatType, float>  (Unity 직렬화용 비제너릭 서브클래스)
+
 kangtoe99_PlayerStatsData (ScriptableObject — Assets/Data/Players/PlayerStatsData_*.asset)
-  └─ List<StatEntry { StatType stat, float value }> baseStats
+  ├─ StatMap baseStats
+  └─ OnEnable: 비어 있으면 PlayerStats.Defaults로 자동 채움
 
 kangtoe99_PlayerStats (MonoBehaviour)
-  ├─ baseStatProfile (SO 참조, 없으면 코드 Defaults fallback)
-  ├─ Dictionary<StatType, float> baseValues  ← Awake에서 SO 값으로 초기화
+  ├─ baseStatProfile (SO 참조)
+  ├─ static StatMap Defaults  ← 코드 fallback (GetDefaultFor switch)
+  ├─ StatMap baseValues       ← Awake에서 Defaults → SO 순으로 CopyFrom
   ├─ List<IStatModifier> modifiers
-  ├─ float GetFinal(StatType) — base + Σ(가산) → ×Π(배율)
-  ├─ void AddModifier(IStatModifier)
-  └─ void RemoveModifier(IStatModifier)
+  └─ GetFinal(StatType) — (base + Σ가산) × Π(1+배율)
 
-IStatModifier
-  ├─ StatType Stat
-  ├─ ModifierKind Kind (Additive | Multiplicative)
-  ├─ float Value
-  └─ object Source (디버깅/제거 용도 — 아이템/레벨업/일시버프 식별)
+Assets/Editor/Drawers/kangtoe99_StatMapDrawer.cs
+  └─ StatMap 인스펙터에 enum 이름 라벨로 각 항목 표시 (foldout + 정렬된 float field)
 ```
 
 캐릭터·세션별로 다른 base 프로파일을 만들고 싶다면 `PlayerStatsData_<Variant>.asset`을 추가 생성해 인스펙터에서 교체.
