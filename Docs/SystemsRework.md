@@ -121,12 +121,12 @@ IStatModifier
 | 무기 | EnergyCost | 발당 에너지 소모 |
 | 에너지 | EnergyMax | 최대 에너지 |
 | 에너지 | EnergyRegen | 초당 회복량 |
-| 기체 | MaxHP (Durability) | 최대 체력 |
-| 기체 | HPRegen (Repair) | 초당 자연 회복 |
-| 기체 | BodyScale | 기체 크기 (충돌 판정 영향) |
+| 기체 | MaxHP (Durability) | 최대 체력 — Player가 SetMaxHealth로 적용 |
+| 기체 | HPRegen (Repair) | 초당 자연 회복 — Player.Update에서 매 프레임 Heal |
+| 기체 | BodyScale | transform.localScale 배율 (originalScale * BodyScale) |
 | 이동 | MoveForce | 추진력(AddForce 곱셈). 평형 속도는 drag와의 비율로 결정 |
 | 이동 | RotationSpeed | 초당 회전 각도 |
-| 이동 | Friction | LinearDamping 값 (높을수록 빨리 정지) |
+| 이동 | Friction | Rigidbody2D.linearDamping에 직접 적용 (절대값) |
 | 메타 | Luck | 드롭 확률 + 고급 선택지 등장률 |
 | 메타 | Magnet | 드롭 자동 흡수 반경 |
 

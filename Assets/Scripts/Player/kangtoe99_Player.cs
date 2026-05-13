@@ -8,6 +8,7 @@ public class kangtoe99_Player : kangtoe99_Character
 
     private kangtoe99_IRotationInput rotationInput;
     private kangtoe99_PlayerStats stats;
+    private Vector3 originalScale;
 
     public kangtoe99_PlayerStats Stats => stats;
 
@@ -15,6 +16,8 @@ public class kangtoe99_Player : kangtoe99_Character
     {
         stats = GetComponent<kangtoe99_PlayerStats>();
         base.Awake();
+
+        originalScale = transform.localScale;
 
         if (mainCamera == null)
         {
@@ -30,6 +33,8 @@ public class kangtoe99_Player : kangtoe99_Character
         if (stats != null)
         {
             SetMaxHealth(stats.GetFinal(kangtoe99_StatType.MaxHP));
+            ApplyBodyScale();
+            ApplyFriction();
             stats.OnStatChanged += OnStatChanged;
         }
     }
@@ -44,16 +49,36 @@ public class kangtoe99_Player : kangtoe99_Character
 
     private void OnStatChanged(kangtoe99_StatType stat)
     {
-        if (stat == kangtoe99_StatType.MaxHP)
+        switch (stat)
         {
-            float prevMax = GetMaxHealth();
-            float newMax = stats.GetFinal(kangtoe99_StatType.MaxHP);
-            SetMaxHealth(newMax);
-            if (newMax > prevMax)
-            {
-                Heal(newMax - prevMax);
-            }
+            case kangtoe99_StatType.MaxHP:
+                float prevMax = GetMaxHealth();
+                float newMax = stats.GetFinal(kangtoe99_StatType.MaxHP);
+                SetMaxHealth(newMax);
+                if (newMax > prevMax) Heal(newMax - prevMax);
+                break;
+
+            case kangtoe99_StatType.BodyScale:
+                ApplyBodyScale();
+                break;
+
+            case kangtoe99_StatType.Friction:
+                ApplyFriction();
+                break;
         }
+    }
+
+    private void ApplyBodyScale()
+    {
+        if (stats == null) return;
+        float scale = stats.GetFinal(kangtoe99_StatType.BodyScale);
+        transform.localScale = originalScale * scale;
+    }
+
+    private void ApplyFriction()
+    {
+        if (stats == null || rb == null) return;
+        rb.linearDamping = stats.GetFinal(kangtoe99_StatType.Friction);
     }
 
     private void Update()
@@ -61,8 +86,18 @@ public class kangtoe99_Player : kangtoe99_Character
         if (Time.timeScale == 0f) return;
         if (kangtoe99_GameManager.Instance != null && !kangtoe99_GameManager.Instance.IsGameStarted()) return;
 
+        HandleHPRegen();
         HandleInput();
         HandleRotation();
+    }
+
+    private void HandleHPRegen()
+    {
+        if (stats == null) return;
+        float regen = stats.GetFinal(kangtoe99_StatType.HPRegen);
+        if (regen <= 0f) return;
+        if (GetCurrentHealth() >= GetMaxHealth()) return;
+        Heal(regen * Time.deltaTime);
     }
 
     private void LateUpdate()
