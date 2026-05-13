@@ -15,6 +15,12 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     [SerializeField] private float fallbackEnergyCost = 1f;
     [SerializeField] private float bulletKnockback = 5f;
 
+    [Header("Multi-shot Formation (Count >= 2)")]
+    [Tooltip("발사체가 좌우로 펼쳐지는 총 간격 (유닛)")]
+    [SerializeField] private float formationSideSpacing = 0.6f;
+    [Tooltip("양 끝 발사체가 뒤로 빠지는 깊이 (유닛). ∧ 역V 형태")]
+    [SerializeField] private float formationDepth = 0.25f;
+
     [Header("SFX")]
     [SerializeField] private AudioClip shootSound;
     [SerializeField] private AudioClip emptyClickSound;
@@ -87,8 +93,18 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
                 angleOffset = Random.Range(slotStart, slotStart + slotSize);
             }
 
+            // Count >= 2일 때 역V(∧) 시작 위치: 가운데는 firePoint, 양 끝은 좌우+뒤로
+            Vector3 spawnPos = firePoint.position;
+            if (count > 1)
+            {
+                float t = ((float)i / (count - 1)) - 0.5f; // -0.5 ~ +0.5
+                Vector3 side = firePoint.right * (t * formationSideSpacing);
+                Vector3 depth = -firePoint.up * (Mathf.Abs(t) * formationDepth);
+                spawnPos += side + depth;
+            }
+
             Quaternion rotation = firePoint.rotation * Quaternion.Euler(0f, 0f, angleOffset);
-            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, rotation);
+            GameObject bullet = Instantiate(bulletPrefab, spawnPos, rotation);
             if (bulletScale != 1f)
             {
                 bullet.transform.localScale *= bulletScale;
