@@ -78,10 +78,8 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            // count=1: 정중앙. count>=2: -spread/2 ~ +spread/2 균등 분산
-            float angleOffset = count > 1
-                ? Mathf.Lerp(-spread * 0.5f, spread * 0.5f, (float)i / (count - 1))
-                : 0f;
+            // 각 발사체마다 -spread/2 ~ +spread/2 범위에서 랜덤 각도
+            float angleOffset = spread > 0f ? Random.Range(-spread * 0.5f, spread * 0.5f) : 0f;
 
             Quaternion rotation = firePoint.rotation * Quaternion.Euler(0f, 0f, angleOffset);
             GameObject bullet = Instantiate(bulletPrefab, firePoint.position, rotation);
