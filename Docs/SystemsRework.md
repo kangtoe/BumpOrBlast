@@ -94,13 +94,11 @@ kangtoe99_EnumMap<TEnum, TValue> (제너릭, Utils)
 kangtoe99_StatMap : EnumMap<StatType, float>  (Unity 직렬화용 비제너릭 서브클래스)
 
 kangtoe99_PlayerStatsData (ScriptableObject — Assets/Data/Players/PlayerStatsData_*.asset)
-  ├─ StatMap baseStats
-  └─ OnEnable: 비어 있으면 PlayerStats.Defaults로 자동 채움
+  └─ StatMap baseStats  (자산 인스펙터에서 직접 입력, 진리원천)
 
 kangtoe99_PlayerStats (MonoBehaviour)
-  ├─ baseStatProfile (SO 참조)
-  ├─ static StatMap Defaults  ← 코드 fallback (GetDefaultFor switch)
-  ├─ StatMap baseValues       ← Awake에서 Defaults → SO 순으로 CopyFrom
+  ├─ baseStatProfile (SO 참조 — 미할당 시 모든 stat 0)
+  ├─ StatMap baseValues  ← Awake에서 SO에서 CopyFrom
   ├─ List<IStatModifier> modifiers
   └─ GetFinal(StatType) — (base + Σ가산) × Π(1+배율)
 
@@ -111,13 +109,15 @@ Assets/Editor/Drawers/kangtoe99_StatMapDrawer.cs
 캐릭터·세션별로 다른 base 프로파일을 만들고 싶다면 `PlayerStatsData_<Variant>.asset`을 추가 생성해 인스펙터에서 교체.
 
 ### 스탯 목록
+값은 PlayerStatsData SO 자산 인스펙터에서 직접 입력 (코드 기본값 없음).
+
 | 카테고리 | 스탯 | 비고 |
 |---|---|---|
-| 발사체 | ProjectileCount | 동시 발사 개수 |
+| 발사체 | ProjectileCount | 동시 발사 개수 (미적용) |
 | 발사체 | ProjectileSpeed | 탄속 |
 | 발사체 | ProjectileScale | 크기 배율 |
-| 발사체 | ProjectileSpread | 산탄 각도 (도) — Count≥2일 때 유효 |
-| 발사체 | Pierce | 관통 횟수 |
+| 발사체 | ProjectileSpread | 산탄 각도(도) — Count≥2일 때 유효 (미적용) |
+| 발사체 | Pierce | 관통 횟수 (미적용) |
 | 무기 | Damage | 기본 데미지 |
 | 무기 | FireRate | 발사 간격(초) — 작을수록 빠름 |
 | 무기 | EnergyCost | 발당 에너지 소모 |
@@ -126,11 +126,11 @@ Assets/Editor/Drawers/kangtoe99_StatMapDrawer.cs
 | 기체 | MaxHP (Durability) | 최대 체력 — Player가 SetMaxHealth로 적용 |
 | 기체 | HPRegen (Repair) | 초당 자연 회복 — Player.Update에서 매 프레임 Heal |
 | 기체 | BodyScale | transform.localScale 배율 (originalScale * BodyScale) |
-| 이동 | MoveForce | 추진력(AddForce 곱셈). 평형 속도는 drag와의 비율로 결정 |
+| 이동 | MoveForce | 추진력(AddForce 곱셈). 평형 속도 ≈ MoveForce / Friction |
 | 이동 | RotationSpeed | 초당 회전 각도 |
 | 이동 | Friction | Rigidbody2D.linearDamping에 직접 적용 (절대값) |
-| 메타 | Luck | 드롭 확률 + 고급 선택지 등장률 |
-| 메타 | Magnet | 드롭 자동 흡수 반경 |
+| 메타 | Luck | 드롭 확률 + 고급 선택지 등장률 (미적용) |
+| 메타 | Magnet | 드롭 자동 흡수 반경 (미적용) |
 
 ### 적용 흐름
 - `PlayerShooting` 등 소비자는 `stats.GetFinal(StatType.Damage)` 형태로 조회 (캐싱 가능)

@@ -7,45 +7,10 @@ public class kangtoe99_PlayerStats : MonoBehaviour
     [Header("Base Stat Profile (SO)")]
     [SerializeField] private kangtoe99_PlayerStatsData baseStatProfile;
 
-    // 코드 fallback 기준값. SO 자산이 비어 있거나 미할당일 때 사용.
-    public static readonly kangtoe99_StatMap Defaults = new kangtoe99_StatMap(GetDefaultFor);
-
     private kangtoe99_StatMap baseValues;
     private List<kangtoe99_IStatModifier> modifiers = new List<kangtoe99_IStatModifier>();
 
     public event Action<kangtoe99_StatType> OnStatChanged;
-
-    private static float GetDefaultFor(kangtoe99_StatType stat)
-    {
-        switch (stat)
-        {
-            case kangtoe99_StatType.ProjectileCount: return 1f;
-            case kangtoe99_StatType.ProjectileSpeed: return 20f;
-            case kangtoe99_StatType.ProjectileScale: return 1f;
-            case kangtoe99_StatType.ProjectileSpread: return 0f;
-            case kangtoe99_StatType.Pierce: return 0f;
-
-            case kangtoe99_StatType.Damage: return 10f;
-            case kangtoe99_StatType.FireRate: return 0.35f;
-            case kangtoe99_StatType.EnergyCost: return 1f;
-
-            case kangtoe99_StatType.EnergyMax: return 10f;
-            case kangtoe99_StatType.EnergyRegen: return 5f;
-
-            case kangtoe99_StatType.MaxHP: return 100f;
-            case kangtoe99_StatType.HPRegen: return 0f;
-            case kangtoe99_StatType.BodyScale: return 1f;
-
-            case kangtoe99_StatType.MoveForce: return 50f;
-            case kangtoe99_StatType.RotationSpeed: return 270f;
-            case kangtoe99_StatType.Friction: return 1f;
-
-            case kangtoe99_StatType.Luck: return 0f;
-            case kangtoe99_StatType.Magnet: return 1.5f;
-
-            default: return 0f;
-        }
-    }
 
     private void Awake()
     {
@@ -57,7 +22,6 @@ public class kangtoe99_PlayerStats : MonoBehaviour
         if (baseValues != null) return;
 
         baseValues = new kangtoe99_StatMap();
-        baseValues.CopyFrom(Defaults);
 
         if (baseStatProfile != null)
         {
@@ -65,7 +29,7 @@ public class kangtoe99_PlayerStats : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[kangtoe99_PlayerStats] baseStatProfile(SO)이 할당되지 않아 코드 Defaults를 사용합니다.");
+            Debug.LogWarning("[kangtoe99_PlayerStats] baseStatProfile(SO)이 할당되지 않았습니다. 모든 스탯이 0으로 시작합니다.");
         }
     }
 

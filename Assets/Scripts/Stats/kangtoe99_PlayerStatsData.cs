@@ -1,5 +1,7 @@
 using UnityEngine;
 
+// 플레이어 기본 스탯의 진리원천. 값은 자산 인스펙터에서 직접 입력.
+// 코드는 기본값을 제공하지 않으며 새 자산은 모든 stat이 0으로 시작.
 [CreateAssetMenu(fileName = "PlayerStatsData_New", menuName = "BumpOrBlast/PlayerStatsData", order = 0)]
 public class kangtoe99_PlayerStatsData : ScriptableObject
 {
@@ -9,38 +11,13 @@ public class kangtoe99_PlayerStatsData : ScriptableObject
     {
         get
         {
-            EnsureInitialized();
+            baseStats?.EnsureSize();
             return baseStats;
         }
-    }
-
-    private void OnEnable()
-    {
-        EnsureInitialized();
     }
 
     private void OnValidate()
     {
         baseStats?.EnsureSize();
-    }
-
-    // 자산이 처음 생성됐거나 enum 항목이 추가됐을 때 코드 Defaults로 초기화/보강.
-    private void EnsureInitialized()
-    {
-        if (baseStats == null)
-        {
-            baseStats = new kangtoe99_StatMap();
-            baseStats.CopyFrom(kangtoe99_PlayerStats.Defaults);
-            return;
-        }
-
-        int prevCount = baseStats.Count;
-        baseStats.EnsureSize();
-
-        // 새 자산: 모든 항목이 0이면 Defaults로 채움
-        if (prevCount == 0)
-        {
-            baseStats.CopyFrom(kangtoe99_PlayerStats.Defaults);
-        }
     }
 }
