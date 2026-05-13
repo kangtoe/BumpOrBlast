@@ -116,7 +116,7 @@ Assets/Editor/Drawers/kangtoe99_StatMapDrawer.cs
 | 발사체 | ProjectileCount | 동시 발사 개수 (반올림 정수, 최소 1) |
 | 발사체 | ProjectileSpeed | 탄속 |
 | 발사체 | ProjectileScale | 크기 배율 |
-| 발사체 | ProjectileSpread | 산탄 총 각도(도). 각 발사체마다 -spread/2 ~ +spread/2 랜덤 |
+| 발사체 | ProjectileSpread | 산탄 총 각도(도). spread를 Count개 슬롯으로 균등 분할 후 각 슬롯 안에서 랜덤 |
 | 발사체 | Pierce | 관통 횟수 (적 N+1마리 처치 후 소멸) |
 | 무기 | Damage | 기본 데미지 |
 | 무기 | FireRate | 발사 간격(초) — 작을수록 빠름 |

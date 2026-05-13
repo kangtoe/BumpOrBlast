@@ -78,8 +78,14 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            // 각 발사체마다 -spread/2 ~ +spread/2 범위에서 랜덤 각도
-            float angleOffset = spread > 0f ? Random.Range(-spread * 0.5f, spread * 0.5f) : 0f;
+            // spread를 count개 슬롯으로 균등 분할 후 각 슬롯 안에서 랜덤 — 샷건 패턴
+            float angleOffset = 0f;
+            if (spread > 0f)
+            {
+                float slotSize = spread / count;
+                float slotStart = -spread * 0.5f + slotSize * i;
+                angleOffset = Random.Range(slotStart, slotStart + slotSize);
+            }
 
             Quaternion rotation = firePoint.rotation * Quaternion.Euler(0f, 0f, angleOffset);
             GameObject bullet = Instantiate(bulletPrefab, firePoint.position, rotation);
