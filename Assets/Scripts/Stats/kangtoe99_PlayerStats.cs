@@ -42,6 +42,14 @@ public class kangtoe99_PlayerStats : MonoBehaviour
 
     private void Awake()
     {
+        EnsureInitialized();
+    }
+
+    // Player.Awake 등 다른 컴포넌트가 PlayerStats.Awake보다 먼저 GetFinal/GetBase를 호출하는 경우를 대비한 lazy init.
+    private void EnsureInitialized()
+    {
+        if (baseValues != null) return;
+
         baseValues = new Dictionary<kangtoe99_StatType, float>(Defaults);
 
         if (baseStatProfile != null)
@@ -59,7 +67,8 @@ public class kangtoe99_PlayerStats : MonoBehaviour
 
     public float GetBase(kangtoe99_StatType stat)
     {
-        return baseValues != null && baseValues.TryGetValue(stat, out float v) ? v : 0f;
+        EnsureInitialized();
+        return baseValues.TryGetValue(stat, out float v) ? v : 0f;
     }
 
     public void SetBase(kangtoe99_StatType stat, float value)
