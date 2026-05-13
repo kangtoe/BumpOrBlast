@@ -4,9 +4,10 @@ public class kangtoe99_Bullet : MonoBehaviour
 {
     [SerializeField] private float lifetime = 5f;
     
-    private float damage = 10f;     
+    private float damage = 10f;
     private float speed;
     private float knockbackForce;
+    private int pierceRemaining;
 
     private Vector2 direction;
     private Rigidbody2D rb;
@@ -16,12 +17,13 @@ public class kangtoe99_Bullet : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    public void Initialize(Vector2 dir, float bulletSpeed, float knockback, float bulletDamage)
+    public void Initialize(Vector2 dir, float bulletSpeed, float knockback, float bulletDamage, int pierce = 0)
     {
         direction = dir.normalized;
         speed = bulletSpeed;
         knockbackForce = knockback;
         damage = bulletDamage;
+        pierceRemaining = Mathf.Max(0, pierce);
 
         if (rb != null)
         {
@@ -33,24 +35,22 @@ public class kangtoe99_Bullet : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log($"Bullet hit: {collision.gameObject.name}, Tag: {collision.tag}");
+        if (!collision.CompareTag("Enemy")) return;
 
-        if (collision.CompareTag("Enemy"))
+        var enemy = collision.GetComponent<kangtoe99_Character>();
+        if (enemy != null)
         {
-            kangtoe99_Character enemy = collision.GetComponent<kangtoe99_Character>();
-            if (enemy != null)
-            {
-                Debug.Log($"Enemy hit! Damage: {damage}");
-                // 총알의 현재 위치를 충돌 지점으로 사용
-                enemy.TakeDamage(damage, transform.position);
-                enemy.ApplyKnockback(direction, knockbackForce);
-            }
-            else
-            {
-                Debug.LogWarning("Enemy tag found but no Character component!");
-            }
+            enemy.TakeDamage(damage, transform.position);
+            enemy.ApplyKnockback(direction, knockbackForce);
+        }
 
+        if (pierceRemaining <= 0)
+        {
             Destroy(gameObject);
+        }
+        else
+        {
+            pierceRemaining--;
         }
     }
 

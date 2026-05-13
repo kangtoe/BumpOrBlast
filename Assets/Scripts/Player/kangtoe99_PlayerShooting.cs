@@ -72,17 +72,30 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         float damage = stats != null ? stats.GetFinal(kangtoe99_StatType.Damage) : fallbackDamage;
         float bulletSpeed = stats != null ? stats.GetFinal(kangtoe99_StatType.ProjectileSpeed) : fallbackBulletSpeed;
         float bulletScale = stats != null ? stats.GetFinal(kangtoe99_StatType.ProjectileScale) : 1f;
+        int count = stats != null ? Mathf.Max(1, Mathf.RoundToInt(stats.GetFinal(kangtoe99_StatType.ProjectileCount))) : 1;
+        float spread = stats != null ? stats.GetFinal(kangtoe99_StatType.ProjectileSpread) : 0f;
+        int pierce = stats != null ? Mathf.Max(0, Mathf.RoundToInt(stats.GetFinal(kangtoe99_StatType.Pierce))) : 0;
 
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
-        if (bulletScale != 1f)
+        for (int i = 0; i < count; i++)
         {
-            bullet.transform.localScale *= bulletScale;
-        }
+            // count=1: 정중앙. count>=2: -spread/2 ~ +spread/2 균등 분산
+            float angleOffset = count > 1
+                ? Mathf.Lerp(-spread * 0.5f, spread * 0.5f, (float)i / (count - 1))
+                : 0f;
 
-        kangtoe99_Bullet bulletScript = bullet.GetComponent<kangtoe99_Bullet>();
-        if (bulletScript != null)
-        {
-            bulletScript.Initialize(firePoint.up, bulletSpeed, bulletKnockback, damage);
+            Quaternion rotation = firePoint.rotation * Quaternion.Euler(0f, 0f, angleOffset);
+            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, rotation);
+            if (bulletScale != 1f)
+            {
+                bullet.transform.localScale *= bulletScale;
+            }
+
+            var bulletScript = bullet.GetComponent<kangtoe99_Bullet>();
+            if (bulletScript != null)
+            {
+                Vector2 dir = rotation * Vector3.up;
+                bulletScript.Initialize(dir, bulletSpeed, bulletKnockback, damage, pierce);
+            }
         }
 
         if (shootSound != null)
