@@ -10,7 +10,8 @@ public class kangtoe99_DebugPanel : MonoBehaviour
     [SerializeField] private KeyCode toggleKey = KeyCode.BackQuote;
     [SerializeField, Min(0.05f)] private float refreshInterval = 0.25f;
     [SerializeField] private Vector2 panelPosition = new Vector2(20, 20);
-    [SerializeField] private Vector2 panelSize = new Vector2(260, 280);
+    [SerializeField] private Vector2 panelSize = new Vector2(260, 320);
+    [SerializeField, Min(1f)] private float damageAmount = 25f;
 
     private bool isOpen;
     private float nextRefreshAt;
@@ -40,6 +41,7 @@ public class kangtoe99_DebugPanel : MonoBehaviour
         if (GUILayout.Button("Force Level Up")) Action_ForceLevelUp();
         if (GUILayout.Button("Kill All Enemies")) Action_KillAllEnemies();
         if (GUILayout.Button("Heal Full")) Action_HealFull();
+        if (GUILayout.Button($"Damage Player (-{damageAmount:F0})")) Action_DamagePlayer();
         if (GUILayout.Button("Add Random Item")) Action_AddRandomItem();
         GUILayout.EndArea();
     }
@@ -108,6 +110,13 @@ public class kangtoe99_DebugPanel : MonoBehaviour
         if (player == null) return;
         float missing = player.GetMaxHealth() - player.GetCurrentHealth();
         if (missing > 0) player.Heal(missing);
+    }
+
+    private void Action_DamagePlayer()
+    {
+        var player = FindFirstObjectByType<kangtoe99_Player>();
+        if (player == null) return;
+        player.TakeDamage(damageAmount);
     }
 
     private void Action_AddRandomItem()
