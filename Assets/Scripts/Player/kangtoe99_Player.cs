@@ -176,6 +176,17 @@ public class kangtoe99_Player : kangtoe99_Character
     protected override float GetEffectiveMaxRotationSpeed()
         => stats != null ? stats.GetFinal(kangtoe99_StatType.RotationSpeed) : base.GetEffectiveMaxRotationSpeed();
 
+    // 받은 데미지를 RunStats의 "받은 총 피해량"으로 집계 (오버킬 제외).
+    public override void TakeDamage(float damage, Vector2? hitPosition = null)
+    {
+        float effective = Mathf.Min(damage, GetCurrentHealth());
+        base.TakeDamage(damage, hitPosition);
+        if (effective > 0f && kangtoe99_RunStats.Instance != null)
+        {
+            kangtoe99_RunStats.Instance.AddDamageTaken(effective);
+        }
+    }
+
     protected override void Die()
     {
         Debug.Log("Player Died!");
@@ -196,7 +207,10 @@ public class kangtoe99_Player : kangtoe99_Character
             Destroy(deathVFX, 3f);
         }
 
-        Destroy(gameObject);
+        // Destroy 대신 비활성화 — 게임오버 정보 패널이 ItemInventory(빌드 표시)를 계속 참조해야 한다.
+        // 비활성 GameObject는 Update/물리가 멈추지만 컴포넌트는 살아 있어 참조가 유효하다.
+        // 씬 재시작(GameManager.RestartGame)에서 씬과 함께 정리된다.
+        gameObject.SetActive(false);
     }
 
     protected override void OnCollisionEnter2D(Collision2D collision)

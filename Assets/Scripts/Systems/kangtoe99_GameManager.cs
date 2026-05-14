@@ -13,7 +13,8 @@ public class kangtoe99_GameManager : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private GameObject startPanel;
-    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private kangtoe99_RunSummaryUI infoPanel; // 게임오버 1단계: 공용 종합 정보 창 (일시정지와 공유)
+    [SerializeField] private GameObject gameOverPanel; // 게임오버 2단계: 랭킹(리더보드)
     [SerializeField] private kangtoe99_GameOverUI gameOverUI;
 
     [Header("Player Name")]
@@ -23,6 +24,8 @@ public class kangtoe99_GameManager : MonoBehaviour
     [Header("Game Over Settings")]
     [SerializeField] private float slowMotionScale = 0.2f;
     [SerializeField] private float timeRecoveryDuration = 1.5f;
+    [SerializeField] private string summaryTitle = "Game Over";
+    [SerializeField] private string summaryHint = "Press Enter / Space for Ranking";
 
     [Header("Help")]
     [SerializeField] private GameObject helpObject;
@@ -69,7 +72,11 @@ public class kangtoe99_GameManager : MonoBehaviour
             startPanel.SetActive(true);
         }
 
-        // 게임오버 패널 숨기기
+        // 게임오버 관련 패널 숨기기 (정보 창 → 랭킹 2단계)
+        if (infoPanel != null)
+        {
+            infoPanel.Hide();
+        }
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(false);
@@ -170,12 +177,6 @@ public class kangtoe99_GameManager : MonoBehaviour
         // 정확히 1로 설정
         Time.timeScale = 1f;
 
-        // 게임 오버 패널 표시
-        if (gameOverPanel != null)
-        {
-            gameOverPanel.SetActive(true);
-        }
-
         // 게임 오버 사운드 재생
         if (gameOverSound != null)
         {
@@ -186,9 +187,29 @@ public class kangtoe99_GameManager : MonoBehaviour
             ? kangtoe99_ScoreSystem.Instance.GetCurrentScore()
             : 0;
 
+        // 랭킹 서버 요청을 먼저 시작해 둔다. 플레이어가 정보 창을 읽는 동안
+        // 백그라운드로 리더보드가 채워져, 전환 시점엔 거의 준비된 상태가 된다.
+        // (gameOverUI는 항상 활성인 루트 오브젝트라 패널 비활성과 무관하게 코루틴이 돈다)
         if (gameOverUI != null)
         {
             gameOverUI.ShowGameOver(finalScore);
+        }
+
+        // 1단계: 공용 종합 정보 창 표시 → Enter/Space 입력 대기
+        if (infoPanel != null)
+        {
+            infoPanel.Show(summaryTitle, summaryHint);
+
+            yield return new WaitUntil(() =>
+                Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space));
+
+            infoPanel.Hide();
+        }
+
+        // 2단계: 랭킹(리더보드) 패널 표시
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
         }
     }
 

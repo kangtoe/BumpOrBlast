@@ -69,12 +69,28 @@ public class kangtoe99_Enemy : kangtoe99_Character
         RotateTowards(targetAngle);
     }
 
+    // 받은 데미지를 RunStats의 "가한 총 피해량"으로 집계 (오버킬 제외).
+    public override void TakeDamage(float damage, Vector2? hitPosition = null)
+    {
+        float effective = Mathf.Min(damage, GetCurrentHealth());
+        base.TakeDamage(damage, hitPosition);
+        if (effective > 0f && kangtoe99_RunStats.Instance != null)
+        {
+            kangtoe99_RunStats.Instance.AddDamageDealt(effective);
+        }
+    }
+
     protected override void Die()
     {
         // 적 격파 시 즉시 점수 획득
         if (kangtoe99_ScoreSystem.Instance != null)
         {
             kangtoe99_ScoreSystem.Instance.AddScore(scoreValue);
+        }
+
+        if (kangtoe99_RunStats.Instance != null)
+        {
+            kangtoe99_RunStats.Instance.AddKill();
         }
 
         // 드롭

@@ -1,12 +1,15 @@
 using UnityEngine;
 
 // ESC 키 일시정지 토글. LevelUp 활성 중(timeScale=0 + 패널 없음)에는 무시.
+// 일시정지 화면은 공용 종합 정보 패널(kangtoe99_RunSummaryUI)을 띄운다 — 게임오버 1단계와 같은 인스턴스.
 public class kangtoe99_PauseSystem : MonoBehaviour
 {
     public static kangtoe99_PauseSystem Instance { get; private set; }
 
-    [SerializeField] private GameObject pausePanel;
+    [SerializeField] private kangtoe99_RunSummaryUI infoPanel; // 일시정지/게임오버 공용 정보 패널
     [SerializeField] private KeyCode toggleKey = KeyCode.Escape;
+    [SerializeField] private string pauseTitle = "Paused";
+    [SerializeField] private string pauseHint = "Press ESC to Resume";
 
     private bool isPaused;
     public bool IsPaused => isPaused;
@@ -16,7 +19,7 @@ public class kangtoe99_PauseSystem : MonoBehaviour
         if (Instance == null) Instance = this;
         else { Destroy(gameObject); return; }
 
-        if (pausePanel != null) pausePanel.SetActive(false);
+        if (infoPanel != null) infoPanel.Hide();
     }
 
     private void Update()
@@ -40,7 +43,10 @@ public class kangtoe99_PauseSystem : MonoBehaviour
     {
         isPaused = !isPaused;
         Time.timeScale = isPaused ? 0f : 1f;
-        if (pausePanel != null) pausePanel.SetActive(isPaused);
+
+        if (infoPanel == null) return;
+        if (isPaused) infoPanel.Show(pauseTitle, pauseHint);
+        else infoPanel.Hide();
     }
 
     public void Resume()

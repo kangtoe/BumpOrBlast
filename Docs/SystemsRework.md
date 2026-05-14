@@ -12,11 +12,19 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 > 이 문서는 원래 "VampireSurvivorsRework.md"로 시작해 장르 전환을 목표로 했으나, 2026-05-12 재검토로 자동 전진·자동 사격을 폐기하면서 방향성이 "전환"에서 "심화"로 재정립되었다.
 
 - **작성일**: 2026-04-21
-- **최근 갱신**: 2026-05-13 — Phase R6a 완료, 문서/메모리 일괄 정리
+- **최근 갱신**: 2026-05-14 — 종합 정보 패널(RunSummary) + 게임오버 2단계 흐름
 - **상태**: Phase R1~R4 + R6a + R8a 완료. R5 폐기. R6b 트리거 · R7 적 5등급 · R8b(고급 풀 가중치) · R9~R11 미착수.
 - **관련 문서**: [GameDesign.md](GameDesign.md), [TechnicalSpec.md](TechnicalSpec.md), [DevelopmentGuide.md](DevelopmentGuide.md)
 
 ## 변경 이력 (핵심 결정만)
+
+### 2026-05-14
+- **종합 정보 패널(RunSummary) 도입** → `kangtoe99_RunStats`(한 판 통계 누적 싱글톤: 가한/받은 피해·처치·생존시간) + `kangtoe99_RunSummaryUI`(레벨/점수/생존시간/처치/피해 + 빌드 표시). 스탯은 **항목당 Text 1개**(`levelText`/`scoreText`/… 6개 필드, VerticalLayoutGroup 행 배치) — 한 덩어리 문자열 아님
+- **공용 정보 패널** → 일시정지(`PauseSystem`)와 게임오버 1단계(`GameManager`)가 **같은 RunSummaryUI 패널 인스턴스 공유**(기존 PausePanel 재사용 — 별도 패널 안 만듦). 표시 내용은 동일, **제목(`titleText`)·안내 문구(`hintText`)만 맥락별로 다름**(일시정지 "Paused" / 게임오버 "Game Over"). 인게임 표기는 영어로 통일(사용자 방침). `RunSummaryUI.Show(title, hint)`/`Hide()`가 진입점 — `panelRoot`를 켜고 끔. 두 시스템 모두 `infoPanel` 필드(타입 `kangtoe99_RunSummaryUI`)로 같은 인스턴스 참조
+- **게임오버 2단계 흐름** → 사망 시 ① 공용 정보 창 먼저 표시 → **Enter/Space 입력** → ② 랭킹(OverPanel) 표시. 정보 창을 읽는 동안 랭킹 서버 요청은 백그라운드로 미리 시작(`gameOverUI.ShowGameOver`를 1단계에서 호출). GameManager가 `GameOverSequence` 코루틴의 `WaitUntil`로 전환 제어. 정보 창은 사라지고 랭킹만 표시. 일시정지/게임오버는 실질 상호배타라 패널 공유 안전
+- **사망 시 플레이어 `Destroy` → `SetActive(false)`** → 게임오버 정보 패널의 빌드 표시(`BuildDisplayUI`)가 플레이어의 `ItemInventory`를 계속 참조해야 하므로, `Player.Die()`에서 파괴 대신 비활성화. 비활성 GameObject는 Update/물리가 멈추지만 컴포넌트 참조는 유효. 씬 재시작에서 정리됨
+- **일반 플레이 HUD 빌드 표시 제거** → 상시 HUD 빌드 표시(`HUD_BuildContainer`) 삭제. 빌드/아이템 목록은 **공용 정보 패널(일시정지·게임오버)에서만** 표시. `BuildDisplayUI` 스크립트 자체는 유지(공용 패널·게임오버 랭킹 영역이 사용)
+- **자동 셋업 도구 재작성** → `kangtoe99_SceneSetup` (메뉴 `Tools > BumpOrBlast > Setup RunSummary`). RunStats 싱글톤 보장 + 씬의 RunSummaryUI를 찾아 `panelRoot`/`titleText`/`hintText`/`buildDisplay` 배선 + `PauseSystem.infoPanel`·`GameManager.infoPanel` 배선 + 정리(구버전 SummaryPanel · `HUD_BuildContainer` 제거). 일회성 — 셋업 후 폐기
 
 ### 2026-05-12 (방향성 재정립)
 - "장르 전환" → "시스템 심화"로 재정립 (문서 이름 SystemsRework)
@@ -31,7 +39,7 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 - **maxSpeed 클램프 제거** → Character.Move 및 Enemy.ChasePlayer의 속도 클램프 제거. drag(linearDamping)로만 평형 속도 결정. 플레이 테스트 후 어색하면 부활 검토
 - **R8a LevelUpSystem 전면 재작성** → 기존 Damage/FireRate 하드코드 2지선다 폐기. 동적 4지선다 슬롯. `kangtoe99_ILevelUpChoice` 인터페이스(`ItemData` + `InstantDropItemData`가 구현). **풀 고갈 조건 강화**: ItemData가 1개라도 사용 가능하면 ItemData만 노출(1~4개). 완전 고갈(0개) 시에만 `InstantDropItemData`(드롭 3종 즉시 발동)로 슬롯 채움
 - **R8a Build UI 추가** → HUD 좌상단 상시 빌드 표시 + `kangtoe99_PauseSystem`(ESC 토글) + GameOverUI에 별도 빌드 영역. `kangtoe99_BuildDisplayUI` + `kangtoe99_BuildEntrySlot`이 세 영역 모두에서 재사용
-- **자동 셋업 도구** → `kangtoe99_SceneSetup` (메뉴 `Tools > BumpOrBlast > Setup Scene`). 한 번 실행으로 ItemInventory + ItemDisplay.prefab + LevelUpChoiceSlot.prefab + ChoiceContainer + LevelUpSystem 배선 + HUD/Pause/GameOver 빌드 영역 + DebugPanel 전부 자동 생성·배선. **prefab은 현재 코드 필드 시그니처 검증 → 누락 시 삭제 후 재생성**. itemPool/instantDropPool은 프로젝트 전체 자산을 타입 검색해 채움. 샘플 자산 생성 기능은 폐기 — 자산은 사용자가 직접 관리. idempotent
+- **자동 셋업 도구** → `kangtoe99_SceneSetup` (메뉴 `Tools > BumpOrBlast > Setup Scene`). 한 번 실행으로 ItemInventory + ItemDisplay.prefab + LevelUpChoiceSlot.prefab + ChoiceContainer + LevelUpSystem 배선 + HUD/Pause/GameOver 빌드 영역 + DebugPanel 전부 자동 생성·배선. **prefab은 현재 코드 필드 시그니처 검증 → 누락 시 삭제 후 재생성**. itemPool/instantDropPool은 프로젝트 전체 자산을 타입 검색해 채움. **일회성 도구 — Scene 셋업 완료 후 폐기**(2026-05-14 사용 후 삭제 완료). 다음 UI 구조 변경 시 필요하면 재작성
 - **R8a DebugPanel** → 백틱(`) 키 토글. **예외적으로 IMGUI(OnGUI) 사용** — Canvas/prefab/Button 위젯 없이 GUILayout으로 즉시 그림. 게임 상태 정보(레벨/점수/HP/에너지/적 수/보유 아이템 수) + 액션 4종(Force Level Up · Kill All Enemies · Heal Full · Add Random Item). Time.timeScale 건드리지 않음. 자동 셋업은 `DebugPanel` GameObject 1개만 추가
 
 ## 설계 확정 사항
@@ -140,7 +148,7 @@ TriggerEffectData (abstract ScriptableObject)
 
 **ILevelUpChoice/ItemData/InstantDropItemData에 시각 prefab 필드 없음** — UI 표시는 슬롯이 SO 데이터(Icon/이름/설명)를 받아 알아서 채움
 
-**자동 셋업 도구** (`kangtoe99_SceneSetup`): ItemDisplay.prefab(tooltip 자식 포함) + LevelUpChoiceSlot.prefab(자체 표시) 자동 생성. 현재 코드 필드(`IsSet` 검증)와 prefab 직렬화 mismatch 감지 시 삭제 후 재생성 — prefab v3↔v4 직렬화 불일치로 Bind가 null 스킵하던 문제의 항구 대책
+**자동 셋업 도구** (`kangtoe99_SceneSetup`, 일회성 — 사용 후 폐기): ItemDisplay.prefab(tooltip 자식 포함) + LevelUpChoiceSlot.prefab(자체 표시) 자동 생성. 현재 코드 필드(`IsSet` 검증)와 prefab 직렬화 mismatch 감지 시 삭제 후 재생성 — prefab v3↔v4 직렬화 불일치로 Bind가 null 스킵하던 문제의 항구 대책. Scene 셋업 완료 후 도구는 폐기됨
 
 **R8b (미착수)**: 풀 가중치 / Luck 스탯 → 고등급 ItemData 풀 확률 상승 / 같은 선택지 연속 등장 방지 / 회복 카테고리 / 아이템 아이콘 UI(StatIconRegistry 활용)
 
