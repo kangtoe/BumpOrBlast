@@ -2,18 +2,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // 한 영역(HUD / Pause / GameOver)에서 ItemInventory의 빌드를 표시.
+// 아이템 UI(ItemDisplayView) prefab을 그대로 슬롯으로 사용 — 별도 BuildEntrySlot 중간 레이어 없음.
 // inventory의 OnItemAdded 이벤트를 구독해 자동 갱신.
 public class kangtoe99_BuildDisplayUI : MonoBehaviour
 {
     [SerializeField] private kangtoe99_ItemInventory inventory;
     [SerializeField] private Transform slotContainer;
-    [SerializeField] private kangtoe99_BuildEntrySlot slotPrefab;
+    [SerializeField] private kangtoe99_ItemDisplayView slotPrefab;
 
-    [Header("Display Options")]
-    [SerializeField] private bool showName = false;
-    [SerializeField] private bool showDescription = false;
-
-    private readonly List<kangtoe99_BuildEntrySlot> activeSlots = new List<kangtoe99_BuildEntrySlot>();
+    private readonly List<kangtoe99_ItemDisplayView> activeSlots = new List<kangtoe99_ItemDisplayView>();
     private bool subscribed;
 
     private void Start()
@@ -76,7 +73,7 @@ public class kangtoe99_BuildDisplayUI : MonoBehaviour
         foreach (var entry in inventory.GetBuildEntries())
         {
             var slot = Instantiate(slotPrefab, slotContainer);
-            slot.Bind(entry.data, entry.stack, showName, showDescription);
+            slot.Bind(entry.data, entry.stack);
             activeSlots.Add(slot);
         }
     }

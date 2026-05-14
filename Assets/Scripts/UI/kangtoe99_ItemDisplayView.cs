@@ -1,36 +1,46 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// 공통 아이템 시각 prefab의 root에 부착되는 컴포넌트.
-// LevelUpChoiceSlot · BuildEntrySlot이 한 인스턴스를 자식으로 생성한 뒤 Bind 호출.
-// SO(ItemData / InstantDropItemData)의 Icon · displayName · Description을 주입받아 표시.
-public class kangtoe99_ItemDisplayView : MonoBehaviour
+// 아이템 UI 틀. 빌드 화면 슬롯으로 배치.
+// 평소 표시: 아이콘 + 중복 수(xN).
+// 마우스 호버 시: 자식 tooltipRoot 활성화 → 이름/설명 표시.
+public class kangtoe99_ItemDisplayView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+    [Header("Slot")]
     [SerializeField] private Image iconImage;
-    [SerializeField] private Text nameText;
-    [SerializeField] private Text descriptionText;
     [SerializeField] private Text stackText;
 
-    public void Bind(kangtoe99_ILevelUpChoice choice, int stack = 0, bool showName = true, bool showDescription = true)
+    [Header("Tooltip (hover)")]
+    [SerializeField] private GameObject tooltipRoot;
+    [SerializeField] private Text tooltipNameText;
+    [SerializeField] private Text tooltipDescriptionText;
+
+    private kangtoe99_ItemData boundData;
+
+    public void Bind(kangtoe99_ItemData data, int stack)
     {
+        boundData = data;
         if (iconImage != null)
         {
-            iconImage.sprite = choice?.Icon;
-            iconImage.enabled = choice?.Icon != null;
+            iconImage.sprite = data?.Icon;
+            iconImage.enabled = data?.Icon != null;
         }
-        if (stackText != null)
-        {
-            stackText.text = stack > 1 ? $"x{stack}" : string.Empty;
-        }
-        if (nameText != null)
-        {
-            nameText.gameObject.SetActive(showName);
-            if (showName) nameText.text = choice?.DisplayName ?? string.Empty;
-        }
-        if (descriptionText != null)
-        {
-            descriptionText.gameObject.SetActive(showDescription);
-            if (showDescription) descriptionText.text = choice?.Description ?? string.Empty;
-        }
+        if (stackText != null) stackText.text = stack > 1 ? $"x{stack}" : string.Empty;
+
+        // 툴팁 내용 미리 채워두고, 시작은 숨김
+        if (tooltipNameText != null) tooltipNameText.text = data?.DisplayName ?? string.Empty;
+        if (tooltipDescriptionText != null) tooltipDescriptionText.text = data?.Description ?? string.Empty;
+        if (tooltipRoot != null) tooltipRoot.SetActive(false);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (tooltipRoot != null && boundData != null) tooltipRoot.SetActive(true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (tooltipRoot != null) tooltipRoot.SetActive(false);
     }
 }

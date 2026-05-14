@@ -186,4 +186,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 
     public int GetCurrentLevel() => currentLevel;
     public int GetNextLevelScore() => nextLevelScore;
+
+    // 디버그 패널 등 외부 도구가 풀을 조회할 때 사용. 읽기 전용.
+    public IReadOnlyList<kangtoe99_ItemData> GetItemPoolSnapshot() => itemPool;
 }

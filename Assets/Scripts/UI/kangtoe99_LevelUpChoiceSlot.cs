@@ -2,28 +2,30 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-// LevelUp 패널 한 슬롯. Button + 공통 ItemDisplay 인스턴스.
-// 시각은 ItemDisplayView가 SO 데이터를 받아 채움 — 슬롯 자체는 클릭·레이아웃만 담당.
+// 선택지 UI 틀. LevelUp 패널에 4개 인스턴스화.
+// 자체적으로 Icon + Name + Description을 직접 표시. ItemDisplayView 사용 안 함.
 public class kangtoe99_LevelUpChoiceSlot : MonoBehaviour
 {
     [SerializeField] private Button button;
-    [SerializeField] private RectTransform displayContainer;
-    [SerializeField] private kangtoe99_ItemDisplayView displayPrefab;
+    [SerializeField] private Image iconImage;
+    [SerializeField] private Text nameText;
+    [SerializeField] private Text descriptionText;
 
     private kangtoe99_ILevelUpChoice choice;
     private Action<kangtoe99_ILevelUpChoice> onSelected;
-    private kangtoe99_ItemDisplayView currentDisplay;
 
     public void Bind(kangtoe99_ILevelUpChoice c, Action<kangtoe99_ILevelUpChoice> handler)
     {
         choice = c;
         onSelected = handler;
 
-        if (currentDisplay == null && displayPrefab != null && displayContainer != null)
+        if (iconImage != null)
         {
-            currentDisplay = Instantiate(displayPrefab, displayContainer);
+            iconImage.sprite = c?.Icon;
+            iconImage.enabled = c?.Icon != null;
         }
-        currentDisplay?.Bind(c, stack: 0, showName: true, showDescription: true);
+        if (nameText != null) nameText.text = c?.DisplayName ?? string.Empty;
+        if (descriptionText != null) descriptionText.text = c?.Description ?? string.Empty;
 
         if (button != null)
         {
@@ -32,8 +34,5 @@ public class kangtoe99_LevelUpChoiceSlot : MonoBehaviour
         }
     }
 
-    private void OnClicked()
-    {
-        onSelected?.Invoke(choice);
-    }
+    private void OnClicked() => onSelected?.Invoke(choice);
 }

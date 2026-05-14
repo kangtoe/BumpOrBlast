@@ -17,27 +17,9 @@ public class kangtoe99_ItemInventory : MonoBehaviour
 
     public event Action<kangtoe99_ItemData, int> OnItemAdded;
 
-    // R8 LevelUp 풀 확장 전 임시 디버그 핫키
-    [Header("Debug (R6a 임시, R8에서 LevelUp으로 통합)")]
-    [SerializeField] private kangtoe99_ItemData[] debugTestItems = new kangtoe99_ItemData[4];
-    [SerializeField] private KeyCode[] debugKeys = new[] { KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4 };
-
     private void Awake()
     {
         stats = GetComponent<kangtoe99_PlayerStats>();
-    }
-
-    private void Update()
-    {
-        if (debugTestItems == null || debugKeys == null) return;
-        int len = Mathf.Min(debugTestItems.Length, debugKeys.Length);
-        for (int i = 0; i < len; i++)
-        {
-            if (debugTestItems[i] != null && Input.GetKeyDown(debugKeys[i]))
-            {
-                TryAdd(debugTestItems[i]);
-            }
-        }
     }
 
     public int GetStack(kangtoe99_ItemData data)

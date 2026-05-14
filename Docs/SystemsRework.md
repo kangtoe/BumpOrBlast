@@ -31,7 +31,8 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 - **maxSpeed 클램프 제거** → Character.Move 및 Enemy.ChasePlayer의 속도 클램프 제거. drag(linearDamping)로만 평형 속도 결정. 플레이 테스트 후 어색하면 부활 검토
 - **R8a LevelUpSystem 전면 재작성** → 기존 Damage/FireRate 하드코드 2지선다 폐기. 동적 4지선다 슬롯. `kangtoe99_ILevelUpChoice` 인터페이스(`ItemData` + `InstantDropItemData`가 구현). **풀 고갈 조건 강화**: ItemData가 1개라도 사용 가능하면 ItemData만 노출(1~4개). 완전 고갈(0개) 시에만 `InstantDropItemData`(드롭 3종 즉시 발동)로 슬롯 채움
 - **R8a Build UI 추가** → HUD 좌상단 상시 빌드 표시 + `kangtoe99_PauseSystem`(ESC 토글) + GameOverUI에 별도 빌드 영역. `kangtoe99_BuildDisplayUI` + `kangtoe99_BuildEntrySlot`이 세 영역 모두에서 재사용
-- **R8a 자동 셋업 도구** → 메뉴 `Tools > BumpOrBlast > Setup Scene UI (R8a + Build)` 한 번 실행으로 샘플 자산 + ItemInventory + 슬롯 prefab 2종 + ChoiceContainer + LevelUpSystem 배선 + HUD 빌드 영역 + PauseSystem/PausePanel + GameOver 빌드 영역 전부 자동 생성·배선. idempotent. R8b 진입 시 폐기 검토
+- **자동 셋업 도구** → `kangtoe99_SceneSetup` (메뉴 `Tools > BumpOrBlast > Setup Scene`). 한 번 실행으로 ItemInventory + ItemDisplay.prefab + LevelUpChoiceSlot.prefab + ChoiceContainer + LevelUpSystem 배선 + HUD/Pause/GameOver 빌드 영역 + DebugPanel 전부 자동 생성·배선. **prefab은 현재 코드 필드 시그니처 검증 → 누락 시 삭제 후 재생성**. itemPool/instantDropPool은 프로젝트 전체 자산을 타입 검색해 채움. 샘플 자산 생성 기능은 폐기 — 자산은 사용자가 직접 관리. idempotent
+- **R8a DebugPanel** → 백틱(`) 키 토글. **예외적으로 IMGUI(OnGUI) 사용** — Canvas/prefab/Button 위젯 없이 GUILayout으로 즉시 그림. 게임 상태 정보(레벨/점수/HP/에너지/적 수/보유 아이템 수) + 액션 4종(Force Level Up · Kill All Enemies · Heal Full · Add Random Item). Time.timeScale 건드리지 않음. 자동 셋업은 `DebugPanel` GameObject 1개만 추가
 
 ## 설계 확정 사항
 
@@ -118,18 +119,28 @@ TriggerEffectData (abstract ScriptableObject)
 
 ### Build UI (R8a 완료, R8b 가중치 미착수)
 
-세 영역에서 동일한 `kangtoe99_BuildDisplayUI` + `kangtoe99_BuildEntrySlot` 재사용. 각 영역은 showName/showDescription 옵션만 다름:
-- **HUD 좌상단** — prefab + xN 우상단 (showName=false), 상시 표시
-- **PausePanel** (`kangtoe99_PauseSystem`, ESC 토글) — prefab + xN + 이름 (GridLayout)
-- **GameOverPanel** — 리더보드와 별도 영역, prefab + xN
+세 영역에서 동일한 `kangtoe99_BuildDisplayUI` 재사용. 각 영역의 slotPrefab은 **공통 ItemDisplay.prefab(아이템 UI 틀)** 직접 사용. 중간 BuildEntrySlot 레이어 폐기:
+- **HUD 좌상단** — 상시 표시
+- **PausePanel** (`kangtoe99_PauseSystem`, ESC 토글) — GridLayout
+- **GameOverPanel** — 리더보드와 별도 영역
 
 `ItemInventory.GetBuildEntries()` 노출 + `OnItemAdded` 이벤트로 BuildDisplayUI가 자동 갱신.
 
-### 아이템 시각 prefab (R8a, 사용자 결정 — 공통 틀 prefab 1개)
-- 자산별 prefab 폐기. **공통 `Assets/Prefabs/UIs/ItemDisplay.prefab` 1개**가 시각 틀. `kangtoe99_ItemDisplayView` 컴포넌트가 SO의 Icon/이름/설명을 받아 Image·Text에 주입
-- LevelUpChoiceSlot/BuildEntrySlot은 `displayContainer` + `displayPrefab(ItemDisplayView)` 참조만 보유. Bind 시 컨테이너 자식으로 인스턴스화 후 `ItemDisplayView.Bind(choice, stack)` 호출
-- xN 표기는 `ItemDisplayView`의 stackText(우상단 anchor)가 담당. stack≤1이면 비표시
-- 자동 셋업 도구가 ItemDisplay.prefab 1개를 자동 생성. 슬롯 prefab은 displayContainer/displayPrefab 필드 누락 감지 시 재생성. ILevelUpChoice·ItemData·InstantDropItemData의 DisplayPrefab은 제거됨
+### UI 역할 분리 (R8a, 사용자 결정)
+
+**아이템 UI** = `kangtoe99_ItemDisplayView` (`Assets/Prefabs/UIs/ItemDisplay.prefab`)
+- 빌드 화면 슬롯으로 배치 (HUD/Pause/GameOver). BuildDisplayUI가 직접 인스턴스화
+- 평소 표시: 아이콘 + 중복 수(xN, 우상단 anchor)
+- 마우스 호버 시: 자식 tooltipRoot 활성화 → 이름/설명 표시 (`IPointerEnterHandler`/`IPointerExitHandler`)
+- raycastTarget Image가 root에 있어 슬롯 전체에서 호버 감지
+
+**선택지 UI** = `kangtoe99_LevelUpChoiceSlot` (`Assets/Prefabs/UIs/LevelUpChoiceSlot.prefab`)
+- LevelUp 패널에 인스턴스화. 자체적으로 Icon + Name + Description 직접 표시 (ItemDisplayView 의존 폐기)
+- 클릭 시 `ILevelUpChoice.Apply` 호출
+
+**ILevelUpChoice/ItemData/InstantDropItemData에 시각 prefab 필드 없음** — UI 표시는 슬롯이 SO 데이터(Icon/이름/설명)를 받아 알아서 채움
+
+**자동 셋업 도구** (`kangtoe99_SceneSetup`): ItemDisplay.prefab(tooltip 자식 포함) + LevelUpChoiceSlot.prefab(자체 표시) 자동 생성. 현재 코드 필드(`IsSet` 검증)와 prefab 직렬화 mismatch 감지 시 삭제 후 재생성 — prefab v3↔v4 직렬화 불일치로 Bind가 null 스킵하던 문제의 항구 대책
 
 **R8b (미착수)**: 풀 가중치 / Luck 스탯 → 고등급 ItemData 풀 확률 상승 / 같은 선택지 연속 등장 방지 / 회복 카테고리 / 아이템 아이콘 UI(StatIconRegistry 활용)
 
@@ -153,7 +164,7 @@ TriggerEffectData (abstract ScriptableObject)
 2. 같은 선택지 연속 등장 방지 (직전 LevelUp 기억)
 3. 회복 카테고리 (별도 ILevelUpChoice 구현체 — HpRestoreChoice 등)
 4. 아이콘·등급 색상 표시 (StatIconRegistry + Tier 컬러)
-5. ItemInventory의 임시 디버그 핫키 제거
+5. (완료) ItemInventory의 임시 디버그 핫키 제거 — DebugPanel(`)로 흡수
 6. **수용 기준**: 매 레벨업마다 다양한 카테고리·등급 등장, 빌드 다양성 체감
 
 ### R9: 무기 프레임워크 (확장)
