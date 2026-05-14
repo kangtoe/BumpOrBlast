@@ -6,340 +6,189 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 
 - 슈팅의 핵심(WASD 이동 + 마우스 회전·사격, Bump 충돌)은 그대로
 - 탄창 → **에너지** / 분산된 수치 → **중앙 스탯** / 일회성 드롭 → **영구 아이템**으로 확장
-- 적 5등급 분류 등 **로그라이크 장르(특히 뱀파이어 서바이버)에서 영감 받은 요소** 일부 도입 (오픈 필드·카메라 추적은 2026-05-12 재검토로 폐기 — 카메라 고정 + 화면 wrap-around 유지)
+- 적 5등급 분류 등 **로그라이크 장르(특히 뱀파이어 서바이버)에서 영감 받은 요소** 일부 도입
+- 카메라는 고정, 화면 wrap-around 유지 (오픈 필드·카메라 추적 컨셉은 폐기 — 아래 변경 이력 참조)
 
-> 참고: 이 문서는 원래 "VampireSurvivorsRework.md"라는 이름으로 시작했고 초기에는 장르 전환을 목표로 했으나, 2026-05-12 사용자 재검토로 **자동 전진·자동 사격을 폐기**하면서 방향성이 "전환"에서 "시스템 심화"로 재정립되었다.
+> 이 문서는 원래 "VampireSurvivorsRework.md"로 시작해 장르 전환을 목표로 했으나, 2026-05-12 재검토로 자동 전진·자동 사격을 폐기하면서 방향성이 "전환"에서 "심화"로 재정립되었다.
 
 - **작성일**: 2026-04-21
-- **최근 갱신**: 2026-05-12 — 방향성 재정립 + 자동전진·자동사격 폐기, 에너지·스탯·아이템·적 5등급 결정 추가
-- **상태**: Phase R1~R3 코드 반영 (회전 입력 추상화, 카메라 추적, EnemyRegistry, 탄창 제거, PlayerStats)
+- **최근 갱신**: 2026-05-13 — Phase R6a 완료, 문서/메모리 일괄 정리
+- **상태**: Phase R1~R4 + R6a + R8a 완료. R5 폐기. R6b 트리거 · R7 적 5등급 · R8b(고급 풀 가중치) · R9~R11 미착수.
 - **관련 문서**: [GameDesign.md](GameDesign.md), [TechnicalSpec.md](TechnicalSpec.md), [DevelopmentGuide.md](DevelopmentGuide.md)
 
-## 방향성
+## 변경 이력 (핵심 결정만)
 
-### 유지하는 것 (슈터 정체성)
-- WASD 4방향 자유 이동 + 마우스 회전·좌클릭 사격
-- 발사체 기반 공격 (자동 발사 X)
-- 적 추적 AI + Bump 충돌 데미지
-- 기존 LevelUpSystem, ScoreSystem, GameManager 흐름
+### 2026-05-12 (방향성 재정립)
+- "장르 전환" → "시스템 심화"로 재정립 (문서 이름 SystemsRework)
+- 자동 전진/자동 사격 컨셉 폐기, WASD + 마우스 사격 유지
+- 에너지 시스템 신설(탄창 대체, 시간 자동 회복만), 중앙 PlayerStats + Modifier, 영구 아이템, 적/아이템 5등급(Gray/Green/Blue/Purple/Orange) 도입 결정
+- 오픈 필드 + 카메라 추적 + 적 원주 리사이클 폐기 → 카메라 고정 + 화면 wrap-around + 거리 초과 적 삭제(이전 동작) 복원. `kangtoe99_EnemyRegistry`는 자동 조준 무기용으로 유지
 
-### 확장·대체하는 것 (시스템 심화)
-- 탄창·재장전 → 에너지 시스템 (시간 자동 회복)
-- 분산된 수치(Player·PlayerShooting SerializeField) → 중앙 PlayerStats + Modifier
-- 일회성 드롭(XP/회복/폭탄)만 있던 진행 → 영구 효과 **아이템** 추가
-- LevelUpSystem 선택지 2종 → 다중 카테고리 풀 (스탯·아이템·회복)
-- 단일 적 타입 → **5등급 색상 분류** (Gray/Green/Blue/Purple/Orange)
-
-> 2026-05-12 재검토에서 폐기된 변경: 오픈 필드 + 카메라 추적 + 적 원주 리사이클. 카메라 고정 + 화면 wrap-around + 거리 초과 적 삭제(이전 동작)로 회귀.
-
-### 로그라이크 장르에서 차용한 요소
-- 영구 성장 아이템 (뱀서·노이타 등의 패시브 빌드)
-- 5등급 희귀도 색상 (디아블로 계열)
-
-## 변경 이력
-
-### 2026-05-12 결정
-1. **방향성 재정립** — "장르 전환"에서 "시스템 심화"로 (문서 이름도 SystemsRework로 변경)
-2. **자동 전진 컨셉 폐기** → 기존 WASD 4방향 자유 이동 유지
-3. **자동 사격 컨셉 폐기** → 기존 마우스 입력 사격 유지 (탄창은 폐기, fireRate 연사 유지)
-4. **에너지 시스템 신설** (탄창 대체, 시간 자동 회복)
-5. **중앙 PlayerStats + Modifier 구조 신설**
-6. **아이템 시스템 신설** (영구 효과, 레벨업 선택지로 획득)
-7. **드롭(Drop)/아이템(Item) 명명 분리** (기존 `ItemDropSystem` → `DropSystem` 리네임)
-8. **적 5등급 색상 분류** (Gray/Green/Blue/Purple/Orange)
-9. **아이템 5등급 색상 분류** (적과 동일 색계, 풀 구분 의미)
-10. **카메라 추적·오픈 필드 폐기** → 카메라 고정 + 화면 wrap-around + 거리 초과 적 삭제(이전 동작) 복원. `kangtoe99_CameraFollow`/`kangtoe99_GridBackground` 코드 삭제. `kangtoe99_EnemyRegistry`는 자동 조준 무기 등에서 사용 예정이라 유지.
-
-### 2026-05-13 결정
-11. **Bump 양방향 데미지 폐기** → 기존 동작(플레이어만 충돌 데미지 입음) 유지. Phase R5 폐기. `BumpDamageDealtMul`/`BumpDamageTakenMul` 스탯 enum·Defaults에서 완전 제거.
+### 2026-05-13
+- **Bump 양방향 데미지 폐기**(Phase R5 자체 폐기) → 플레이어만 충돌 데미지를 받음(기존 동작). `BumpDamageDealtMul`/`BumpDamageTakenMul` 스탯 enum에서 완전 제거. 추후 무적 프레임 등 필요 시 다시 도입 검토
+- **R6 분할** → R6a(스탯 modifier 기반 아이템) 완료, R6b(트리거 효과)는 분리해서 추후
+- **Drop/Item 명명 분리 적용** → 일시 픽업 = `kangtoe99_Drop*`, 영구 효과 = `kangtoe99_ItemData/Inventory`. `Scripts/Item/`→`Scripts/Drop/`, `Prefabs/Items/`→`Prefabs/Drops/`. 메서드 `TryDropItem` → `TryDrop`
+- **maxSpeed 클램프 제거** → Character.Move 및 Enemy.ChasePlayer의 속도 클램프 제거. drag(linearDamping)로만 평형 속도 결정. 플레이 테스트 후 어색하면 부활 검토
+- **R8a LevelUpSystem 전면 재작성** → 기존 Damage/FireRate 하드코드 2지선다 폐기. 동적 4지선다 슬롯. `kangtoe99_ILevelUpChoice` 인터페이스(`ItemData` + `InstantDropItemData`가 구현). **풀 고갈 조건 강화**: ItemData가 1개라도 사용 가능하면 ItemData만 노출(1~4개). 완전 고갈(0개) 시에만 `InstantDropItemData`(드롭 3종 즉시 발동)로 슬롯 채움
+- **R8a Build UI 추가** → HUD 좌상단 상시 빌드 표시 + `kangtoe99_PauseSystem`(ESC 토글) + GameOverUI에 별도 빌드 영역. `kangtoe99_BuildDisplayUI` + `kangtoe99_BuildEntrySlot`이 세 영역 모두에서 재사용
+- **R8a 자동 셋업 도구** → 메뉴 `Tools > BumpOrBlast > Setup Scene UI (R8a + Build)` 한 번 실행으로 샘플 자산 + ItemInventory + 슬롯 prefab 2종 + ChoiceContainer + LevelUpSystem 배선 + HUD 빌드 영역 + PauseSystem/PausePanel + GameOver 빌드 영역 전부 자동 생성·배선. idempotent. R8b 진입 시 폐기 검토
 
 ## 설계 확정 사항
 
-### 1. 조작 체계
-- **WASD/방향키 4방향 자유 이동** (월드 좌표 기준)
-- 물리 기반 이동: `AddForce(moveDirection * moveForce)` + maxSpeed 클램프 + LinearDamping 마찰 (`kangtoe99_Character.Move`)
-- **회전은 마우스 보간 기반**: `IRotationInput`이 목표 방향(Vector2) 제공 → `Mathf.MoveTowardsAngle`로 `rotationSpeed(도/초)` 만큼 보간
-- 회전 속도 초기 튜닝 범위: **180~360°/sec**, 스탯 시스템으로 업그레이드 가능
-- **사격은 마우스 좌클릭 누름 감지 + fireRate 쿨다운** (자동 연사). 단 에너지 부족 시 발사 불가
+### 조작 체계
+- WASD/방향키 4방향 자유 이동 (월드 좌표 기준), 물리 기반 `AddForce` + linearDamping
+- 회전은 마우스 보간 기반: `IRotationInput` → `Mathf.MoveTowardsAngle`로 `RotationSpeed(도/초)` 보간 (초기 튜닝 범위 180~360°/sec)
+- 사격은 마우스 좌클릭 + fireRate 쿨다운 자동 연사, 에너지 부족 시 발사 불가
 
-### 2. 카메라 & 필드
-- **카메라 플레이어 추적** ([kangtoe99_CameraFollow.cs](../Assets/Scripts/Systems/kangtoe99_CameraFollow.cs))
-- **오픈 필드**: 화면 wrap-around 폐기. 적이 cullRadius 초과 시 플레이어 기준 원주에 재배치 ([kangtoe99_EnemySpawner.cs](../Assets/Scripts/Enemy/kangtoe99_EnemySpawner.cs))
-- **완전 무한감 지향**: 안개·장벽 없음. 배경은 [kangtoe99_GridBackground.cs](../Assets/Scripts/Systems/kangtoe99_GridBackground.cs)로 카메라 위치 기반 무한 타일링
+### 카메라 & 필드
+- 카메라 고정, 화면 wrap-around. 적은 cullRadius 초과 시 삭제 (이전 동작)
+- 향후 부드러운 추적이 필요하면 Cinemachine 검토 (미결정)
 
-### 3. 무기 체계
-- **기본 무기**: 마우스 방향 발사 (현재 `kangtoe99_PlayerShooting` → 추후 `ForwardWeapon`으로 리팩터)
-- **추가 무기**: 업그레이드로 해금 — 자동 조준, 공전 드론, 장판 등
-- 모든 무기는 사격 시 **에너지 소모**, 에너지 부족 시 발사 불가
+### 무기 체계
+- 기본 무기: 마우스 방향 발사 (`kangtoe99_PlayerShooting`, 추후 `ForwardWeapon`으로 리팩터 — Phase R9)
+- 추가 무기는 업그레이드로 해금 (자동 조준, 공전 드론, 장판 등 — Phase R9)
+- 모든 무기는 사격 시 에너지 소모
 
-### 4. Bump 충돌 처리
-- 충돌 시 **플레이어만 데미지를 받음** (기존 동작 유지). 2026-05-13 결정으로 양방향 교환·관련 스탯 모두 폐기.
+### Bump 충돌
+- 플레이어만 데미지를 받음(기존 동작). 양방향 교환·관련 스탯 모두 폐기(2026-05-13)
 
-### 5. 플랫폼 & 입력
-- **타겟**: PC 우선 출시, 모바일(세로) 대응 준비
-- **입력 추상화**:
-  - 회전: `IRotationInput` (PC=마우스, 모바일=조이스틱)
-  - 이동: WASD/방향키 (모바일은 화면 좌측 가상 조이스틱)
-  - 사격: 마우스 좌클릭 (모바일은 화면 우측 사격 버튼)
+### 플랫폼 & 입력
+- PC 우선, 모바일(세로) 대응 준비
+- 입력 추상화: 회전(`IRotationInput`) / 이동(WASD or 가상 조이스틱) / 사격(좌클릭 or 사격 버튼)
 
-## 스탯 시스템
+## 살아있는 청사진
 
-### 구조
-중앙 `kangtoe99_PlayerStats` 컴포넌트가 모든 스탯의 단일 진리원천. 기본값은 **`kangtoe99_PlayerStatsData` ScriptableObject**에서 읽어오고, 외부 modifier 리스트로 동적 보정. 스탯 컨테이너는 enum-keyed 배열(`StatMap`).
+### 스탯 시스템 (구현 완료)
+- 중앙 `kangtoe99_PlayerStats`가 모든 스탯의 단일 진리원천
+- base는 `kangtoe99_PlayerStatsData` SO에서 로드(자산이 진리원천, 코드 기본값 없음)
+- 외부 modifier 리스트로 동적 보정. 공식: `(base + Σ가산) × Π(1 + 배율)`
+- `OnStatChanged` 이벤트로 의존 컴포넌트 반응(MaxHP/BodyScale/Friction)
+- 스탯 카테고리 — 발사체(Count/Speed/Scale/Spread/Pierce), 무기(Damage/FireRate/EnergyCost), 에너지(EnergyMax/EnergyRegen), 기체(MaxHP/HPRegen/BodyScale), 이동(MoveForce/RotationSpeed/Friction), 메타(Luck/Magnet). enum 본체는 [kangtoe99_StatType.cs](../Assets/Scripts/Stats/kangtoe99_StatType.cs)
+- **메타 스탯 적용 상황**: Luck/Magnet은 아직 미적용(Drop·LevelUp 풀과 연동 시 wire-up)
 
-```
-kangtoe99_EnumMap<TEnum, TValue> (제너릭, Utils)
-  └─ TValue[] values  (enum int = array index, O(1) 접근)
+### 에너지 시스템 (구현 완료)
+- 탄창·재장전 대체. 사격 시 `EnergyCost` 소모, 시간 자동 회복만 (`EnergyRegen`/sec)
+- 사격 시 회복 50% 배율(연사 중 패널티)
+- UI: 눈금 세그먼트 게이지 (`EnergyBarUI`, `pointsPerTick`)
 
-kangtoe99_StatMap : EnumMap<StatType, float>  (Unity 직렬화용 비제너릭 서브클래스)
+### 아이템 / 드롭 명명
+- **Drop (드롭)**: 적이 떨어뜨리는 일시 픽업. XP/HP회복/폭탄. → [kangtoe99_DropSystem](../Assets/Scripts/Drop/kangtoe99_DropSystem.cs)
+- **Item (아이템)**: 레벨업 선택지로 획득하는 영구 효과. 스탯 modifier(+R6b 트리거 효과 예정) → [Scripts/Item/](../Assets/Scripts/Item/)
 
-kangtoe99_PlayerStatsData (ScriptableObject — Assets/Data/Players/PlayerStatsData_*.asset)
-  └─ StatMap baseStats  (자산 인스펙터에서 직접 입력, 진리원천)
+### 아이템 데이터 (R6a 구현 완료)
+- `kangtoe99_ItemData` SO: displayName / icon / tier(5단계) / maxStack / List<StatModifierData>
+- `Description` 프로퍼티는 modifiers를 자동 조립 (예: "Damage +20%\nFireRate -10%"). 수동 입력 없음. R6b 진입 시 trigger 효과 텍스트도 같은 자리에서 합칠 예정
+- 공개 포맷 API: `ItemData.FormatModifier(m)` = "Damage +20%" (이름+값) / `ItemData.FormatValue(m)` = "+20%" (값만). UI는 stat 아이콘과 결합 시 FormatValue 사용
+- **Stat 아이콘**: `kangtoe99_StatIconRegistry` SO가 StatType→Sprite 매핑 보유 (단일 자산 진리원천, EnumMap 패턴). 실제 UI 표시 방식(TMP 인라인 vs 행 단위 Image+Text)은 R8 LevelUp 풀 확장 시 결정
+- 등급 = **풀 구분 의미**: Gray/Green/Blue/Purple/Orange 각각 별개 풀. 고등급 풀일수록 더 강한 modifier + 트리거 효과(R6b)
+- 같은 ItemData는 maxStack까지만 중첩, 종류는 무제한
+- `kangtoe99_ItemInventory`가 Player에 부착되어 스택·modifier 등록 관리. modifier source는 Entry 객체(스택 단위 추적)
 
-kangtoe99_PlayerStats (MonoBehaviour)
-  ├─ baseStatProfile (SO 참조 — 미할당 시 모든 stat 0)
-  ├─ StatMap baseValues  ← Awake에서 SO에서 CopyFrom
-  ├─ List<IStatModifier> modifiers
-  └─ GetFinal(StatType) — (base + Σ가산) × Π(1+배율)
-
-Assets/Editor/Drawers/kangtoe99_StatMapDrawer.cs
-  └─ StatMap 인스펙터에 enum 이름 라벨로 각 항목 표시 (foldout + 정렬된 float field)
-```
-
-캐릭터·세션별로 다른 base 프로파일을 만들고 싶다면 `PlayerStatsData_<Variant>.asset`을 추가 생성해 인스펙터에서 교체.
-
-### 스탯 목록
-값은 PlayerStatsData SO 자산 인스펙터에서 직접 입력 (코드 기본값 없음).
-
-| 카테고리 | 스탯 | 비고 |
-|---|---|---|
-| 발사체 | ProjectileCount | 동시 발사 개수 (반올림 정수, 최소 1) |
-| 발사체 | ProjectileSpeed | 탄속 |
-| 발사체 | ProjectileScale | 크기 배율 |
-| 발사체 | ProjectileSpread | 산탄 총 각도(도). spread를 Count개 슬롯으로 균등 분할 후 각 슬롯 안에서 랜덤 |
-| 발사체 | Pierce | 관통 횟수 (적 N+1마리 처치 후 소멸) |
-| 무기 | Damage | 기본 데미지 |
-| 무기 | FireRate | 발사 간격(초) — 작을수록 빠름 |
-| 무기 | EnergyCost | 발당 에너지 소모 |
-| 에너지 | EnergyMax | 최대 에너지 |
-| 에너지 | EnergyRegen | 초당 회복량 |
-| 기체 | MaxHP (Durability) | 최대 체력 — Player가 SetMaxHealth로 적용 |
-| 기체 | HPRegen (Repair) | 초당 자연 회복 — Player.Update에서 매 프레임 Heal |
-| 기체 | BodyScale | transform.localScale 배율 (originalScale * BodyScale) |
-| 이동 | MoveForce | 추진력(AddForce 곱셈). 평형 속도 ≈ MoveForce / Friction |
-| 이동 | RotationSpeed | 초당 회전 각도 |
-| 이동 | Friction | Rigidbody2D.linearDamping에 직접 적용 (절대값) |
-| 메타 | Luck | 드롭 확률 + 고급 선택지 등장률 (미적용) |
-| 메타 | Magnet | 드롭 자동 흡수 반경 (미적용) |
-
-### 적용 흐름
-- `PlayerShooting` 등 소비자는 `stats.GetFinal(StatType.Damage)` 형태로 조회 (캐싱 가능)
-- 아이템 획득 시 해당 아이템의 modifier들을 `AddModifier`로 등록
-- 일시 버프(예: 픽업 시 5초 데미지↑)도 같은 인터페이스, Source로 만료 시 제거
-
-## 에너지 시스템
-
-탄창·재장전을 대체. 발사 시 소모, **시간 자동 회복만** (Bump 회복·적 처치 회복 없음).
-
-```
-kangtoe99_EnergySystem (MonoBehaviour, Player 부착)
-  ├─ float current
-  ├─ float Max => stats.GetFinal(EnergyMax)
-  ├─ float Regen => stats.GetFinal(EnergyRegen)
-  ├─ bool TryConsume(float amount) — 충분하면 차감 후 true
-  └─ Update(): current = Mathf.Min(Max, current + Regen * dt)
-```
-
-- `PlayerShooting.Shoot()` 안에서 `if (!energy.TryConsume(stats.GetFinal(EnergyCostPerShot))) return;`
-- UI: 기존 탄창 UI를 에너지 게이지로 대체 (단일 바 또는 세그먼트)
-
-## 아이템 / 드롭 구분
-
-### 명명
-- **Drop (드롭)**: 적이 떨어뜨리는 일시 픽업. XP, HP 회복, 폭탄 등. 기존 [kangtoe99_ItemDropSystem.cs](../Assets/Scripts/Item/kangtoe99_ItemDropSystem.cs) → `kangtoe99_DropSystem`으로 리네임 권장
-- **Item (아이템)**: 레벨업 선택지로 획득하는 영구 효과. 스탯 modifier + 트리거 효과 가능
-
-### 아이템 데이터 (ScriptableObject)
-```
-kangtoe99_ItemData : ScriptableObject
-  ├─ string displayName
-  ├─ Sprite icon
-  ├─ string description
-  ├─ ItemTier tier (Gray/Green/Blue/Purple/Orange)
-  ├─ int maxStack — 이 아이템의 최대 중첩 보유 개수
-  ├─ List<StatModifierData> modifiers — 스탯 보너스
-  └─ List<TriggerEffectData> triggers — 특수 효과 (고등급 풀에 주로)
-```
-
-### 등급 = 풀 구분
-- Gray/Green/Blue/Purple/Orange 각각 별개의 아이템 풀
-- 고등급 풀일수록 더 강한 modifier 수치 + 트리거 효과(예: "HP 50% 이하 시 데미지+30%", "Bump 시 폭발")
-- 상위 등급 등장 확률은 행운 스탯과 레벨에 비례
-
-### 보유 제한
-- 종류별(스탯·트리거) 보유 수 제한 없음
-- 단 같은 아이템(동일 ScriptableObject)은 `maxStack` 까지만 중첩
-
-### 트리거 효과 (확장형)
+### 트리거 효과 (R6b 미착수)
 ```
 TriggerEffectData (abstract ScriptableObject)
   ├─ Subscribe(player) — 이벤트 후킹
   └─ Unsubscribe(player)
-
-예시 구현체:
-  - OnLowHpDamageBoost — HP가 threshold 이하일 때 Damage modifier 추가
-  - OnBumpExplode — 적과 충돌 시 폭발 데미지
-  - OnKillSpawnProjectile — 적 처치 시 추가 투사체
 ```
+첫 풀 후보: OnLowHpDamageBoost / OnKillSpawnProjectile / OnEnergyFullCritical 등. 구체 선정은 R6b 진입 시 결정. (OnBumpExplode는 Bump 양방향 폐기로 컨셉 부적합 — 제외)
 
-## 적 5등급 시스템
-
-### 등급 정의
+### 적 5등급 (R7 미착수)
 | 등급 | 색상 | HP/Damage/Speed | 드롭 |
 |---|---|---|---|
-| Gray | 회색 | 기본 1배 | XP 소량, 일반 풀 |
+| Gray | 회색 | 1배 | XP 소량, 일반 풀 |
 | Green | 초록 | 1.5배 | XP 1.5배, Green+ 풀 확률 |
 | Blue | 파랑 | 2.5배 | XP 3배, Blue+ 풀 확률 |
 | Purple | 보라 | 4배 | XP 6배, Purple+ 풀 확률 |
 | Orange | 주황 | 8배 (미니보스급) | XP 10배 + 확정 고등급 드롭 |
 
-### 구조
-- `kangtoe99_EnemyData` ScriptableObject에 `EnemyTier tier` 필드 추가
-- 등급별 수치 스케일은 코드 상수 또는 별도 `EnemyTierCurve` ScriptableObject로 관리
-- 행동 패턴은 등급과 독립 (기존 Normal/Fast/Heavy 행동 타입 유지 가능)
-- 스폰 확률은 시간(난이도 곡선)에 따라 상위 등급 비율 증가
+- `EnemyData`에 tier 필드 추가, 등급별 수치 스케일은 별도 `EnemyTierCurve` SO로 관리 검토
+- 행동 패턴은 등급과 독립 (기존 Normal/Fast/Heavy 유지)
+- 스폰 확률은 시간(난이도 곡선)에 따라 상위 비율 증가
+- 시각: 스프라이트 동일, 색상만 등급별 차등. Orange는 크기도 명확히 차등
 
-### 시각
-- 스프라이트는 동일, 색상만 등급별 머티리얼 또는 SpriteRenderer.color로 차등
-- 크기는 등급별 약간 차등 가능 (Orange는 명확히 크게)
+### LevelUpSystem (R8a 완료, R8b 미착수)
 
-## 선택지 풀 확장안 (LevelUpSystem)
+**R8a 완료**: 동적 4지선다. `ILevelUpChoice` 통일 인터페이스. `LevelUpSystem`이 itemPool에서 IsAvailable한 ItemData를 우선 노출. **완전 고갈(0개) 시에만** instantDropPool로 슬롯 채움.
 
-| 카테고리 | 가중치 비고 |
-|---|---|
-| 스탯 강화 (직접 modifier) | 무난한 풀 채움. 발사체·무기·이동·에너지 등 |
-| 아이템 획득 (영구) | maxStack 미만인 풀에서 추첨. Gray~Orange 풀별 가중치 |
-| 회복 옵션 | HP 즉시 회복 (가끔 등장) |
+**ILevelUpChoice 구현체**
+- `kangtoe99_ItemData` — 영구 modifier. IsAvailable = `!Inventory.IsFull(this)`. Apply = `Inventory.TryAdd(this)`
+- `kangtoe99_InstantDropItemData` — Drop prefab 1개 참조. Apply = 플레이어 위치에 비활성 prefab을 인스턴스화한 뒤 `Drop.TriggerPickup(player)` 호출. 즉시 효과 발동 후 Destroy
 
-**규칙**:
-- 4지선다 유지
-- 같은 선택지 연속 등장 방지
-- 행운 스탯이 높을수록 Blue+ 풀 등장률 상승
-- 보유 중인 아이템이 maxStack 도달 시 풀에서 제외
+**Drop 변경**: `Drop.OnTriggerEnter2D` 내부 픽업 로직을 `public TriggerPickup(player)`로 추출. 콜라이더 충돌과 코드 직접 호출 모두에서 동일 경로
 
-## 기존 시스템 활용 계획
+### Build UI (R8a 완료, R8b 가중치 미착수)
 
-### 그대로 재사용
-| 파일 | 역할 |
-|---|---|
-| [kangtoe99_GameManager.cs](../Assets/Scripts/Systems/kangtoe99_GameManager.cs) | 게임 상태 |
-| [kangtoe99_ScoreSystem.cs](../Assets/Scripts/Systems/kangtoe99_ScoreSystem.cs) | 점수 |
-| [kangtoe99_EnemyData.cs](../Assets/Scripts/Enemy/kangtoe99_EnemyData.cs) | 적 데이터 SO (tier 필드만 추가) |
+세 영역에서 동일한 `kangtoe99_BuildDisplayUI` + `kangtoe99_BuildEntrySlot` 재사용. 각 영역은 showName/showDescription 옵션만 다름:
+- **HUD 좌상단** — prefab + xN 우상단 (showName=false), 상시 표시
+- **PausePanel** (`kangtoe99_PauseSystem`, ESC 토글) — prefab + xN + 이름 (GridLayout)
+- **GameOverPanel** — 리더보드와 별도 영역, prefab + xN
 
-### 부분 수정
-| 파일 | 변경 내용 |
-|---|---|
-| [kangtoe99_Player.cs](../Assets/Scripts/Player/kangtoe99_Player.cs) | PlayerStats 컴포넌트 의존 추가. 이동·회전 파라미터는 stats에서 조회 |
-| [kangtoe99_PlayerShooting.cs](../Assets/Scripts/Player/kangtoe99_PlayerShooting.cs) | 스탯·에너지 의존으로 전환. 발사 전 에너지 체크 |
-| [kangtoe99_LevelUpSystem.cs](../Assets/Scripts/Systems/kangtoe99_LevelUpSystem.cs) | 선택지 풀을 동적 풀로 확장. 스탯·아이템 카테고리 추가 |
-| [kangtoe99_ItemDropSystem.cs](../Assets/Scripts/Item/kangtoe99_ItemDropSystem.cs) | `kangtoe99_DropSystem`으로 리네임. 행운 스탯 반영 |
-| [kangtoe99_EnemySpawner.cs](../Assets/Scripts/Enemy/kangtoe99_EnemySpawner.cs) | 등급 스폰 확률 곡선 도입 |
+`ItemInventory.GetBuildEntries()` 노출 + `OnItemAdded` 이벤트로 BuildDisplayUI가 자동 갱신.
 
-### 신규 추가
-| 파일 | 역할 |
-|---|---|
-| `kangtoe99_PlayerStats.cs` | 중앙 스탯 + Modifier 합산 |
-| `kangtoe99_IStatModifier.cs` | 스탯 보정 인터페이스 |
-| `kangtoe99_EnergySystem.cs` | 에너지 자원 관리 |
-| `kangtoe99_ItemData.cs` (SO) | 아이템 정의 |
-| `kangtoe99_ItemInventory.cs` | 보유 아이템 + 스택 추적 |
-| `kangtoe99_TriggerEffectData.cs` (SO 추상) | 트리거 효과 베이스 |
-| `kangtoe99_EnemyTier.cs` (enum + curve) | 5등급 정의 |
+### 아이템 시각 prefab (R8a, 사용자 결정 — 공통 틀 prefab 1개)
+- 자산별 prefab 폐기. **공통 `Assets/Prefabs/UIs/ItemDisplay.prefab` 1개**가 시각 틀. `kangtoe99_ItemDisplayView` 컴포넌트가 SO의 Icon/이름/설명을 받아 Image·Text에 주입
+- LevelUpChoiceSlot/BuildEntrySlot은 `displayContainer` + `displayPrefab(ItemDisplayView)` 참조만 보유. Bind 시 컨테이너 자식으로 인스턴스화 후 `ItemDisplayView.Bind(choice, stack)` 호출
+- xN 표기는 `ItemDisplayView`의 stackText(우상단 anchor)가 담당. stack≤1이면 비표시
+- 자동 셋업 도구가 ItemDisplay.prefab 1개를 자동 생성. 슬롯 prefab은 displayContainer/displayPrefab 필드 누락 감지 시 재생성. ILevelUpChoice·ItemData·InstantDropItemData의 DisplayPrefab은 제거됨
 
-### 폐기 또는 대체
-| 파일 | 사유 |
-|---|---|
-| 탄창/재장전 UI | 에너지 게이지로 대체 |
-| `kangtoe99_AmmoUIManager` 등 | 에너지 UI 컴포넌트로 교체 |
+**R8b (미착수)**: 풀 가중치 / Luck 스탯 → 고등급 ItemData 풀 확률 상승 / 같은 선택지 연속 등장 방지 / 회복 카테고리 / 아이템 아이콘 UI(StatIconRegistry 활용)
 
-## 단계별 구현 계획
+## 미착수 Phase 세부
 
-### Phase R1: 조작·카메라 기초 (완료)
-- IRotationInput + MouseRotationInput, CameraFollow, GridBackground, 화면 wrap-around 제거
+### R6b: 아이템 트리거 효과
+1. `TriggerEffectData` 추상 SO + Subscribe/Unsubscribe
+2. 구현체 2~3종 선정·구현
+3. `ItemData`에 `List<TriggerEffectData> triggers` 필드 추가, `ItemInventory.TryAdd`/제거에서 Subscribe/Unsubscribe 연결
+4. **수용 기준**: 트리거 효과를 가진 ItemData 획득 시 해당 이벤트에서 효과 발동
 
-### Phase R2: 오픈 필드 + 적 리사이클 (완료)
-- EnemyRegistry, EnemySpawner 원주 재배치
-
-### Phase R3: 스탯 시스템 (다음 작업)
-1. `IStatModifier` 인터페이스 + `StatType` enum 정의
-2. `kangtoe99_PlayerStats` 컴포넌트 작성 (base값 + modifier 합산)
-3. Player·PlayerShooting을 PlayerStats 조회 방식으로 리팩터
-4. **수용 기준**: 외부에서 modifier를 추가/제거하면 발사 데미지·이동 속도 등이 즉시 반영됨
-
-### Phase R4: 에너지 시스템
-1. `kangtoe99_EnergySystem` 컴포넌트 작성
-2. PlayerShooting 발사 전 에너지 체크 + 소모
-3. UI: 탄창 UI 폐기 → 에너지 게이지
-4. **수용 기준**: 연사 시 에너지가 줄고, 멈추면 회복되며, 0일 때 발사 불가
-
-### Phase R5: Bump 데미지 시스템 (2026-05-13 폐기)
-양방향 교환형 Bump 데미지 및 관련 스탯 모두 폐기. 기존 동작(플레이어만 데미지 받음) 유지.
-
-### Phase R6: 아이템 시스템
-1. `kangtoe99_ItemData` SO + 등급 enum
-2. `kangtoe99_ItemInventory` 컴포넌트 (Player 부착)
-3. 트리거 효과 베이스 클래스 + 기본 구현체 2~3종
-4. **수용 기준**: ItemData 에셋을 인벤토리에 추가하면 스탯 modifier·트리거가 발동
-
-### Phase R7: 적 5등급 시스템
+### R7: 적 5등급
 1. `EnemyTier` enum + 등급 스케일 데이터
-2. EnemyData에 tier 필드 추가, 시각·수치 적용
-3. EnemySpawner 등급 확률 곡선
-4. 등급별 드롭 확률 차등 (행운 스탯 반영)
-5. **수용 기준**: 시간이 지날수록 고등급 적 출현 비율 증가, 처치 시 등급에 맞는 드롭
+2. `EnemyData`에 tier 필드 추가, 시각·수치 적용
+3. `EnemySpawner` 등급 확률 곡선
+4. 등급별 드롭 확률 차등 (Luck 스탯 반영)
+5. **수용 기준**: 시간 경과로 고등급 출현 비율 증가, 등급에 맞는 드롭
 
-### Phase R8: LevelUpSystem 풀 확장
-1. 동적 선택지 풀 (카테고리별 가중치)
-2. 스탯 강화 / 아이템 / 회복 카테고리 통합
-3. 행운 스탯이 고등급 아이템 풀 확률에 반영
-4. 4지선다 UI 유지, 아이콘·등급 색상 표시
-5. **수용 기준**: 매 레벨업마다 다양한 카테고리가 등장, 빌드 다양성 체감
+### R8b: LevelUpSystem 풀 확장 (R8a 완료 후)
+1. 풀 가중치 / Luck 스탯이 고등급 ItemData 풀 확률에 반영
+2. 같은 선택지 연속 등장 방지 (직전 LevelUp 기억)
+3. 회복 카테고리 (별도 ILevelUpChoice 구현체 — HpRestoreChoice 등)
+4. 아이콘·등급 색상 표시 (StatIconRegistry + Tier 컬러)
+5. ItemInventory의 임시 디버그 핫키 제거
+6. **수용 기준**: 매 레벨업마다 다양한 카테고리·등급 등장, 빌드 다양성 체감
 
-### Phase R9: 무기 프레임워크 (확장)
-1. `WeaponBase` 추상 + ScriptableObject `WeaponData`
+### R9: 무기 프레임워크 (확장)
+1. `WeaponBase` 추상 + `WeaponData` SO
 2. `ForwardWeapon` / `AutoAimNearestWeapon` 구현
 3. 아이템에 "무기 슬롯 추가" 카테고리 통합
-4. **수용 기준**: 새 무기를 획득하면 동시 발사, 같은 무기 재선택 시 레벨업
+4. **수용 기준**: 새 무기 획득 시 동시 발사, 같은 무기 재선택 시 레벨업
 
-### Phase R10: 밸런싱 & 폴리싱 (PC 완성)
-- 추진력/마찰/회전속도 튜닝, 등급 스폰 곡선, 아이템 가중치 조정
+### R10: 밸런싱 & 폴리싱 (PC 완성)
+추진력/마찰/회전속도 튜닝, 등급 스폰 곡선, 아이템 가중치 조정
 
-### Phase R11: 모바일 대응
-- `JoystickRotationInput` + 이동/사격 가상 컨트롤
-- 세로 UI 재배치
+### R11: 모바일 대응
+`JoystickRotationInput` + 이동/사격 가상 컨트롤, 세로 UI 재배치
 
 ## 미결정 사항
 
-- **maxSpeed 클램프 제거 (2026-05-13)**: Character.Move 및 Enemy.ChasePlayer의 `velocity.magnitude > maxSpd` 클램프 제거하고 drag(linearDamping)로만 평형 속도 결정. 프리팹의 drag와 moveForce 비율로 튜닝 필요. 플레이 테스트 후 감각이 어색하면 부활 검토.
+- maxSpeed 클램프 제거 후 플레이 감각 (어색하면 부활 검토)
+- 에너지 0일 때 빈클릭 사운드 유지 여부
+- R6b 트리거 효과 첫 풀 구체 선정
+- 등급별 스폰 곡선 곡률 (선형/지수형)
+- Luck 효과 곱: 1포인트당 드롭률 +X%, 고등급 가중치 +Y배 — 수치 미정
+- 카메라 부드러운 추적: 현재 직접 고정, 추후 Cinemachine 검토
+- 구 문서 처리: 리워크 완료 후 [GameDesign.md](GameDesign.md) / [TechnicalSpec.md](TechnicalSpec.md) 갱신
 
-- **에너지 0일 때 빈클릭 사운드 유지 여부**
-- **아이템 트리거 효과 첫 풀에 어떤 효과들을 넣을지** (R6 구현 시 결정)
-- **등급별 스폰 곡선 곡률** (선형/지수형)
-- **행운 스탯 효과 곱**: 1포인트당 드롭률 +X%, 고등급 가중치 +Y배 — 수치 미정
-- **카메라 부드러운 추적**: 현재 직접 lock, 추후 Cinemachine 검토
-- **구 문서 처리**: 리워크 완료 후 [GameDesign.md](GameDesign.md) / [TechnicalSpec.md](TechnicalSpec.md) 갱신
+## 폴더 구조 (DevelopmentGuide 가이드 준수)
 
-### 폴더 구조 마이그레이션 (DevelopmentGuide 가이드 준수)
+- `Assets/Scripts/<Category>/` — 카테고리 폴더 (Player/Enemy/Drop/Item/Stats/Systems/UI/Utils/Core/Network)
+- `Assets/Prefabs/<Category>/` — Drops/UIs/(Enemies/Player 등은 평면)
+- `Assets/Data/<Category>/` — Players(StatsData), Items(ItemData) 등 SO 자산
+- `Assets/Editor/Drawers/` — 영구 PropertyDrawer
+- `Assets/Editor/Tools/` — 메뉴 도구 (필요 시 일회성 도구는 사용 후 폐기)
 
-[DevelopmentGuide.md](DevelopmentGuide.md)의 폴더 규약은 신규 작업부터 적용하되, 기존 평면 구조의 마이그레이션은 추후 검토:
+> **자산 이동 시**: `.meta` 파일을 함께 옮겨야 GUID 보존(인스펙터 참조 깨짐 방지). `git mv`가 안전.
 
-- `Assets/Editor/Tools/kangtoe99_SceneSetup.cs` 단일 영구 도구로 통합 (메뉴: `Tools > BumpOrBlast > Setup Scene`). 이전 Phase별 셋업 도구(R3/R4)는 폐기됨
-- `Assets/Prefabs/` 평면 → `Assets/Prefabs/<Category>/` (Player, Enemies, Items, Weapons, World, VFXs, Bosses)
-- `Assets/Data/<Category>/` 신설 (현재 SO 자산 인스턴스 없음, 클래스만 존재)
-
-**마이그레이션 시 주의**: `.meta` 파일 함께 이동해야 GUID 보존(인스펙터 참조 깨짐 방지). 시점은 Phase R6(아이템 SO 도입)~R7(적 5등급) 무렵 자산이 늘어나기 시작할 때가 자연스러움.
-
-## 스크립트 명명 규칙 (유지)
+## 스크립트 명명 규칙
 
 - 모든 신규 C# 클래스 파일에 `kangtoe99_` 접두어
 - 아트는 Unity 기본 프리미티브 + 색상 구분 (`Tilesheet`, `Simple Vector Icons` 임포트됨)

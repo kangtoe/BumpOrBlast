@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac99e2fedb2a54e49bdf1f309e020ff9, type: 3}
+  m_Name: InstantDropItem_XP
+  m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_InstantDropItemData
+  displayName: XP Boost
+  icon: {fileID: 0}
+  displayPrefab: {fileID: 7948233742723947664, guid: 8bf390eeb52654946ae7eca48bd9c8ca, type: 3}
+  description: "\uC989\uC2DC XP \uD68D\uB4DD"
+  dropPrefab: {fileID: 4991588376140438129, guid: 4d38b8888e8f88f47bcfa7eda386f3a3, type: 3}

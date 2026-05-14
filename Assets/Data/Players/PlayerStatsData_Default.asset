@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_PlayerStatsData
   baseStats:
     values:
-    - 5
+    - 2
     - 18
     - 1
     - 0

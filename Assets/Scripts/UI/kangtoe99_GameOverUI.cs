@@ -17,6 +17,9 @@ public class kangtoe99_GameOverUI : MonoBehaviour
     [SerializeField] private Button nextButton;
     [SerializeField] private Text pageText;
 
+    [Header("Build Display")]
+    [SerializeField] private kangtoe99_BuildDisplayUI buildDisplay;
+
     [Header("Settings")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color highlightColor = Color.yellow;
@@ -66,6 +69,9 @@ public class kangtoe99_GameOverUI : MonoBehaviour
         {
             kangtoe99_CrosshairUI.Instance.gameObject.SetActive(false);
         }
+
+        // 빌드 영역 갱신 (패널이 켜질 때 OnEnable에서도 호출되지만 명시적으로 한 번 더)
+        if (buildDisplay != null) buildDisplay.Refresh();
 
         // 서버에 랭킹 저장
         SubmitRankToServer();

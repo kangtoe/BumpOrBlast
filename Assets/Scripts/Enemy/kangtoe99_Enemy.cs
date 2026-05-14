@@ -77,10 +77,10 @@ public class kangtoe99_Enemy : kangtoe99_Character
             kangtoe99_ScoreSystem.Instance.AddScore(scoreValue);
         }
 
-        // 아이템 드롭
-        if (kangtoe99_ItemDropSystem.Instance != null)
+        // 드롭
+        if (kangtoe99_DropSystem.Instance != null)
         {
-            kangtoe99_ItemDropSystem.Instance.TryDropItem(transform.position, transform.up, scoreValue);
+            kangtoe99_DropSystem.Instance.TryDrop(transform.position, transform.up, scoreValue);
         }
 
         Debug.Log($"Enemy died! Score: {scoreValue}");
