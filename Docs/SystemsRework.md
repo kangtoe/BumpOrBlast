@@ -12,11 +12,18 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 > 이 문서는 원래 "VampireSurvivorsRework.md"로 시작해 장르 전환을 목표로 했으나, 2026-05-12 재검토로 자동 전진·자동 사격을 폐기하면서 방향성이 "전환"에서 "심화"로 재정립되었다.
 
 - **작성일**: 2026-04-21
-- **최근 갱신**: 2026-05-14 — 종합 정보 패널(RunSummary) + 게임오버 2단계 흐름
-- **상태**: Phase R1~R4 + R6a + R8a 완료. R5 폐기. R6b 트리거 · R7 적 5등급 · R8b(고급 풀 가중치) · R9~R11 미착수.
+- **최근 갱신**: 2026-05-15 — R7 적 5등급 + 챔피언 몹 + 드롭 재구성
+- **상태**: Phase R1~R4 + R6a + R7 + R8a 완료. R5 폐기. R6b 트리거 · R8b(고급 풀 가중치) · R9~R11 미착수.
 - **관련 문서**: [GameDesign.md](GameDesign.md), [TechnicalSpec.md](TechnicalSpec.md), [DevelopmentGuide.md](DevelopmentGuide.md)
 
 ## 변경 이력 (핵심 결정만)
+
+### 2026-05-15
+- **R7 적 5등급** → `kangtoe99_EnemyTier` enum(Gray~Orange) + `kangtoe99_EnemyTierData` SO(등급별 statMultiplier/scoreMultiplier/color/scaleMultiplier). 스폰 시 배율 레이어로 적용 — `EnemyData` 데이터화는 안 함(사용자 결정). 기존 시간 기반 HP 배율(`currentHealthMultiplier`)과 **둘 다 유지**(등급×시간 누적, 사용자 결정). `Enemy.ApplyTier(entry)`가 HP/Damage/moveForce/score·색·스케일 적용
+- **스폰 진행: solid → blend → solid** (사용자 결정) → `EnemyTierData.PickTier(elapsedTime)`. cycle = `solidDuration`+`blendDuration`. solid 구간은 단일 등급, blend 구간은 인접 두 등급을 비율(0→1) 추첨, 최고 등급 도달 후 고정
+- **챔피언 몹** (사용자 결정) → 5등급과 **별개 축**. 새 적이 아니라 기존 적의 강화판. `EnemySpawner`가 `championCheckInterval`마다 `championChance` 확률로 추가 스폰. `Enemy.ApplyChampion(statMul, scaleMul)`이 등급 배율 위에 추가 강화 + `isChampion` 플래그
+- **드롭 재구성** (사용자 결정) → 일반 적은 드롭 없음(처치 점수만). 기존 `DropSystem.TryDrop`(XP/HP/Bomb 로직)은 그대로 두되 **호출 지점을 챔피언 처치로만 이동** — `Enemy.Die()`에서 `isChampion` 게이트. 등급별 드롭 풀 차등은 폐기(드롭은 챔피언 전용)
+- 신규 자산: `Assets/Data/Enemy/EnemyTierData.asset` — `EnemySpawner.tierData`에 배선
 
 ### 2026-05-14
 - **종합 정보 패널(RunSummary) 도입** → `kangtoe99_RunStats`(한 판 통계 누적 싱글톤: 가한/받은 피해·처치·생존시간) + `kangtoe99_RunSummaryUI`(레벨/점수/생존시간/처치/피해 + 빌드 표시). 스탯은 **항목당 Text 1개**(`levelText`/`scoreText`/… 6개 필드, VerticalLayoutGroup 행 배치) — 한 덩어리 문자열 아님
@@ -25,6 +32,10 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 - **사망 시 플레이어 `Destroy` → `SetActive(false)`** → 게임오버 정보 패널의 빌드 표시(`BuildDisplayUI`)가 플레이어의 `ItemInventory`를 계속 참조해야 하므로, `Player.Die()`에서 파괴 대신 비활성화. 비활성 GameObject는 Update/물리가 멈추지만 컴포넌트 참조는 유효. 씬 재시작에서 정리됨
 - **일반 플레이 HUD 빌드 표시 제거** → 상시 HUD 빌드 표시(`HUD_BuildContainer`) 삭제. 빌드/아이템 목록은 **공용 정보 패널(일시정지·게임오버)에서만** 표시. `BuildDisplayUI` 스크립트 자체는 유지(공용 패널·게임오버 랭킹 영역이 사용)
 - **자동 셋업 도구 재작성** → `kangtoe99_SceneSetup` (메뉴 `Tools > BumpOrBlast > Setup RunSummary`). RunStats 싱글톤 보장 + 씬의 RunSummaryUI를 찾아 `panelRoot`/`titleText`/`hintText`/`buildDisplay` 배선 + `PauseSystem.infoPanel`·`GameManager.infoPanel` 배선 + 정리(구버전 SummaryPanel · `HUD_BuildContainer` 제거). 일회성 — 셋업 후 폐기
+- **플레이어 이름 입력 이전** → 시작 화면 이름 입력 폐기. 이름은 RunSummaryUI 패널에서 Edit 버튼 → 입력 패널로 수정. `PlayerPrefs` 저장(기본값 "player name"), 수정 안 하면 계속 유지. 입력 패널 열린 동안 Enter/Space/ESC는 게임 진행(랭킹 전환·일시정지 해제)에 안 쓰이도록 가드(`RunSummaryUI.IsNameEditOpen`)
+- **게임오버 리더보드 재설계** → 페이지네이션·`myRankEntry` 폐기. 최상위 5 + 내 주변 5(중복 허용)를 한 명단으로 `entryContainer`에 `LeaderboardEntry` 프리팹 런타임 생성. 내 항목 이름은 항상 `GameManager.PlayerName` 기준 렌더(서버 PATCH 타이밍과 무관). `RankApi.UpdateRankName`(이름만 PATCH) 추가 — 이름 수정 시 서버 반영(best-effort)
+- **전체 TMP 전환** → `UnityEngine.UI.Text` → `TextMeshProUGUI` 전 프로젝트 전환(씬 36개 + 프리팹 11개 + 스크립트 6개). 씬/프리팹은 fileID 유지로 참조 보존. `InputField` 1개는 레거시 uGUI로 남김. `Assets/TextMesh Pro/`는 .gitignore 대상(표준 관행 — 폰트 GUID가 결정적이라 참조 유지됨) → 클론 후 `Window > TextMeshPro > Import TMP Essential Resources` 필요
+- **씬 타이틀 영어화** → 인스펙터에 한글로 직렬화돼 있던 `pauseTitle`/`summaryTitle` → "Paused"/"Game Over" (인게임 텍스트 영어 통일 방침)
 
 ### 2026-05-12 (방향성 재정립)
 - "장르 전환" → "시스템 심화"로 재정립 (문서 이름 SystemsRework)
@@ -101,19 +112,21 @@ TriggerEffectData (abstract ScriptableObject)
 ```
 첫 풀 후보: OnLowHpDamageBoost / OnKillSpawnProjectile / OnEnergyFullCritical 등. 구체 선정은 R6b 진입 시 결정. (OnBumpExplode는 Bump 양방향 폐기로 컨셉 부적합 — 제외)
 
-### 적 5등급 (R7 미착수)
-| 등급 | 색상 | HP/Damage/Speed | 드롭 |
+### 적 5등급 + 챔피언 (R7 완료)
+등급별 배율 (`EnemyTierData.asset` 초기값 — 인스펙터에서 튜닝):
+| 등급 | statMultiplier | scoreMultiplier | scaleMultiplier |
 |---|---|---|---|
-| Gray | 회색 | 1배 | XP 소량, 일반 풀 |
-| Green | 초록 | 1.5배 | XP 1.5배, Green+ 풀 확률 |
-| Blue | 파랑 | 2.5배 | XP 3배, Blue+ 풀 확률 |
-| Purple | 보라 | 4배 | XP 6배, Purple+ 풀 확률 |
-| Orange | 주황 | 8배 (미니보스급) | XP 10배 + 확정 고등급 드롭 |
+| Gray | 1 | 1 | 1 |
+| Green | 1.5 | 1.5 | 1.1 |
+| Blue | 2.5 | 3 | 1.2 |
+| Purple | 4 | 6 | 1.35 |
+| Orange | 8 | 10 | 1.6 |
 
-- `EnemyData`에 tier 필드 추가, 등급별 수치 스케일은 별도 `EnemyTierCurve` SO로 관리 검토
-- 행동 패턴은 등급과 독립 (기존 Normal/Fast/Heavy 유지)
-- 스폰 확률은 시간(난이도 곡선)에 따라 상위 비율 증가
-- 시각: 스프라이트 동일, 색상만 등급별 차등. Orange는 크기도 명확히 차등
+- 등급은 **스폰 시 배율 레이어** — `EnemyData` 데이터화 안 함. 행동 패턴(프리팹)은 등급과 독립
+- 스폰 진행은 **solid → blend → solid**: `solidDuration`(단일 등급) ↔ `blendDuration`(인접 두 등급 비율 추첨) 반복, 최고 등급 도달 후 고정
+- 기존 시간 기반 HP 배율(`currentHealthMultiplier`)과 등급 배율은 둘 다 적용(누적)
+- **챔피언**: 등급과 별개 축. 주기적 확률 스폰되는 강화 변종(`championStatMultiplier`/`championScaleMultiplier`). **드롭은 챔피언만** — 일반 적은 처치 점수만, 챔피언만 `DropSystem.TryDrop`(XP/HP/Bomb) 호출
+- 시각: 색상은 등급별, 크기는 등급·챔피언 배율 누적
 
 ### LevelUpSystem (R8a 완료, R8b 미착수)
 
@@ -159,13 +172,6 @@ TriggerEffectData (abstract ScriptableObject)
 2. 구현체 2~3종 선정·구현
 3. `ItemData`에 `List<TriggerEffectData> triggers` 필드 추가, `ItemInventory.TryAdd`/제거에서 Subscribe/Unsubscribe 연결
 4. **수용 기준**: 트리거 효과를 가진 ItemData 획득 시 해당 이벤트에서 효과 발동
-
-### R7: 적 5등급
-1. `EnemyTier` enum + 등급 스케일 데이터
-2. `EnemyData`에 tier 필드 추가, 시각·수치 적용
-3. `EnemySpawner` 등급 확률 곡선
-4. 등급별 드롭 확률 차등 (Luck 스탯 반영)
-5. **수용 기준**: 시간 경과로 고등급 출현 비율 증가, 등급에 맞는 드롭
 
 ### R8b: LevelUpSystem 풀 확장 (R8a 완료 후)
 1. 풀 가중치 / Luck 스탯이 고등급 ItemData 풀 확률에 반영

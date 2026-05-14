@@ -7,6 +7,12 @@ public class kangtoe99_Enemy : kangtoe99_Character
     [SerializeField] private int scoreValue = 10;
     [SerializeField] private float despawnDistance = 30f;
 
+    // 등급·챔피언 — 스폰 시 EnemySpawner가 적용 (둘은 별개 축).
+    private kangtoe99_EnemyTier currentTier = kangtoe99_EnemyTier.Gray;
+    private bool isChampion = false;
+    public kangtoe99_EnemyTier Tier => currentTier;
+    public bool IsChampion => isChampion;
+
     private Transform player;
 
     protected override void Awake()
@@ -93,13 +99,13 @@ public class kangtoe99_Enemy : kangtoe99_Character
             kangtoe99_RunStats.Instance.AddKill();
         }
 
-        // 드롭
-        if (kangtoe99_DropSystem.Instance != null)
+        // 드롭은 챔피언만 — 일반 적은 처치 점수만 (기존 드롭 로직을 챔피언 처치로 통합)
+        if (isChampion && kangtoe99_DropSystem.Instance != null)
         {
             kangtoe99_DropSystem.Instance.TryDrop(transform.position, transform.up, scoreValue);
         }
 
-        Debug.Log($"Enemy died! Score: {scoreValue}");
+        Debug.Log($"Enemy died! Score: {scoreValue}, Champion: {isChampion}");
         base.Die();
     }
 
@@ -120,6 +126,42 @@ public class kangtoe99_Enemy : kangtoe99_Character
             sr.color = data.color;
             originalColor = data.color; // 원래 색상 저장
         }
+    }
+
+    // 스폰 시 EnemySpawner가 호출 — 등급 배율을 기존 수치 위에 곱하고 시각을 등급색·크기로 바꾼다.
+    public void ApplyTier(kangtoe99_EnemyTierData.TierEntry entry)
+    {
+        if (entry == null) return;
+        currentTier = entry.tier;
+
+        maxHealth *= entry.statMultiplier;
+        currentHealth = maxHealth;
+        damage *= entry.statMultiplier;
+        moveForce *= entry.statMultiplier;
+        scoreValue = Mathf.RoundToInt(scoreValue * entry.scoreMultiplier);
+
+        transform.localScale *= entry.scaleMultiplier;
+
+        SpriteRenderer sr = spriteRenderer != null ? spriteRenderer : GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.color = entry.color;
+            originalColor = entry.color;
+        }
+    }
+
+    // 스폰 시 EnemySpawner가 호출 — 챔피언은 등급과 별개로 수치·스케일을 추가 강화. 드롭 자격이 생긴다.
+    public void ApplyChampion(float statMultiplier, float scaleMultiplier)
+    {
+        isChampion = true;
+
+        maxHealth *= statMultiplier;
+        currentHealth = maxHealth;
+        damage *= statMultiplier;
+        moveForce *= statMultiplier;
+        scoreValue = Mathf.RoundToInt(scoreValue * statMultiplier);
+
+        transform.localScale *= scaleMultiplier;
     }
 
     public float GetDamage() => damage;

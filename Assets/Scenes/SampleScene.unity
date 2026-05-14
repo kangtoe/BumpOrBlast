@@ -16635,6 +16635,11 @@ MonoBehaviour:
   initialHealthMultiplier: 1
   maxHealthMultiplier: 4
   healthMultiplierIncreaseRate: 0.01
+  tierData: {fileID: 11400000, guid: 53fac3152f264b4cabff7f88612ce4d0, type: 2}
+  championCheckInterval: 30
+  championChance: 0.5
+  championStatMultiplier: 3
+  championScaleMultiplier: 1.8
 --- !u!4 &1930471000
 Transform:
   m_ObjectHideFlags: 0
