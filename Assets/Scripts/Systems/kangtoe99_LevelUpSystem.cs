@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class kangtoe99_LevelUpSystem : MonoBehaviour
 {
@@ -24,7 +25,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [SerializeField] private Transform slotContainer;
     [SerializeField] private kangtoe99_LevelUpChoiceSlot slotPrefab;
     [SerializeField] private Image expBar;
-    [SerializeField] private Text levelText;
+    [SerializeField] private TMP_Text levelText;
 
     [Header("SFX")]
     [SerializeField] private AudioClip levelUpSound;

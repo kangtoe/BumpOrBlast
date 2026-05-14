@@ -35,6 +35,12 @@ public class UpdateRankRequest
 }
 
 [System.Serializable]
+public class UpdateRankNameRequest
+{
+    public string name;
+}
+
+[System.Serializable]
 public class RankDataArray
 {
     public RankData[] data;
@@ -146,6 +152,29 @@ public class kangtoe99_RankApi : MonoBehaviour
         Action<RankData> onSuccess, Action<string> onError = null)
     {
         var body = JsonUtility.ToJson(new UpdateRankRequest { score = score });
+
+        using var request = new UnityWebRequest($"{baseUrl}/rank/{id}", "PATCH");
+        request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(body));
+        request.downloadHandler = new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
+
+        yield return request.SendWebRequest();
+
+        if (request.result != UnityWebRequest.Result.Success)
+        {
+            onError?.Invoke(request.error);
+            yield break;
+        }
+
+        var rank = JsonUtility.FromJson<RankData>(request.downloadHandler.text);
+        onSuccess?.Invoke(rank);
+    }
+
+    // PATCH /rank/:id (이름만 갱신 — score/level은 건드리지 않음)
+    public IEnumerator UpdateRankName(int id, string name,
+        Action<RankData> onSuccess, Action<string> onError = null)
+    {
+        var body = JsonUtility.ToJson(new UpdateRankNameRequest { name = name });
 
         using var request = new UnityWebRequest($"{baseUrl}/rank/{id}", "PATCH");
         request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(body));

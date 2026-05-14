@@ -33,6 +33,8 @@ public class kangtoe99_PauseSystem : MonoBehaviour
         if (kangtoe99_GameManager.Instance == null) return false;
         if (!kangtoe99_GameManager.Instance.IsGameStarted()) return false;
         if (kangtoe99_GameManager.Instance.IsGameOver()) return false;
+        // 이름 입력 패널이 열려 있는 동안엔 ESC를 무시 (입력 패널의 Confirm/Cancel로만 닫는다).
+        if (infoPanel != null && infoPanel.IsNameEditOpen) return false;
         // LevelUp이 timeScale=0 직접 설정 후 패널 표시 중인 동안엔 ESC 무시.
         // (이미 isPaused 상태면 무시 해제하기 위한 Resume은 허용)
         if (!isPaused && Time.timeScale == 0f) return false;

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using TMPro;
 
 // 아이템 UI 틀. 빌드 화면 슬롯으로 배치.
 // 평소 표시: 아이콘 + 중복 수(xN).
@@ -9,12 +10,12 @@ public class kangtoe99_ItemDisplayView : MonoBehaviour, IPointerEnterHandler, IP
 {
     [Header("Slot")]
     [SerializeField] private Image iconImage;
-    [SerializeField] private Text stackText;
+    [SerializeField] private TMP_Text stackText;
 
     [Header("Tooltip (hover)")]
     [SerializeField] private GameObject tooltipRoot;
-    [SerializeField] private Text tooltipNameText;
-    [SerializeField] private Text tooltipDescriptionText;
+    [SerializeField] private TMP_Text tooltipNameText;
+    [SerializeField] private TMP_Text tooltipDescriptionText;
 
     private kangtoe99_ItemData boundData;
 

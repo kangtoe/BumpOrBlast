@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 // 선택지 UI 틀. LevelUp 패널에 4개 인스턴스화.
 // 자체적으로 Icon + Name + Description을 직접 표시. ItemDisplayView 사용 안 함.
@@ -8,8 +9,8 @@ public class kangtoe99_LevelUpChoiceSlot : MonoBehaviour
 {
     [SerializeField] private Button button;
     [SerializeField] private Image iconImage;
-    [SerializeField] private Text nameText;
-    [SerializeField] private Text descriptionText;
+    [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text descriptionText;
 
     private kangtoe99_ILevelUpChoice choice;
     private Action<kangtoe99_ILevelUpChoice> onSelected;

@@ -1,13 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class kangtoe99_LeaderboardEntry : MonoBehaviour
 {
     [SerializeField] private Image backgroundImage;
-    [SerializeField] private Text rankText;
-    [SerializeField] private Text nameText;
-    [SerializeField] private Text levelText;
-    [SerializeField] private Text scoreText;
+    [SerializeField] private TMP_Text rankText;
+    [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text levelText;
+    [SerializeField] private TMP_Text scoreText;
 
     public void SetData(int rank, string name, int level, int score)
     {

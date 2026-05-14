@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
@@ -17,8 +16,10 @@ public class kangtoe99_GameManager : MonoBehaviour
     [SerializeField] private GameObject gameOverPanel; // 게임오버 2단계: 랭킹(리더보드)
     [SerializeField] private kangtoe99_GameOverUI gameOverUI;
 
-    [Header("Player Name")]
-    [SerializeField] private InputField nameInput;
+    // 이름은 시작 화면이 아니라 종합 정보 패널(RunSummaryUI)에서 보고 수정한다.
+    // 로컬(PlayerPrefs)에 저장돼 다음 실행에도 유지된다.
+    private const string PlayerNamePrefKey = "PlayerName";
+    private const string DefaultPlayerName = "player name";
     public string PlayerName { get; private set; }
 
     [Header("Game Over Settings")]
@@ -53,18 +54,8 @@ public class kangtoe99_GameManager : MonoBehaviour
         // 게임 시작 전 상태
         isGameStarted = false;
 
-        // 기본 이름 생성 (플레이스홀더에 표기)
-        PlayerName = "user" + Random.Range(1000, 10000);
-        if (nameInput != null)
-        {
-            nameInput.text = "";
-            if (nameInput.placeholder != null)
-            {
-                Text placeholderText = nameInput.placeholder.GetComponent<Text>();
-                if (placeholderText != null)
-                    placeholderText.text = PlayerName;
-            }
-        }
+        // 로컬에 저장된 이름을 불러온다 (없으면 기본값)
+        PlayerName = PlayerPrefs.GetString(PlayerNamePrefKey, DefaultPlayerName);
 
         // 시작 패널 표시
         if (startPanel != null)
@@ -113,15 +104,18 @@ public class kangtoe99_GameManager : MonoBehaviour
         }
     }
 
+    // 종합 정보 패널(RunSummaryUI)의 이름 편집에서 호출. 로컬에 저장해 다음 실행에도 유지한다.
+    public void SetPlayerName(string newName)
+    {
+        string trimmed = newName != null ? newName.Trim() : "";
+        PlayerName = string.IsNullOrEmpty(trimmed) ? DefaultPlayerName : trimmed;
+        PlayerPrefs.SetString(PlayerNamePrefKey, PlayerName);
+        PlayerPrefs.Save();
+    }
+
     private void StartGame()
     {
         isGameStarted = true;
-
-        // 입력된 이름 저장
-        if (nameInput != null && !string.IsNullOrEmpty(nameInput.text))
-        {
-            PlayerName = nameInput.text;
-        }
 
         // 게임 시작 사운드 재생
         if (gameStartSound != null)
@@ -200,8 +194,10 @@ public class kangtoe99_GameManager : MonoBehaviour
         {
             infoPanel.Show(summaryTitle, summaryHint);
 
+            // 이름 입력 패널이 열려 있는 동안엔 Enter/Space를 이름 입력에 양보한다.
             yield return new WaitUntil(() =>
-                Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space));
+                !infoPanel.IsNameEditOpen &&
+                (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)));
 
             infoPanel.Hide();
         }

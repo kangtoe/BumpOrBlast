@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 public class kangtoe99_ScoreSystem : MonoBehaviour
 {
@@ -10,7 +10,7 @@ public class kangtoe99_ScoreSystem : MonoBehaviour
     private int highScore = 0;
 
     [Header("UI")]
-    [SerializeField] private Text scoreText;
+    [SerializeField] private TMP_Text scoreText;
 
     private void Awake()
     {
