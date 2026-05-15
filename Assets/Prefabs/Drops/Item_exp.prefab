@@ -171,14 +171,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_DropXPOrb
   lifetime: 600
   initialForce: 3
+  scatterRandomness: 1
+  drag: 3
+  repulsionRange: 0.7
+  repulsionForce: 8
   pickupParticlePrefab: {fileID: 7086463146503359885, guid: 761b1bb3a62bd1843b9ef0cedff18ab7, type: 3}
-  pickupColor: {r: 0.24705884, g: 0.41176474, b: 0.8745099, a: 1}
   pulseSpeed: 10
   pulseAmount: 0.1
   pickupSound: {fileID: 8300000, guid: 326bdd055ff7db14a9053f8d214f4111, type: 3}
   scoreValue: 10
   xpLifetime: 20
-  magnetForce: 30
+  magnetForce: 5
   magnetMinDistance: 0.05
   blinkStartBeforeEnd: 5
   blinkSpeed: 8
