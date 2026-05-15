@@ -169,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0058650a90a01f4b83b098115c6e120, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_DropHealthPack
-  lifetime: 600
+  lifetime: 30
   initialForce: 3
   pickupParticlePrefab: {fileID: 7086463146503359885, guid: 761b1bb3a62bd1843b9ef0cedff18ab7, type: 3}
   pickupColor: {r: 0, g: 0.96470594, b: 0.47450984, a: 1}

@@ -4,7 +4,15 @@ using UnityEngine;
 public class kangtoe99_Drop : MonoBehaviour
 {
     [Header("Drop Settings")]
-    [SerializeField] protected float lifetime = 600f;
+    [SerializeField] protected float lifetime = 20f;
+
+    [Header("Despawn Blink (사라지기 직전 깜빡임)")]
+    [Tooltip("사라지기 몇 초 전부터 깜빡일지. 0이면 깜빡임 없음.")]
+    [SerializeField] protected float blinkStartBeforeEnd = 5f;
+    [Tooltip("깜빡임 주파수(Hz).")]
+    [SerializeField] protected float blinkSpeed = 8f;
+    [Tooltip("깜빡임 시 최저 알파.")]
+    [SerializeField, Range(0f, 1f)] protected float blinkMinAlpha = 0.2f;
 
     [Header("Physics")]
     [SerializeField] protected float initialForce = 3f;
@@ -33,6 +41,9 @@ public class kangtoe99_Drop : MonoBehaviour
     protected Vector2 dropDirection;
     private Vector3 baseScale;
     private Camera mainCam;
+    private float spawnTime;
+    private SpriteRenderer cachedRenderer;
+    private float baseAlpha = 1f;
     private static readonly Collider2D[] RepulsionBuffer = new Collider2D[16];
 
     protected virtual void Start()
@@ -40,6 +51,11 @@ public class kangtoe99_Drop : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         baseScale = transform.localScale;
         mainCam = Camera.main;
+        spawnTime = Time.time;
+
+        cachedRenderer = GetComponent<SpriteRenderer>();
+        if (cachedRenderer == null) cachedRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (cachedRenderer != null) baseAlpha = cachedRenderer.color.a;
 
         if (rb != null)
         {
@@ -63,6 +79,32 @@ public class kangtoe99_Drop : MonoBehaviour
         // 펄스 애니메이션
         float pulse = 1f + Mathf.Sin(Time.time * pulseSpeed) * pulseAmount;
         transform.localScale = baseScale * pulse;
+
+        ApplyDespawnBlink();
+    }
+
+    // 사라지기 blinkStartBeforeEnd초 전부터 사인파로 알파를 흔든다. 구간 밖에서는 원래 알파 유지.
+    private void ApplyDespawnBlink()
+    {
+        if (cachedRenderer == null || blinkStartBeforeEnd <= 0f) return;
+
+        float remaining = lifetime - (Time.time - spawnTime);
+        if (remaining > blinkStartBeforeEnd)
+        {
+            Color restore = cachedRenderer.color;
+            if (!Mathf.Approximately(restore.a, baseAlpha))
+            {
+                restore.a = baseAlpha;
+                cachedRenderer.color = restore;
+            }
+            return;
+        }
+
+        float wave = 0.5f * (Mathf.Sin(Time.time * blinkSpeed * Mathf.PI * 2f) + 1f);
+        float alpha = Mathf.Lerp(blinkMinAlpha, baseAlpha, wave);
+        Color c = cachedRenderer.color;
+        c.a = alpha;
+        cachedRenderer.color = c;
     }
 
     protected virtual void FixedUpdate()
