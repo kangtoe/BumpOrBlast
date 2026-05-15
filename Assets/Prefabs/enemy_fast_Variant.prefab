@@ -34,7 +34,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: moveForce
-      value: 8
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: maxRotationSpeed

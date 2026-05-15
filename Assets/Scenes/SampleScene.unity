@@ -3483,7 +3483,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_Player
   moveForce: 50
-  maxSpeed: 6
+  speedCapOvershoot: 1.5
   maxRotationSpeed: 270
   maxHealth: 100
   collisionKnockbackForce: 10
@@ -3505,8 +3505,8 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 2
+  m_Mass: 2
+  m_LinearDamping: 1
   m_AngularDamping: 0.05
   m_GravityScale: 0
   m_Material: {fileID: 0}
@@ -16349,10 +16349,11 @@ MonoBehaviour:
   - {fileID: 6136649435194348503, guid: 2858ac27c2ec108409afb3cb4f4b2477, type: 3}
   - {fileID: 684994416705669148, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
   player: {fileID: 451658495}
-  initialSpawnInterval: 5
-  minSpawnInterval: 1.5
-  intervalDecreaseRate: 0.02
-  spawnDistanceFromScreen: 2
+  baseSpawnInterval: 1
+  baseTargetCount: 3
+  targetCountGrowthPerSec: 0.15
+  maxTargetCount: 30
+  spawnDistanceFromScreen: 1
   tierData: {fileID: 11400000, guid: 53fac3152f264b4cabff7f88612ce4d0, type: 2}
   postStepDuration: 30
   postStepIncrement: 0.5

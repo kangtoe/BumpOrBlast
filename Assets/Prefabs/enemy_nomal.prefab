@@ -134,8 +134,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60cbab4990c0d054a82c380f6547abe9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_Enemy
-  moveForce: 4
-  maxSpeed: 2
+  moveForce: 2
+  speedCapOvershoot: 1.5
   maxRotationSpeed: 180
   maxHealth: 50
   collisionKnockbackForce: 0.8

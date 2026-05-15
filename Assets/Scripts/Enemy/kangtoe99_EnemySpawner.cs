@@ -9,9 +9,14 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     [SerializeField] private Transform player;
 
     [Header("Spawn Settings")]
-    [SerializeField] private float initialSpawnInterval = 3f;
-    [SerializeField] private float minSpawnInterval = 0.5f;
-    [SerializeField] private float intervalDecreaseRate = 0.05f;
+    [Tooltip("기준 스폰 간격(초). 화면 내 적 수 == targetCount일 때의 실제 인터벌.")]
+    [SerializeField] private float baseSpawnInterval = 1f;
+    [Tooltip("초기 기준 적 수. count < target이면 스폰이 빨라지고, 초과하면 느려진다.")]
+    [SerializeField] private float baseTargetCount = 3f;
+    [Tooltip("초당 기준 적 수 증가량. 시간이 지날수록 화면이 더 붐벼야 압박이 유지된다.")]
+    [SerializeField] private float targetCountGrowthPerSec = 0.15f;
+    [Tooltip("기준 적 수 상한.")]
+    [SerializeField] private float maxTargetCount = 30f;
     [SerializeField] private float spawnDistanceFromScreen = 2f;
 
     [Header("Enemy Tier")]
@@ -36,7 +41,6 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     [SerializeField] private float championScaleMultiplier = 1.8f;
 
     private Camera mainCamera;
-    private float currentSpawnInterval;
     private float spawnTimer;
     private bool isSpawning = false;
     private float elapsedTime;
@@ -54,8 +58,7 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
             return;
         }
 
-        currentSpawnInterval = initialSpawnInterval;
-        spawnTimer = currentSpawnInterval;
+        spawnTimer = 0f;
 
         mainCamera = Camera.main;
         if (mainCamera == null)
@@ -83,12 +86,7 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
         if (spawnTimer <= 0)
         {
             SpawnEnemy();
-            spawnTimer = currentSpawnInterval;
-
-            currentSpawnInterval = Mathf.Max(
-                currentSpawnInterval - intervalDecreaseRate,
-                minSpawnInterval
-            );
+            spawnTimer = ComputeEffectiveInterval();
         }
 
         // 챔피언: 일정 주기마다 확률로 추가 스폰 (등급 추첨과 별개 축)
@@ -142,6 +140,16 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
             character.SetMaxHealth(newMaxHealth);
             character.Heal(newMaxHealth);
         }
+    }
+
+    // 인구 피드백: count < target이면 빨라지고, count > target이면 느려진다.
+    // (count+1)/(target+1) 배수로 부드럽게 보정 — count == target에서 정확히 baseSpawnInterval.
+    // target은 시간에 따라 baseTargetCount → maxTargetCount로 선형 증가하여 시간 기반 압박을 표현.
+    private float ComputeEffectiveInterval()
+    {
+        float target = Mathf.Min(baseTargetCount + targetCountGrowthPerSec * elapsedTime, maxTargetCount);
+        int count = kangtoe99_EnemyRegistry.Count;
+        return baseSpawnInterval * (count + 1f) / (target + 1f);
     }
 
     // 등급 진행 완료 후, 경과 시간에 따라 스텝 단위로 증가하는 HP 배율 (진행 중엔 1).
@@ -201,7 +209,6 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     public void StartSpawning()
     {
         isSpawning = true;
-        currentSpawnInterval = initialSpawnInterval;
         spawnTimer = 0;
         elapsedTime = 0f;
         championTimer = championCheckInterval;
