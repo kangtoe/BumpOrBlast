@@ -975,7 +975,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 19.200012}
-  m_SizeDelta: {x: 360, y: 32}
+  m_SizeDelta: {x: 360, y: 24}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &202611907
 MonoBehaviour:
@@ -991,12 +991,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_EnergyBarUI
   energySystem: {fileID: 451658502}
   fillImage: {fileID: 315737213}
-  normalColor: {r: 0.3, g: 0.7, b: 1, a: 1}
+  normalColor: {r: 0.24705884, g: 0.41176474, b: 0.8745099, a: 1}
   emptyColor: {r: 1, g: 0.3, b: 0.3, a: 1}
-  emptyThreshold: 0.15
+  emptyThreshold: 0.25
   tickColor: {r: 1, g: 1, b: 1, a: 1}
-  tickWidth: 5
-  pointsPerTick: 1
+  tickWidth: 4
+  pointsPerTick: 25
 --- !u!1 &234292810
 GameObject:
   m_ObjectHideFlags: 0
@@ -2107,7 +2107,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.3, g: 0.7, b: 1, a: 1}
+  m_Color: {r: 0.24705884, g: 0.40784317, b: 0.8745099, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3464,8 +3464,9 @@ MonoBehaviour:
   fallbackBulletSpeed: 20
   fallbackEnergyCost: 1
   bulletKnockback: 6
-  formationSideSpacing: 0.5
-  formationDepth: 1
+  formationSideSpacing: 0.1
+  formationSideScalePadding: 0.25
+  formationOuterSpeedMultiplier: 0.7
   shootSound: {fileID: 8300000, guid: 1743f0d445b86480b8ecfdbc8c84a5f9, type: 3}
   emptyClickSound: {fileID: 0}
   emptyClickCooldown: 0.3
@@ -5671,7 +5672,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.28627452, g: 0.6784314, b: 0.9686275, a: 1}
+  m_Color: {r: 0.24313727, g: 0.41176474, b: 0.8705883, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5824,7 +5825,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -10, y: -10}
+  m_SizeDelta: {x: -8, y: -8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &759775131
 MonoBehaviour:
@@ -9336,7 +9337,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -62.699997}
+  m_AnchoredPosition: {x: 0, y: -62.700012}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1166295301

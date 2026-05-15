@@ -16,10 +16,12 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     [SerializeField] private float bulletKnockback = 5f;
 
     [Header("Multi-shot Formation (Count >= 2)")]
-    [Tooltip("발사체가 좌우로 펼쳐지는 총 간격 (유닛)")]
+    [Tooltip("발사체 사이 간격의 고정 오프셋(유닛). 스케일과 무관")]
     [SerializeField] private float formationSideSpacing = 0.6f;
-    [Tooltip("양 끝 발사체가 뒤로 빠지는 깊이 (유닛). ∧ 역V 형태")]
-    [SerializeField] private float formationDepth = 0.25f;
+    [Tooltip("발사체 스케일에 비례해 추가되는 간격(유닛 × bulletScale). 큰 발사체는 자동으로 더 벌어짐. 0이면 비활성")]
+    [SerializeField] private float formationSideScalePadding = 0f;
+    [Tooltip("멀티샷 시 양 끝 발사체의 속도 배율 (가운데=1.0). 외곽일수록 느려짐")]
+    [SerializeField, Range(0.1f, 1f)] private float formationOuterSpeedMultiplier = 0.7f;
 
     [Header("SFX")]
     [SerializeField] private AudioClip shootSound;
@@ -82,6 +84,9 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         float spread = stats != null ? stats.GetFinal(kangtoe99_StatType.ProjectileSpread) : 0f;
         int pierce = stats != null ? Mathf.Max(0, Mathf.RoundToInt(stats.GetFinal(kangtoe99_StatType.Pierce))) : 0;
 
+        // 멀티샷 인접 탄환 간격 = 고정 오프셋 + 스케일 비례 패딩
+        float effectiveSideSpacing = formationSideSpacing + formationSideScalePadding * bulletScale;
+
         for (int i = 0; i < count; i++)
         {
             // 각도 슬롯은 위치 i의 반대편을 사용 — 양 끝 위치가 가운데를 향하도록 교차.
@@ -95,14 +100,18 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
                 angleOffset = Random.Range(slotStart, slotStart + slotSize);
             }
 
-            // Count >= 2일 때 ∧ 시작 위치: 가운데는 firePoint, 양 끝은 좌우 + 뒤로.
+            // Count >= 2일 때 좌우로 펼쳐진 일자 시작 위치 + 외곽 속도 감소.
+            // 사이드: effectiveSideSpacing × 가운데 기준 인덱스 오프셋 — count 늘어도 간격 유지.
+            // 속도: |정규화 위치|×2 (= 0~1)로 1 → formationOuterSpeedMultiplier 사이를 lerp.
             Vector3 spawnPos = firePoint.position;
+            float thisBulletSpeed = bulletSpeed;
             if (count > 1)
             {
-                float t = ((float)i / (count - 1)) - 0.5f; // -0.5 ~ +0.5
-                Vector3 side = firePoint.right * (t * formationSideSpacing);
-                Vector3 depth = -firePoint.up * (Mathf.Abs(t) * formationDepth);
-                spawnPos += side + depth;
+                float t = ((float)i / (count - 1)) - 0.5f; // -0.5 ~ +0.5 (정규화 위치)
+                float sideOffset = (i - (count - 1) * 0.5f) * effectiveSideSpacing;
+                spawnPos += firePoint.right * sideOffset;
+
+                thisBulletSpeed = bulletSpeed * Mathf.Lerp(1f, formationOuterSpeedMultiplier, Mathf.Abs(t) * 2f);
             }
 
             Quaternion rotation = firePoint.rotation * Quaternion.Euler(0f, 0f, angleOffset);
@@ -116,7 +125,7 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
             if (bulletScript != null)
             {
                 Vector2 dir = rotation * Vector3.up;
-                bulletScript.Initialize(dir, bulletSpeed, bulletKnockback, damage, pierce);
+                bulletScript.Initialize(dir, thisBulletSpeed, bulletKnockback, damage, pierce);
             }
         }
 

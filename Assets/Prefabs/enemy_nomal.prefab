@@ -145,7 +145,7 @@ MonoBehaviour:
   hitSound: {fileID: 8300000, guid: 9514a408285a205409a06d2166250665, type: 3}
   deathSound: {fileID: 8300000, guid: cab7b87e49683304cb8fd53b765359a9, type: 3}
   damage: 10
-  scoreValue: 5
+  scoreValue: 10
   despawnDistance: 30
 --- !u!58 &872089030968924965
 CircleCollider2D:
