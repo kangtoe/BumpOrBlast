@@ -117,10 +117,14 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
 
         kangtoe99_Enemy enemy = enemyObj.GetComponent<kangtoe99_Enemy>();
 
-        // 등급 배율 (배율 레이어) — 시간 기반 HP 배율보다 먼저 적용
+        // 등급 배율 (배율 레이어) — 시간 기반 HP 배율보다 먼저 적용. 색상은 공용 팔레트에서.
         if (enemy != null && tierData != null)
         {
-            enemy.ApplyTier(tierData.PickTier(elapsedTime));
+            var tierEntry = tierData.PickTier(elapsedTime);
+            if (tierEntry != null)
+            {
+                enemy.ApplyTier(tierEntry, tierData.GetColor(tierEntry.tier));
+            }
         }
 
         // 챔피언 강화 (등급과 별개 축)

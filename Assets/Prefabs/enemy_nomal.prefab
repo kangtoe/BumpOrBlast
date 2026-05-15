@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.16143, y: 0.4189, z: 0}
-  m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1845246645434442217}
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 317161735, guid: 0e1507d77a4b01440b51279f1f836dc9, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -146,6 +146,7 @@ MonoBehaviour:
   deathSound: {fileID: 8300000, guid: cab7b87e49683304cb8fd53b765359a9, type: 3}
   damage: 10
   scoreValue: 5
+  despawnDistance: 30
 --- !u!58 &872089030968924965
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -209,7 +210,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.65, y: 0.65, z: 0.65}
+  m_LocalScale: {x: 0.675, y: 0.675, z: 0.675}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6665424404718431832}
@@ -263,7 +264,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 317161735, guid: 0e1507d77a4b01440b51279f1f836dc9, type: 3}
   m_Color: {r: 0.468, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0

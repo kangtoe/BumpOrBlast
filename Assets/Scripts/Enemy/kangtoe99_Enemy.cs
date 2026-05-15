@@ -8,9 +8,9 @@ public class kangtoe99_Enemy : kangtoe99_Character
     [SerializeField] private float despawnDistance = 30f;
 
     // 등급·챔피언 — 스폰 시 EnemySpawner가 적용 (둘은 별개 축).
-    private kangtoe99_EnemyTier currentTier = kangtoe99_EnemyTier.Gray;
+    private kangtoe99_Tier currentTier = kangtoe99_Tier.Gray;
     private bool isChampion = false;
-    public kangtoe99_EnemyTier Tier => currentTier;
+    public kangtoe99_Tier Tier => currentTier;
     public bool IsChampion => isChampion;
 
     private Transform player;
@@ -129,7 +129,8 @@ public class kangtoe99_Enemy : kangtoe99_Character
     }
 
     // 스폰 시 EnemySpawner가 호출 — 등급 배율을 기존 수치 위에 곱하고 시각을 등급색·크기로 바꾼다.
-    public void ApplyTier(kangtoe99_EnemyTierData.TierEntry entry)
+    // 등급 색상은 공용 팔레트에서 온 값을 EnemySpawner가 넘겨준다.
+    public void ApplyTier(kangtoe99_EnemyTierData.TierEntry entry, Color tierColor)
     {
         if (entry == null) return;
         currentTier = entry.tier;
@@ -145,8 +146,8 @@ public class kangtoe99_Enemy : kangtoe99_Character
         SpriteRenderer sr = spriteRenderer != null ? spriteRenderer : GetComponent<SpriteRenderer>();
         if (sr != null)
         {
-            sr.color = entry.color;
-            originalColor = entry.color;
+            sr.color = tierColor;
+            originalColor = tierColor;
         }
     }
 

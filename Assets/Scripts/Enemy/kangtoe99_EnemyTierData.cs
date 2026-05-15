@@ -10,12 +10,11 @@ public class kangtoe99_EnemyTierData : ScriptableObject
     [System.Serializable]
     public class TierEntry
     {
-        public kangtoe99_EnemyTier tier;
+        public kangtoe99_Tier tier;
         [Tooltip("HP·Damage·Speed 공통 배율")]
         public float statMultiplier = 1f;
         [Tooltip("점수·XP 드롭 배율")]
         public float scoreMultiplier = 1f;
-        public Color color = Color.gray;
         [Tooltip("스프라이트 크기 배율")]
         public float scaleMultiplier = 1f;
         [Tooltip("이 등급만 스폰되는 구간 길이(초). 마지막 등급은 무시 — 도달 후 영구 고정")]
@@ -26,6 +25,9 @@ public class kangtoe99_EnemyTierData : ScriptableObject
 
     [Header("등급 데이터 (Gray→Orange 순서로). 스텝별 solid/blend 시간은 각 항목에서 설정")]
     [SerializeField] private TierEntry[] tiers;
+
+    [Tooltip("등급별 색상 — 적·아이템 공용 팔레트")]
+    [SerializeField] private kangtoe99_TierColorPalette colorPalette;
 
     // 등급 진행이 끝나는 시점(초) — 마지막 등급 solid가 시작되는 시각.
     // 이 시점 이후엔 등급이 더 안 오르므로, EnemySpawner는 여기서부터 시간 배율로 난이도를 잇는다.
@@ -41,6 +43,12 @@ public class kangtoe99_EnemyTierData : ScriptableObject
             }
             return total;
         }
+    }
+
+    // 등급 색상 — 공용 팔레트에서 조회. 팔레트 미할당 시 흰색.
+    public Color GetColor(kangtoe99_Tier tier)
+    {
+        return colorPalette != null ? colorPalette.Get(tier) : Color.white;
     }
 
     // 경과 시간으로 스폰할 등급을 뽑는다. 타임라인을 등급별 solid → blend 순서로 걷는다.

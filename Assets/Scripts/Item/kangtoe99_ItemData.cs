@@ -10,7 +10,7 @@ public class kangtoe99_ItemData : ScriptableObject, kangtoe99_ILevelUpChoice
     [SerializeField] private Sprite icon;
 
     [Header("Tier & Stack")]
-    [SerializeField] private kangtoe99_ItemTier tier = kangtoe99_ItemTier.Gray;
+    [SerializeField] private kangtoe99_Tier tier = kangtoe99_Tier.Gray;
     [SerializeField, Min(1)] private int maxStack = 5;
 
     [Header("Modifiers (applied per stack)")]
@@ -18,7 +18,7 @@ public class kangtoe99_ItemData : ScriptableObject, kangtoe99_ILevelUpChoice
 
     public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
     public Sprite Icon => icon;
-    public kangtoe99_ItemTier Tier => tier;
+    public kangtoe99_Tier Tier => tier;
     public int MaxStack => maxStack;
     public IReadOnlyList<kangtoe99_StatModifierData> Modifiers => modifiers;
 

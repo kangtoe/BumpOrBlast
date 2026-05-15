@@ -35,7 +35,8 @@
 - **solid** = 그 등급만 스폰. **blend** = 인접 두 등급을 비율(0→1)로 추첨하며 전환
 - `ProgressionDuration` = Σ(solid+blend) of Gray~Purple = **현재 200초**
 - 마지막 등급(Orange)의 solid/blend는 무시 — 도달 후 영구 고정
-- 시각: 색상은 등급별, 크기는 scaleMul
+- 시각: 색상은 공용 팔레트(`Assets/Data/TierColorPalette.asset`)에서, 크기는 scaleMul
+- 등급 색상은 적·아이템이 공유 — `kangtoe99_TierColorPalette` SO 한 곳에서 관리
 
 ## 스폰 / 진행 후 (EnemySpawner 인스펙터)
 

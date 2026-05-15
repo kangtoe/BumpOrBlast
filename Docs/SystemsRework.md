@@ -19,7 +19,8 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 ## 변경 이력 (핵심 결정만)
 
 ### 2026-05-15
-- **R7 적 5등급** → `kangtoe99_EnemyTier` enum(Gray~Orange) + `kangtoe99_EnemyTierData` SO(등급별 statMultiplier/scoreMultiplier/color/scaleMultiplier). 스폰 시 배율 레이어로 적용 — `EnemyData` 데이터화는 안 함(사용자 결정). `Enemy.ApplyTier(entry)`가 HP/Damage/moveForce/score·색·스케일 적용
+- **R7 적 5등급** → `kangtoe99_Tier` enum(Gray~Orange, 적·아이템 공용) + `kangtoe99_EnemyTierData` SO(등급별 statMultiplier/scoreMultiplier/scaleMultiplier). 스폰 시 배율 레이어로 적용 — `EnemyData` 데이터화는 안 함(사용자 결정). `EnemySpawner`가 `Enemy.ApplyTier(entry, color)`로 HP/Damage/moveForce/score·색·스케일 적용
+- **등급 색상 공용 팔레트** (사용자 결정) → `kangtoe99_TierColorPalette` SO(`Assets/Data/TierColorPalette.asset`)가 등급별 색을 한 곳에서 관리. 적 틴트(`EnemyTierData.colorPalette`)·아이템 배경 UI가 공유. `kangtoe99_EnemyTier`/`kangtoe99_ItemTier` 별개 enum을 `kangtoe99_Tier` 하나로 통합
 - **난이도 = 등급 → 스텝 배율 순차** (사용자 결정) → 등급 진행 중엔 시간 배율 OFF(1배), **마지막 등급(Orange) solid 도달 후부터** 적 HP가 **스텝마다** 강해짐(스폰당 누적 아님). `EnemySpawner.GetPostProgressionMultiplier()` — `over = elapsed - tierData.ProgressionDuration`, `1 + floor(over/postStepDuration)×postStepIncrement`, `postMaxMultiplier` 상한. 진행 후 스케일은 선형이라 SO 아닌 스포너 인스펙터 필드(사용자 결정). HP에만 적용 — 공격력·속도는 등급 배율로만
 - **스폰 진행: solid → blend → solid** (사용자 결정) → `EnemyTierData.PickTier(elapsedTime)`. solid 구간은 단일 등급, blend 구간은 인접 두 등급을 비율(0→1) 추첨, 최고 등급 도달 후 고정. **solid/blend 시간은 스텝별** — 각 `TierEntry`가 자기 `solidDuration`/`blendDuration` 보유(인스펙터 설정)
 - **챔피언 몹** (사용자 결정) → 5등급과 **별개 축**. 새 적이 아니라 기존 적의 강화판. `EnemySpawner`가 `championCheckInterval`마다 `championChance` 확률로 추가 스폰. `Enemy.ApplyChampion(statMul, scaleMul)`이 등급 배율 위에 추가 강화 + `isChampion` 플래그

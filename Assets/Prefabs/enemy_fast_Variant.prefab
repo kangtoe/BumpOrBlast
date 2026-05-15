@@ -12,21 +12,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: enemy_fast_Variant
       objectReference: {fileID: 0}
-    - target: {fileID: 872089030968924965, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
-      propertyPath: m_Radius
-      value: 0.35
-      objectReference: {fileID: 0}
     - target: {fileID: 1845246645434442217, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.6
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 1845246645434442217, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.6
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 1845246645434442217, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.6
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: maxSpeed
@@ -54,23 +50,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6665424404718431832, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6665424404718431832, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6665424404718431832, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1.2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6665424404718431832, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 3.6943297
       objectReference: {fileID: 0}
     - target: {fileID: 6665424404718431832, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -4.5355883
       objectReference: {fileID: 0}
     - target: {fileID: 6665424404718431832, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_LocalPosition.z
@@ -111,7 +107,7 @@ PrefabInstance:
     - target: {fileID: 6901123927391957602, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
+      objectReference: {fileID: -1551716152, guid: 0e1507d77a4b01440b51279f1f836dc9, type: 3}
     - target: {fileID: 7297189681456392454, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_Size.y
       value: 1
@@ -119,7 +115,7 @@ PrefabInstance:
     - target: {fileID: 7297189681456392454, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
+      objectReference: {fileID: -1551716152, guid: 0e1507d77a4b01440b51279f1f836dc9, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
