@@ -4,7 +4,8 @@ public class kangtoe99_Character : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField] protected float moveForce = 50f;
-    [SerializeField] protected float maxSpeed = 5f;
+    [SerializeField, Tooltip("속도 캡 배수. 캡 = (moveForce / (mass × linearDamping)) × 이 값. 1.0 = 평형 속도 엄격, 1.5 권장, 2.0 = 여유")]
+    protected float speedCapOvershoot = 1.5f;
     protected Rigidbody2D rb;
     protected Vector2 moveDirection;
 
@@ -44,6 +45,7 @@ public class kangtoe99_Character : MonoBehaviour
     protected virtual void FixedUpdate()
     {
         Move();
+        ClampSpeed();
     }
 
     /// <summary>
@@ -64,11 +66,31 @@ public class kangtoe99_Character : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 
-    // 평형 속도는 Rigidbody2D.linearDamping(drag)로만 결정. 충돌·외부 힘 시 일시적으로 maxSpeed를 초과할 수 있음.
-    // 감각이 어색하면 maxSpeed 클램프 부활 검토 (이전 구현: velocity.magnitude > maxSpd 시 normalized * maxSpd).
+    // 평형 속도 v_eq = F / (m × d) (Unity 2D 물리). ClampSpeed가 v_eq × speedCapOvershoot로 캡을 건다.
+    // 충돌·임펄스 등 외부 힘으로 캡까지는 잠깐 초과 가능, 그 위로는 잘림.
     protected virtual void Move()
     {
         rb.AddForce(moveDirection * GetEffectiveMoveForce());
+    }
+
+    // 평형 속도(moveForce, mass, linearDamping 기반) × overshoot로 클램프.
+    // drag/mass가 0이면 평형 속도가 정의 안 되므로 클램프 생략.
+    protected void ClampSpeed()
+    {
+        if (rb == null) return;
+        float drag = rb.linearDamping;
+        float mass = rb.mass;
+        if (drag <= 0f || mass <= 0f) return;
+
+        float terminalSpeed = GetEffectiveMoveForce() / (mass * drag);
+        float cap = terminalSpeed * speedCapOvershoot;
+        if (cap <= 0f) return;
+
+        Vector2 v = rb.linearVelocity;
+        if (v.sqrMagnitude > cap * cap)
+        {
+            rb.linearVelocity = v.normalized * cap;
+        }
     }
 
     protected virtual float GetEffectiveMoveForce() => moveForce;
@@ -148,13 +170,6 @@ public class kangtoe99_Character : MonoBehaviour
     {
         maxHealth = newMaxHealth;
         currentHealth = Mathf.Min(currentHealth, maxHealth);
-    }
-
-    public float GetMoveSpeed() => maxSpeed;
-
-    public void SetMoveSpeed(float newSpeed)
-    {
-        maxSpeed = newSpeed;
     }
 
     public void SetMoveForce(float newForce)

@@ -55,6 +55,7 @@ public class kangtoe99_Enemy : kangtoe99_Character
     {
         // Character의 Move()를 호출하지 않고 직접 AddForce 사용
         ChasePlayer();
+        ClampSpeed();
     }
 
     // 평형 속도는 Rigidbody2D.linearDamping(drag)로만 결정. 프리팹의 drag와 moveForce 비율로 튜닝.
@@ -113,7 +114,6 @@ public class kangtoe99_Enemy : kangtoe99_Character
     {
         if (data == null) return;
 
-        maxSpeed = data.moveSpeed;
         maxHealth = data.maxHealth;
         currentHealth = maxHealth;
         damage = data.damage;
@@ -160,6 +160,8 @@ public class kangtoe99_Enemy : kangtoe99_Character
         currentHealth = maxHealth;
         damage *= statMultiplier;
         moveForce *= statMultiplier;
+        // mass도 같이 올려 F/m 비율을 유지 — 평형 속도 동일, 가속·넉백 저항만 무거워짐.
+        if (rb != null) rb.mass *= statMultiplier;
         scoreValue = Mathf.RoundToInt(scoreValue * statMultiplier);
 
         transform.localScale *= scaleMultiplier;
