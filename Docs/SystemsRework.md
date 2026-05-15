@@ -12,7 +12,7 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 > 이 문서는 원래 "VampireSurvivorsRework.md"로 시작해 장르 전환을 목표로 했으나, 2026-05-12 재검토로 자동 전진·자동 사격을 폐기하면서 방향성이 "전환"에서 "심화"로 재정립되었다.
 
 - **작성일**: 2026-04-21
-- **최근 갱신**: 2026-05-15 — R7 적 5등급 + 챔피언 몹 + 드롭 재구성
+- **최근 갱신**: 2026-05-15 — R7 적 5등급 + 챔피언 몹 + 드롭 재구성 + XP orb 마그넷/깜빡임 + 챔피언 보너스 HP비율 가중
 - **상태**: Phase R1~R4 + R6a + R7 + R8a 완료. R5 폐기. R6b 트리거 · R8b(고급 풀 가중치) · R9~R11 미착수.
 - **관련 문서**: [Balance.md](Balance.md), [GameDesign.md](GameDesign.md), [TechnicalSpec.md](TechnicalSpec.md), [DevelopmentGuide.md](DevelopmentGuide.md)
 
@@ -26,6 +26,11 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 - **챔피언 몹** (사용자 결정) → 5등급과 **별개 축**. 새 적이 아니라 기존 적의 강화판. `EnemySpawner`가 `championCheckInterval`마다 `championChance` 확률로 추가 스폰. `Enemy.ApplyChampion(statMul, scaleMul)`이 등급 배율 위에 추가 강화 + `isChampion` 플래그
 - **드롭 재구성** (사용자 결정) → 일반 적은 드롭 없음(처치 점수만). 기존 `DropSystem.TryDrop`(XP/HP/Bomb 로직)은 그대로 두되 **호출 지점을 챔피언 처치로만 이동** — `Enemy.Die()`에서 `isChampion` 게이트. 등급별 드롭 풀 차등은 폐기(드롭은 챔피언 전용)
 - 신규 자산: `Assets/Data/Enemy/EnemyTierData.asset` — `EnemySpawner.tierData`에 배선
+- **드롭 재구성 v2** (사용자 결정, 2026-05-15) → 위 v1을 다시 갱신:
+  - **모든 적 → XP orb 드롭** (점수는 격파 즉시 가산 폐지, **orb 픽업 시점에 가산**). `Enemy.Die()`는 등급·챔피언 배율이 반영된 `scoreValue`로 `DropSystem.DropEnemy` 호출
+  - **챔피언 → XP orb + 보너스 1종(폭탄 or 회복)**. 보너스 종류는 **플레이어 HP비율 가중**: `bombWeight = championBombWeightAtFullHP × hpRatio`, `healWeight = championHealWeightAtZeroHP × (1 - hpRatio)`. HP 만땅 → 폭탄, 빈사 → 회복. 기존 `TryDrop`의 단일 roll·쿨다운·최소 적 수·체력 임계치는 모두 폐기 — 챔피언이 드롭 게이트(스폰 빈도가 조절축)
+  - **XP orb**: `Magnet` 스탯값을 픽업 반경으로 해석, 반경 내에서 플레이어 쪽 인력. lifetime 짧게 두고 사라지기 직전 깜빡임(`xpLifetime`/`blinkStartBeforeEnd`/`blinkSpeed`/`blinkMinAlpha`). 폭탄/회복은 깜빡임·마그넷 영향 없음(드물고 회수 가치 큼)
+  - `DropSystem` API: `TryDrop` 단일 메서드 → `DropEnemy(...)` / `DropChampion(...)` 분리. 호출자(`Enemy.Die`)가 `isChampion`으로 라우팅
 
 ### 2026-05-14
 - **종합 정보 패널(RunSummary) 도입** → `kangtoe99_RunStats`(한 판 통계 누적 싱글톤: 가한/받은 피해·처치·생존시간) + `kangtoe99_RunSummaryUI`(레벨/점수/생존시간/처치/피해 + 빌드 표시). 스탯은 **항목당 Text 1개**(`levelText`/`scoreText`/… 6개 필드, VerticalLayoutGroup 행 배치) — 한 덩어리 문자열 아님
@@ -86,7 +91,7 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 - 외부 modifier 리스트로 동적 보정. 공식: `(base + Σ가산) × Π(1 + 배율)`
 - `OnStatChanged` 이벤트로 의존 컴포넌트 반응(MaxHP/BodyScale/Friction)
 - 스탯 카테고리 — 발사체(Count/Speed/Scale/Spread/Pierce), 무기(Damage/FireRate/EnergyCost), 에너지(EnergyMax/EnergyRegen), 기체(MaxHP/HPRegen/BodyScale), 이동(MoveForce/RotationSpeed/Friction), 메타(Luck/Magnet). enum 본체는 [kangtoe99_StatType.cs](../Assets/Scripts/Stats/kangtoe99_StatType.cs)
-- **메타 스탯 적용 상황**: Luck/Magnet은 아직 미적용(Drop·LevelUp 풀과 연동 시 wire-up)
+- **메타 스탯 적용 상황**: Luck 미적용, **Magnet은 XP orb 픽업 반경으로 적용**(DropXPOrb가 `PlayerStats.GetFinal(Magnet)`을 거리 임계로 사용). Luck은 LevelUp 풀·챔피언 출현률과 연동 시 wire-up
 
 ### 에너지 시스템 (구현 완료)
 - 탄창·재장전 대체. 사격 시 `EnergyCost` 소모, 시간 자동 회복만 (`EnergyRegen`/sec)

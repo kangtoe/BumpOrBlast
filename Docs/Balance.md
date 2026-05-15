@@ -63,26 +63,42 @@
 | championScaleMultiplier | 1.8 | 챔피언 스케일 배율 |
 
 - 등급과 **별개 축**. 새 적이 아니라 기존 적의 강화판
-- **드롭은 챔피언만** — 일반 적은 처치 점수만, 챔피언만 `DropSystem.TryDrop` 호출
+- **모든 적이 XP orb 드롭** — 점수는 orb 픽업 시점에서만 가산. 챔피언만 보너스(폭탄/회복) 추가
 
 ## 드롭 (DropSystem 인스펙터)
 
 | 값 | 현재 | 의미 |
 |---|---|---|
-| healthPackDropRate | 0.5 | HP팩 드롭 확률 |
-| bombDropRate | 0.5 | 폭탄 드롭 확률 |
-| minEnemiesForBomb | 15 | 폭탄 스폰 최소 적 수 |
-| bombCooldown | 120 | 폭탄 쿨다운(초) |
-| healthPackHealthThreshold | 0.6 | HP팩 스폰 체력 조건 (이하일 때) |
-| healthPackCooldown | 90 | HP팩 쿨다운(초) |
+| championBombWeightAtFullHP | 1 | HP 가득(=1) 시 폭탄 선택 가중 — hpRatio에 곱해진다 |
+| championHealWeightAtZeroHP | 1 | HP 0(=1) 시 회복 선택 가중 — (1-hpRatio)에 곱해진다 |
 
-- `TryDrop`: bomb → healthPack → (폴백) XP orb 순으로 roll. XP orb는 항상 폴백이라 챔피언은 최소 XP는 보장
-- XP orb 가치는 처치한 챔피언의 (등급·챔피언 배율 적용된) scoreValue
+### 일반 적 처치
+- `DropSystem.DropEnemy(pos, dir, scoreValue)` → XP orb 1개
+- XP orb 가치는 처치한 적의 (등급 배율 적용된) scoreValue
+- XP orb는 `Magnet` 스탯 반경 내에서 플레이어 쪽으로 인력, lifetime 종료 직전 깜빡임
+
+### 챔피언 처치
+- `DropSystem.DropChampion(pos, dir, scoreValue)` → XP orb 1개 + 보너스 1종
+- 보너스 선택: `bombWeight = championBombWeightAtFullHP × hpRatio`, `healWeight = championHealWeightAtZeroHP × (1 - hpRatio)` 정규화 후 추첨
+  - HP 만땅(1.0) → 100% 폭탄
+  - HP 빈사(0.0) → 100% 회복
+  - HP 50% → 50:50
+- 쿨다운/최소 적 수/체력 임계치는 모두 제거(챔피언 스폰 빈도가 게이트)
+
+## XP Orb (DropXPOrb 프리팹 인스펙터)
+
+| 값 | 의미 |
+|---|---|
+| xpLifetime | XP orb 수명(초). 끝나면 자동 사라짐 |
+| magnetForce | Magnet 범위 내에서 플레이어 쪽으로 가하는 힘 |
+| magnetMinDistance | 이 거리 이내에선 인력 생략(떨림 방지) |
+| blinkStartBeforeEnd | 사라지기 N초 전부터 깜빡임 시작 |
+| blinkSpeed | 깜빡임 주파수(Hz) |
+| blinkMinAlpha | 깜빡임 최저 알파 |
 
 ## 미결정 / 검토 중
 
 - **스폰 속도 게이팅**: 축 3이 t=0부터 항상 적용 — 축 1·2의 진행 중/후 분리 원칙과 어긋남. 게이팅하거나 스텝식으로 바꿀지 미결정
 - **진행 후 HP 배율 방식**: 현재 선형(가산). 복리(`1.5^step`)로 바꿀지
 - **진행 후 스케일 대상**: 현재 HP만. 공격력·속도·점수에도 적용할지
-- **챔피언 드롭 풍성함**: 현재 기존 `TryDrop` roll 그대로. 챔피언이 유일한 드롭원이라 HP팩/폭탄이 너무 드물 수 있음 — 확정 드롭/다중 드롭 검토
 - **Luck 스탯 연동** (R8b): 챔피언 출현률·드롭 확률에 반영할지

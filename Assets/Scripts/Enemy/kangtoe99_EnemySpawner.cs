@@ -221,6 +221,12 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
         Debug.Log("Enemy spawning stopped!");
     }
 
+    // 디버그 패널용 즉시 스폰. 정상 스폰 로직과 동일한 경로(등급·챔피언·진행 후 HP 배율)를 거친다.
+    public void DebugSpawnEnemy(bool asChampion = false)
+    {
+        SpawnEnemy(asChampion);
+    }
+
     private void OnDrawGizmosSelected()
     {
         Camera cam = mainCamera != null ? mainCamera : Camera.main;

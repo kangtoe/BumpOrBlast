@@ -173,4 +173,6 @@ MonoBehaviour:
   initialForce: 0
   pickupParticlePrefab: {fileID: 0}
   pickupColor: {r: 1, g: 1, b: 1, a: 1}
+  pulseSpeed: 10
+  pulseAmount: 0.15
   pickupSound: {fileID: 8300000, guid: 326bdd055ff7db14a9053f8d214f4111, type: 3}

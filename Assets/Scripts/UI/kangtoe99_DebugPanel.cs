@@ -10,7 +10,7 @@ public class kangtoe99_DebugPanel : MonoBehaviour
     [SerializeField] private KeyCode toggleKey = KeyCode.BackQuote;
     [SerializeField, Min(0.05f)] private float refreshInterval = 0.25f;
     [SerializeField] private Vector2 panelPosition = new Vector2(20, 20);
-    [SerializeField] private Vector2 panelSize = new Vector2(260, 320);
+    [SerializeField] private Vector2 panelSize = new Vector2(260, 380);
     [SerializeField, Min(1f)] private float damageAmount = 25f;
 
     private bool isOpen;
@@ -39,6 +39,8 @@ public class kangtoe99_DebugPanel : MonoBehaviour
         GUILayout.Label(cachedInfo);
         GUILayout.Space(6);
         if (GUILayout.Button("Force Level Up")) Action_ForceLevelUp();
+        if (GUILayout.Button("Spawn Enemy")) Action_SpawnEnemy();
+        if (GUILayout.Button("Spawn Champion")) Action_SpawnChampion();
         if (GUILayout.Button("Kill All Enemies")) Action_KillAllEnemies();
         if (GUILayout.Button("Heal Full")) Action_HealFull();
         if (GUILayout.Button($"Damage Player (-{damageAmount:F0})")) Action_DamagePlayer();
@@ -102,6 +104,18 @@ public class kangtoe99_DebugPanel : MonoBehaviour
         {
             if (e != null) e.TakeDamage(float.MaxValue);
         }
+    }
+
+    private void Action_SpawnEnemy()
+    {
+        if (kangtoe99_EnemySpawner.Instance == null) return;
+        kangtoe99_EnemySpawner.Instance.DebugSpawnEnemy(asChampion: false);
+    }
+
+    private void Action_SpawnChampion()
+    {
+        if (kangtoe99_EnemySpawner.Instance == null) return;
+        kangtoe99_EnemySpawner.Instance.DebugSpawnEnemy(asChampion: true);
     }
 
     private void Action_HealFull()

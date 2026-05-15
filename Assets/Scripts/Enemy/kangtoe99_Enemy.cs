@@ -89,24 +89,26 @@ public class kangtoe99_Enemy : kangtoe99_Character
 
     protected override void Die()
     {
-        // 적 격파 시 즉시 점수 획득
-        if (kangtoe99_ScoreSystem.Instance != null)
-        {
-            kangtoe99_ScoreSystem.Instance.AddScore(scoreValue);
-        }
-
         if (kangtoe99_RunStats.Instance != null)
         {
             kangtoe99_RunStats.Instance.AddKill();
         }
 
-        // 드롭은 챔피언만 — 일반 적은 처치 점수만 (기존 드롭 로직을 챔피언 처치로 통합)
-        if (isChampion && kangtoe99_DropSystem.Instance != null)
+        // 점수는 더 이상 격파 즉시 가산하지 않는다 — XP orb 픽업 시점에서만 가산.
+        // 일반 적은 XP orb만, 챔피언은 XP orb + (폭탄 or 회복) 보너스 1종.
+        if (kangtoe99_DropSystem.Instance != null)
         {
-            kangtoe99_DropSystem.Instance.TryDrop(transform.position, transform.up, scoreValue);
+            if (isChampion)
+            {
+                kangtoe99_DropSystem.Instance.DropChampion(transform.position, transform.up, scoreValue);
+            }
+            else
+            {
+                kangtoe99_DropSystem.Instance.DropEnemy(transform.position, transform.up, scoreValue);
+            }
         }
 
-        Debug.Log($"Enemy died! Score: {scoreValue}, Champion: {isChampion}");
+        Debug.Log($"Enemy died! ScoreValue(orb): {scoreValue}, Champion: {isChampion}");
         base.Die();
     }
 

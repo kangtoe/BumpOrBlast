@@ -9,18 +9,12 @@ public class kangtoe99_DropSystem : MonoBehaviour
     [SerializeField] private kangtoe99_DropHealthPack healthPackPrefab;
     [SerializeField] private kangtoe99_DropBomb bombPrefab;
 
-    [Header("Bonus Drop Rates (0-1)")]
-    [SerializeField] private float healthPackDropRate = 0.1f; // 10%
-    [SerializeField] private float bombDropRate = 0.02f;      // 2%
+    [Header("Champion Bonus Weights (HP 비율 기반)")]
+    [Tooltip("HP가 가득 찼을 때(=1) 폭탄 선택 가중치. HP비율과 곱해진다.")]
+    [SerializeField] private float championBombWeightAtFullHP = 1f;
+    [Tooltip("HP가 0일 때(=1) 회복 선택 가중치. (1 - HP비율)과 곱해진다.")]
+    [SerializeField] private float championHealWeightAtZeroHP = 1f;
 
-    [Header("Spawn Conditions")]
-    [SerializeField] private int minEnemiesForBomb = 20;           // 폭탄 스폰에 필요한 최소 적 수
-    [SerializeField] private float bombCooldown = 180f;            // 폭탄 스폰 쿨다운 (3분)
-    [SerializeField] private float healthPackHealthThreshold = 0.5f; // 회복 스폰 체력 조건 (50%)
-    [SerializeField] private float healthPackCooldown = 120f;      // 회복 스폰 쿨다운 (2분)
-
-    private float lastBombSpawnTime = float.NegativeInfinity;
-    private float lastHealthPackSpawnTime = float.NegativeInfinity;
     private kangtoe99_Character playerCharacter;
 
     private void Awake()
@@ -44,37 +38,36 @@ public class kangtoe99_DropSystem : MonoBehaviour
         }
     }
 
-    public void TryDrop(Vector3 position, Vector2 direction, int scoreValue)
+    // 일반 적 처치 — XP orb 한 개만 떨어뜨린다.
+    public void DropEnemy(Vector3 position, Vector2 direction, int scoreValue)
     {
-        float roll = Random.value;
-        if (roll < bombDropRate && CanSpawnBomb())
+        SpawnXPOrb(position, direction, scoreValue);
+    }
+
+    // 챔피언 처치 — XP orb + 보너스 1종(폭탄 or 회복). 보너스 선택은 플레이어 HP 비율 가중치.
+    public void DropChampion(Vector3 position, Vector2 direction, int scoreValue)
+    {
+        SpawnXPOrb(position, direction, scoreValue);
+        SpawnChampionBonus(position, direction);
+    }
+
+    // HP가 높을수록 폭탄, 낮을수록 회복 — 선형 가중. 양쪽 합이 0이면 폴백 없이 생략.
+    private void SpawnChampionBonus(Vector3 position, Vector2 direction)
+    {
+        float hpRatio = playerCharacter != null ? Mathf.Clamp01(playerCharacter.GetHealthPercentage()) : 1f;
+        float bombWeight = championBombWeightAtFullHP * hpRatio;
+        float healWeight = championHealWeightAtZeroHP * (1f - hpRatio);
+        float total = bombWeight + healWeight;
+        if (total <= 0f) return;
+
+        if (Random.value < bombWeight / total)
         {
             SpawnBomb(position, direction);
-            lastBombSpawnTime = Time.time;
-        }
-        else if (roll < bombDropRate + healthPackDropRate && CanSpawnHealthPack())
-        {
-            SpawnHealthPack(position, direction);
-            lastHealthPackSpawnTime = Time.time;
         }
         else
         {
-            SpawnXPOrb(position, direction, scoreValue);
+            SpawnHealthPack(position, direction);
         }
-    }
-
-    private bool CanSpawnBomb()
-    {
-        if (Time.time - lastBombSpawnTime < bombCooldown) return false;
-        int enemyCount = FindObjectsByType<kangtoe99_Enemy>(FindObjectsSortMode.None).Length;
-        return enemyCount >= minEnemiesForBomb;
-    }
-
-    private bool CanSpawnHealthPack()
-    {
-        if (Time.time - lastHealthPackSpawnTime < healthPackCooldown) return false;
-        if (playerCharacter == null) return false;
-        return playerCharacter.GetHealthPercentage() <= healthPackHealthThreshold;
     }
 
     private void SpawnXPOrb(Vector3 position, Vector2 direction, int scoreValue)

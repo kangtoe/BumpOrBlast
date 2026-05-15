@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1, y: 1, z: 0}
-  m_LocalScale: {x: 0.33, y: 0.33, z: 0.33}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -84,8 +84,8 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.9215687, g: 0.77647066, b: 0, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 4a0aca3a5f2effb41b43cc0a1661d845, type: 3}
+  m_Color: {r: 0.24705884, g: 0.41176474, b: 0.8745099, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -129,7 +129,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 1
+  m_Radius: 0.62
 --- !u!50 &8680605013005867010
 Rigidbody2D:
   serializedVersion: 5
@@ -170,10 +170,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_DropXPOrb
   lifetime: 600
-  initialForce: 1
+  initialForce: 3
   pickupParticlePrefab: {fileID: 7086463146503359885, guid: 761b1bb3a62bd1843b9ef0cedff18ab7, type: 3}
-  pickupColor: {r: 1, g: 0.8431373, b: 0, a: 1}
+  pickupColor: {r: 0.24705884, g: 0.41176474, b: 0.8745099, a: 1}
   pulseSpeed: 10
-  pulseAmount: 0.05
+  pulseAmount: 0.1
   pickupSound: {fileID: 8300000, guid: 326bdd055ff7db14a9053f8d214f4111, type: 3}
   scoreValue: 10
+  xpLifetime: 20
+  magnetForce: 30
+  magnetMinDistance: 0.05
+  blinkStartBeforeEnd: 5
+  blinkSpeed: 8
+  blinkMinAlpha: 0.2
