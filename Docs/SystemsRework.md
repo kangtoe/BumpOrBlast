@@ -14,13 +14,14 @@ BumpOrBlast의 **2D 탑다운 슈터 정체성은 유지**한 채, 그 위에 **
 - **작성일**: 2026-04-21
 - **최근 갱신**: 2026-05-15 — R7 적 5등급 + 챔피언 몹 + 드롭 재구성
 - **상태**: Phase R1~R4 + R6a + R7 + R8a 완료. R5 폐기. R6b 트리거 · R8b(고급 풀 가중치) · R9~R11 미착수.
-- **관련 문서**: [GameDesign.md](GameDesign.md), [TechnicalSpec.md](TechnicalSpec.md), [DevelopmentGuide.md](DevelopmentGuide.md)
+- **관련 문서**: [Balance.md](Balance.md), [GameDesign.md](GameDesign.md), [TechnicalSpec.md](TechnicalSpec.md), [DevelopmentGuide.md](DevelopmentGuide.md)
 
 ## 변경 이력 (핵심 결정만)
 
 ### 2026-05-15
-- **R7 적 5등급** → `kangtoe99_EnemyTier` enum(Gray~Orange) + `kangtoe99_EnemyTierData` SO(등급별 statMultiplier/scoreMultiplier/color/scaleMultiplier). 스폰 시 배율 레이어로 적용 — `EnemyData` 데이터화는 안 함(사용자 결정). 기존 시간 기반 HP 배율(`currentHealthMultiplier`)과 **둘 다 유지**(등급×시간 누적, 사용자 결정). `Enemy.ApplyTier(entry)`가 HP/Damage/moveForce/score·색·스케일 적용
-- **스폰 진행: solid → blend → solid** (사용자 결정) → `EnemyTierData.PickTier(elapsedTime)`. cycle = `solidDuration`+`blendDuration`. solid 구간은 단일 등급, blend 구간은 인접 두 등급을 비율(0→1) 추첨, 최고 등급 도달 후 고정
+- **R7 적 5등급** → `kangtoe99_EnemyTier` enum(Gray~Orange) + `kangtoe99_EnemyTierData` SO(등급별 statMultiplier/scoreMultiplier/color/scaleMultiplier). 스폰 시 배율 레이어로 적용 — `EnemyData` 데이터화는 안 함(사용자 결정). `Enemy.ApplyTier(entry)`가 HP/Damage/moveForce/score·색·스케일 적용
+- **난이도 = 등급 → 스텝 배율 순차** (사용자 결정) → 등급 진행 중엔 시간 배율 OFF(1배), **마지막 등급(Orange) solid 도달 후부터** 적 HP가 **스텝마다** 강해짐(스폰당 누적 아님). `EnemySpawner.GetPostProgressionMultiplier()` — `over = elapsed - tierData.ProgressionDuration`, `1 + floor(over/postStepDuration)×postStepIncrement`, `postMaxMultiplier` 상한. 진행 후 스케일은 선형이라 SO 아닌 스포너 인스펙터 필드(사용자 결정). HP에만 적용 — 공격력·속도는 등급 배율로만
+- **스폰 진행: solid → blend → solid** (사용자 결정) → `EnemyTierData.PickTier(elapsedTime)`. solid 구간은 단일 등급, blend 구간은 인접 두 등급을 비율(0→1) 추첨, 최고 등급 도달 후 고정. **solid/blend 시간은 스텝별** — 각 `TierEntry`가 자기 `solidDuration`/`blendDuration` 보유(인스펙터 설정)
 - **챔피언 몹** (사용자 결정) → 5등급과 **별개 축**. 새 적이 아니라 기존 적의 강화판. `EnemySpawner`가 `championCheckInterval`마다 `championChance` 확률로 추가 스폰. `Enemy.ApplyChampion(statMul, scaleMul)`이 등급 배율 위에 추가 강화 + `isChampion` 플래그
 - **드롭 재구성** (사용자 결정) → 일반 적은 드롭 없음(처치 점수만). 기존 `DropSystem.TryDrop`(XP/HP/Bomb 로직)은 그대로 두되 **호출 지점을 챔피언 처치로만 이동** — `Enemy.Die()`에서 `isChampion` 게이트. 등급별 드롭 풀 차등은 폐기(드롭은 챔피언 전용)
 - 신규 자산: `Assets/Data/Enemy/EnemyTierData.asset` — `EnemySpawner.tierData`에 배선
@@ -123,8 +124,8 @@ TriggerEffectData (abstract ScriptableObject)
 | Orange | 8 | 10 | 1.6 |
 
 - 등급은 **스폰 시 배율 레이어** — `EnemyData` 데이터화 안 함. 행동 패턴(프리팹)은 등급과 독립
-- 스폰 진행은 **solid → blend → solid**: `solidDuration`(단일 등급) ↔ `blendDuration`(인접 두 등급 비율 추첨) 반복, 최고 등급 도달 후 고정
-- 기존 시간 기반 HP 배율(`currentHealthMultiplier`)과 등급 배율은 둘 다 적용(누적)
+- 스폰 진행은 **solid → blend → solid**: solid(단일 등급) ↔ blend(인접 두 등급 비율 추첨) 반복, 최고 등급 도달 후 고정. solid/blend 시간은 등급별로 각각 설정(`TierEntry.solidDuration`/`blendDuration`)
+- 등급 진행 완료(마지막 등급 solid 도달) 후엔 적 HP가 스텝마다 강해짐 — `EnemySpawner`의 `postStepDuration`/`postStepIncrement`/`postMaxMultiplier`(선형, 인스펙터). 진행 중엔 등급 escalation이, 그 후엔 스텝 배율이 난이도를 이어감
 - **챔피언**: 등급과 별개 축. 주기적 확률 스폰되는 강화 변종(`championStatMultiplier`/`championScaleMultiplier`). **드롭은 챔피언만** — 일반 적은 처치 점수만, 챔피언만 `DropSystem.TryDrop`(XP/HP/Bomb) 호출
 - 시각: 색상은 등급별, 크기는 등급·챔피언 배율 누적
 

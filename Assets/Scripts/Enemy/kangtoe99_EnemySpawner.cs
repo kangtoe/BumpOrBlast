@@ -14,13 +14,16 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     [SerializeField] private float intervalDecreaseRate = 0.05f;
     [SerializeField] private float spawnDistanceFromScreen = 2f;
 
-    [Header("Health Multiplier Settings")]
-    [SerializeField] private float initialHealthMultiplier = 1f;
-    [SerializeField] private float maxHealthMultiplier = 5f;
-    [SerializeField] private float healthMultiplierIncreaseRate = 0.02f;
-
     [Header("Enemy Tier")]
     [SerializeField] private kangtoe99_EnemyTierData tierData;
+
+    [Header("Post-Progression (등급 진행 완료 후 — 스텝마다 적 HP 강화)")]
+    [Tooltip("진행 완료 후 한 스텝의 길이(초)")]
+    [SerializeField] private float postStepDuration = 30f;
+    [Tooltip("스텝마다 더해지는 HP 배율 증가량 (1.0에서 시작)")]
+    [SerializeField] private float postStepIncrement = 0.5f;
+    [Tooltip("HP 배율 상한")]
+    [SerializeField] private float postMaxMultiplier = 4f;
 
     [Header("Champion (등급과 별개 축 — 주기적 확률 스폰, 드롭은 챔피언만)")]
     [Tooltip("챔피언 출현 시도 주기(초)")]
@@ -36,7 +39,6 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     private float currentSpawnInterval;
     private float spawnTimer;
     private bool isSpawning = false;
-    private float currentHealthMultiplier;
     private float elapsedTime;
     private float championTimer;
 
@@ -54,7 +56,6 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
 
         currentSpawnInterval = initialSpawnInterval;
         spawnTimer = currentSpawnInterval;
-        currentHealthMultiplier = initialHealthMultiplier;
 
         mainCamera = Camera.main;
         if (mainCamera == null)
@@ -87,11 +88,6 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
             currentSpawnInterval = Mathf.Max(
                 currentSpawnInterval - intervalDecreaseRate,
                 minSpawnInterval
-            );
-
-            currentHealthMultiplier = Mathf.Min(
-                currentHealthMultiplier + healthMultiplierIncreaseRate,
-                maxHealthMultiplier
             );
         }
 
@@ -133,14 +129,26 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
             enemy.ApplyChampion(championStatMultiplier, championScaleMultiplier);
         }
 
-        // 시간 기반 HP 배율 (등급·챔피언 배율 위에 추가로 곱함)
+        // 등급 진행 완료 후의 시간 배율 (HP에만, 등급·챔피언 배율 위에 추가로 곱함).
+        // 진행 중엔 1 — 등급 escalation이 난이도를 담당, 진행 후엔 스텝마다 강해진다.
         kangtoe99_Character character = enemyObj.GetComponent<kangtoe99_Character>();
         if (character != null)
         {
-            float newMaxHealth = character.GetMaxHealth() * currentHealthMultiplier;
+            float newMaxHealth = character.GetMaxHealth() * GetPostProgressionMultiplier();
             character.SetMaxHealth(newMaxHealth);
             character.Heal(newMaxHealth);
         }
+    }
+
+    // 등급 진행 완료 후, 경과 시간에 따라 스텝 단위로 증가하는 HP 배율 (진행 중엔 1).
+    // 마지막 등급 solid 도달 이후 postStepDuration마다 postStepIncrement씩 더해지며 postMaxMultiplier에서 멈춘다.
+    private float GetPostProgressionMultiplier()
+    {
+        if (tierData == null) return 1f;
+        float over = elapsedTime - tierData.ProgressionDuration;
+        if (over <= 0f) return 1f;
+        int step = Mathf.FloorToInt(over / Mathf.Max(0.01f, postStepDuration));
+        return Mathf.Min(1f + step * postStepIncrement, postMaxMultiplier);
     }
 
     private Vector2 GetRandomSpawnPosition()
@@ -190,7 +198,6 @@ public class kangtoe99_EnemySpawner : MonoBehaviour
     {
         isSpawning = true;
         currentSpawnInterval = initialSpawnInterval;
-        currentHealthMultiplier = initialHealthMultiplier;
         spawnTimer = 0;
         elapsedTime = 0f;
         championTimer = championCheckInterval;

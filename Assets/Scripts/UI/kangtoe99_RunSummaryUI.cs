@@ -34,7 +34,7 @@ public class kangtoe99_RunSummaryUI : MonoBehaviour
     [SerializeField] private TMP_Text nameText;                 // 이름 표시 행
     [SerializeField] private Button editNameButton;         // 누르면 입력 패널 표시
     [SerializeField] private GameObject nameEditPanel;      // 이름 입력 패널 (InputField + 확인/취소)
-    [SerializeField] private InputField nameEditInput;
+    [SerializeField] private TMP_InputField nameEditInput;
     [SerializeField] private Button nameEditConfirmButton;
     [SerializeField] private Button nameEditCancelButton;
 
