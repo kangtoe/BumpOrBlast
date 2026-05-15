@@ -8,9 +8,15 @@ using TMPro;
 public class kangtoe99_LevelUpChoiceSlot : MonoBehaviour
 {
     [SerializeField] private Button button;
+    [SerializeField] private Image backgroundImage; // 등급 색으로 칠해짐 (= 버튼 배경)
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private TMP_Text descriptionText;
+
+    [Header("Tier")]
+    [SerializeField] private kangtoe99_TierColorPalette tierPalette; // 적·아이템 공용 등급 색상
+    [Tooltip("ItemData가 아닌 선택지(InstantDrop 등) 배경색 — 등급이 없음")]
+    [SerializeField] private Color nonTierColor = new Color(0.15f, 0.15f, 0.2f, 0.95f);
 
     private kangtoe99_ILevelUpChoice choice;
     private Action<kangtoe99_ILevelUpChoice> onSelected;
@@ -27,6 +33,14 @@ public class kangtoe99_LevelUpChoiceSlot : MonoBehaviour
         }
         if (nameText != null) nameText.text = c?.DisplayName ?? string.Empty;
         if (descriptionText != null) descriptionText.text = c?.Description ?? string.Empty;
+
+        // 배경을 등급 색으로 — ItemData만 등급이 있고, 그 외(InstantDrop 등)는 nonTierColor
+        if (backgroundImage != null)
+        {
+            backgroundImage.color = (c is kangtoe99_ItemData item && tierPalette != null)
+                ? tierPalette.Get(item.Tier)
+                : nonTierColor;
+        }
 
         if (button != null)
         {

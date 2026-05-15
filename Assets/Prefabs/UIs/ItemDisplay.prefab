@@ -443,8 +443,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fbf6a5ed04659b49bdd2212955f1b91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_ItemDisplayView
+  backgroundImage: {fileID: 3426287901224913301}
   iconImage: {fileID: 7146523628753722290}
   stackText: {fileID: 2054062759495033427}
+  tierPalette: {fileID: 11400000, guid: 63842bad2b85441a9d5eb5fff565d0bf, type: 2}
   tooltipRoot: {fileID: 1954084867789677268}
   tooltipNameText: {fileID: 7733356590042036080}
   tooltipDescriptionText: {fileID: 4012912335865613507}

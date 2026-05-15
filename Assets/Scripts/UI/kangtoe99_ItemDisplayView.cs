@@ -9,8 +9,12 @@ using TMPro;
 public class kangtoe99_ItemDisplayView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Slot")]
+    [SerializeField] private Image backgroundImage; // 등급 색으로 칠해짐
     [SerializeField] private Image iconImage;
     [SerializeField] private TMP_Text stackText;
+
+    [Header("Tier")]
+    [SerializeField] private kangtoe99_TierColorPalette tierPalette; // 적·아이템 공용 등급 색상
 
     [Header("Tooltip (hover)")]
     [SerializeField] private GameObject tooltipRoot;
@@ -28,6 +32,12 @@ public class kangtoe99_ItemDisplayView : MonoBehaviour, IPointerEnterHandler, IP
             iconImage.enabled = data?.Icon != null;
         }
         if (stackText != null) stackText.text = stack > 1 ? $"x{stack}" : string.Empty;
+
+        // 배경을 등급 색으로
+        if (backgroundImage != null && tierPalette != null && data != null)
+        {
+            backgroundImage.color = tierPalette.Get(data.Tier);
+        }
 
         // 툴팁 내용 미리 채워두고, 시작은 숨김
         if (tooltipNameText != null) tooltipNameText.text = data?.DisplayName ?? string.Empty;

@@ -281,9 +281,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_LevelUpChoiceSlot
   button: {fileID: 3409273328717286642}
+  backgroundImage: {fileID: 1114543466782287529}
   iconImage: {fileID: 3531058294493482777}
   nameText: {fileID: 6153352108039560919}
   descriptionText: {fileID: 3602652908913041645}
+  tierPalette: {fileID: 11400000, guid: 63842bad2b85441a9d5eb5fff565d0bf, type: 2}
+  nonTierColor: {r: 0.15, g: 0.15, b: 0.2, a: 0.95}
 --- !u!1 &7569572398826736642
 GameObject:
   m_ObjectHideFlags: 0
