@@ -3457,13 +3457,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_PlayerShooting
   bulletPrefab: {fileID: 316193704725549345, guid: 0c259e4847afd1d4b94098170eeb67ad, type: 3}
   firePoint: {fileID: 922985539}
-  stats: {fileID: 451658501}
-  energy: {fileID: 451658502}
-  fallbackDamage: 10
-  fallbackFireRate: 0.35
-  fallbackBulletSpeed: 20
-  fallbackEnergyCost: 1
   bulletKnockback: 6
+  squashTarget: {fileID: 0}
+  squashScale: {x: 1.25, y: 0.75}
+  squashDuration: 0.06
+  settleDuration: 0.12
+  settleOvershoot: 0.12
   formationSideSpacing: 0.1
   formationSideScalePadding: 0.25
   formationOuterSpeedMultiplier: 0.7
@@ -3553,9 +3552,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3142ec8bee1f4f16824981b908b2c0d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_EnergySystem
-  stats: {fileID: 451658501}
-  fallbackMax: 10
-  fallbackRegen: 5
   firingRegenMultiplier: 0.5
 --- !u!114 &451658503
 MonoBehaviour:
@@ -5142,12 +5138,8 @@ MonoBehaviour:
   xpOrbPrefab: {fileID: 4991588376140438129, guid: 4d38b8888e8f88f47bcfa7eda386f3a3, type: 3}
   healthPackPrefab: {fileID: 6915107874435773169, guid: 23725fcf233e9504cb1b931381f2ecef, type: 3}
   bombPrefab: {fileID: 6714754364648959643, guid: 9c0476005d349db499e231f112829dbd, type: 3}
-  healthPackDropRate: 0.5
-  bombDropRate: 0.5
-  minEnemiesForBomb: 15
-  bombCooldown: 120
-  healthPackHealthThreshold: 0.6
-  healthPackCooldown: 90
+  championBombWeightAtFullHP: 1
+  championHealWeightAtZeroHP: 1
 --- !u!4 &631712723
 Transform:
   m_ObjectHideFlags: 0
