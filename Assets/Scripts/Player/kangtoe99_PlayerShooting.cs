@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(kangtoe99_PlayerStats), typeof(kangtoe99_EnergySystem))]
@@ -9,6 +10,17 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
 
     [Header("Combat")]
     [SerializeField] private float bulletKnockback = 5f;
+
+    [Header("Recoil Squash VFX")]
+    [Tooltip("스쿼시 대상 Transform. 비워두면 자식 SpriteRenderer를 자동 사용 — 루트가 아니므로 콜라이더에 영향 없음")]
+    [SerializeField] private Transform squashTarget;
+    [Tooltip("반동 squash 피크 — 옆(X)으로 부풀고 앞뒤(Y)로 눌림")]
+    [SerializeField] private Vector2 squashScale = new Vector2(1.2f, 0.85f);
+    [SerializeField] private float squashDuration = 0.06f;
+    [Tooltip("원복 단계 지속 시간 — 끝에 탄성 overshoot")]
+    [SerializeField] private float settleDuration = 0.12f;
+    [Tooltip("원복 단계 overshoot 강도. 0이면 단순 ease-out")]
+    [SerializeField, Range(0f, 0.3f)] private float settleOvershoot = 0.12f;
 
     [Header("Multi-shot Formation (Count >= 2)")]
     [Tooltip("발사체 사이 간격의 고정 오프셋(유닛). 스케일과 무관")]
@@ -28,10 +40,20 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     private float nextFireTime = 0f;
     private float nextEmptyClickTime = 0f;
 
+    private Coroutine recoilRoutine;
+    private Vector3 squashBaseScale = Vector3.one;
+
     private void Awake()
     {
         stats = GetComponent<kangtoe99_PlayerStats>();
         energy = GetComponent<kangtoe99_EnergySystem>();
+
+        if (squashTarget == null)
+        {
+            var sr = GetComponentInChildren<SpriteRenderer>();
+            if (sr != null) squashTarget = sr.transform;
+        }
+        if (squashTarget != null) squashBaseScale = squashTarget.localScale;
     }
 
     private void Update()
@@ -124,5 +146,51 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(shootSound, Camera.main.transform.position);
         }
+
+        PlayRecoilSquash();
+    }
+
+    private void PlayRecoilSquash()
+    {
+        if (squashTarget == null) return;
+        if (recoilRoutine != null) StopCoroutine(recoilRoutine);
+        recoilRoutine = StartCoroutine(RecoilSquashRoutine());
+    }
+
+    private IEnumerator RecoilSquashRoutine()
+    {
+        Vector3 squash = Vector3.Scale(squashBaseScale, new Vector3(squashScale.x, squashScale.y, 1f));
+        Vector3 start = squashTarget.localScale; // 연사 시 현재 위치에서 이어서 보간
+
+        yield return TweenScale(start, squash, squashDuration, EaseOutQuad);
+        yield return TweenScale(squash, squashBaseScale, settleDuration, EaseOutBackWithOvershoot);
+
+        squashTarget.localScale = squashBaseScale;
+        recoilRoutine = null;
+    }
+
+    private IEnumerator TweenScale(Vector3 from, Vector3 to, float duration, System.Func<float, float> ease)
+    {
+        if (duration <= 0f) { squashTarget.localScale = to; yield break; }
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float k = Mathf.Clamp01(t / duration);
+            squashTarget.localScale = Vector3.LerpUnclamped(from, to, ease(k));
+            yield return null;
+        }
+        squashTarget.localScale = to;
+    }
+
+    private static float EaseOutQuad(float t) => 1f - (1f - t) * (1f - t);
+
+    private float EaseOutBackWithOvershoot(float t)
+    {
+        // c1 튜닝: settleOvershoot=0.1일 때 표준 ease-out-back(c1≈1.70158) 강도.
+        float c1 = 17.0158f * settleOvershoot;
+        float c3 = c1 + 1f;
+        float u = t - 1f;
+        return 1f + c3 * u * u * u + c1 * u * u;
     }
 }
