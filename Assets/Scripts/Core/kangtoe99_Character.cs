@@ -2,22 +2,17 @@ using UnityEngine;
 
 public class kangtoe99_Character : MonoBehaviour
 {
-    [Header("Movement")]
-    [SerializeField] protected float moveForce = 50f;
-    [SerializeField, Tooltip("속도 캡 배수. 캡 = (moveForce / (mass × linearDamping)) × 이 값. 1.0 = 평형 속도 엄격, 1.5 권장, 2.0 = 여유")]
+    // 모든 stat·물리 필드는 SO 주입 — Enemy: kangtoe99_EnemyData, Player: kangtoe99_PlayerStats.
+    // 인스펙터에 노출 안 함. 디폴트 값은 SO 미주입 시의 fail-safe가 아니라 단순 초기값.
+    protected float moveForce = 50f;
     protected float speedCapOvershoot = 1.5f;
+    protected float maxRotationSpeed = 180f;
+    protected float maxHealth = 100f;
+    protected float collisionKnockbackForce = 3f;
+
     protected Rigidbody2D rb;
     protected Vector2 moveDirection;
-
-    [Header("Rotation")]
-    [SerializeField] protected float maxRotationSpeed = 180f; // 초당 최대 회전 각도
-
-    [Header("Health")]
-    [SerializeField] protected float maxHealth = 100f;
     protected float currentHealth;
-
-    [Header("Collision")]
-    [SerializeField] protected float collisionKnockbackForce = 3f;
 
     [Header("Visual")]
     [SerializeField] protected SpriteRenderer spriteRenderer;
@@ -34,6 +29,7 @@ public class kangtoe99_Character : MonoBehaviour
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        LoadStats();
         currentHealth = maxHealth;
 
         if (spriteRenderer != null)
@@ -41,6 +37,15 @@ public class kangtoe99_Character : MonoBehaviour
             originalColor = spriteRenderer.color;
         }
     }
+
+    // 서브클래스가 자기 SO 소스(EnemyData / PlayerStats 등)를 읽어 Character 필드를 채운다.
+    // base.Awake() 안에서 rb 확보 직후 / currentHealth 동기화 직전에 호출되므로:
+    //   - rb를 만져도 안전 (mass/drag 등)
+    //   - maxHealth만 세팅하면 currentHealth는 부모가 알아서 동기화
+    // 두 가지 갱신 모델이 공존:
+    //   - 스냅샷형 (Enemy): 여기서 필드에 복사, 이후 ApplyTier 등으로 직접 곱
+    //   - 라이브-리드형 (Player): 여기서는 maxHealth만 스냅샷, 나머지는 GetEffective* 오버라이드로 매번 SO에서 읽음
+    protected virtual void LoadStats() { }
 
     protected virtual void FixedUpdate()
     {
@@ -83,7 +88,7 @@ public class kangtoe99_Character : MonoBehaviour
         if (drag <= 0f || mass <= 0f) return;
 
         float terminalSpeed = GetEffectiveMoveForce() / (mass * drag);
-        float cap = terminalSpeed * speedCapOvershoot;
+        float cap = terminalSpeed * GetEffectiveSpeedCapOvershoot();
         if (cap <= 0f) return;
 
         Vector2 v = rb.linearVelocity;
@@ -95,6 +100,8 @@ public class kangtoe99_Character : MonoBehaviour
 
     protected virtual float GetEffectiveMoveForce() => moveForce;
     protected virtual float GetEffectiveMaxRotationSpeed() => maxRotationSpeed;
+    protected virtual float GetEffectiveSpeedCapOvershoot() => speedCapOvershoot;
+    protected virtual float GetEffectiveCollisionKnockback() => collisionKnockbackForce;
 
     public virtual void TakeDamage(float damage, Vector2? hitPosition = null)
     {
@@ -185,9 +192,10 @@ public class kangtoe99_Character : MonoBehaviour
             // 충돌 방향 계산 (상대방 -> 나)
             Vector2 knockbackDirection = (transform.position - collision.transform.position).normalized;
 
-            // 서로에게 넉백 적용
-            ApplyKnockback(knockbackDirection, collisionKnockbackForce);
-            otherCharacter.ApplyKnockback(-knockbackDirection, collisionKnockbackForce);
+            // 서로에게 넉백 적용 (각자 자기 값을 상대에게 가함 — 비대칭 디자인)
+            float myKnockback = GetEffectiveCollisionKnockback();
+            ApplyKnockback(knockbackDirection, myKnockback);
+            otherCharacter.ApplyKnockback(-knockbackDirection, myKnockback);
         }
     }
 }

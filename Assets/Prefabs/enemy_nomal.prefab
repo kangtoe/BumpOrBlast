@@ -134,18 +134,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60cbab4990c0d054a82c380f6547abe9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_Enemy
-  moveForce: 2
-  speedCapOvershoot: 1.5
-  maxRotationSpeed: 180
-  maxHealth: 50
-  collisionKnockbackForce: 0.8
   spriteRenderer: {fileID: 6901123927391957602}
   hitParticlePrefab: {fileID: 8453916313859941413, guid: fcb2d54071e449f409c23d619adbfa05, type: 3}
   deathParticlePrefab: {fileID: 8453916313859941413, guid: 761b1bb3a62bd1843b9ef0cedff18ab7, type: 3}
   hitSound: {fileID: 8300000, guid: 9514a408285a205409a06d2166250665, type: 3}
   deathSound: {fileID: 8300000, guid: cab7b87e49683304cb8fd53b765359a9, type: 3}
-  damage: 10
-  scoreValue: 10
+  data: {fileID: 11400000, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 2}
   despawnDistance: 30
 --- !u!58 &872089030968924965
 CircleCollider2D:

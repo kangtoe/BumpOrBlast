@@ -14,7 +14,6 @@ public class kangtoe99_Player : kangtoe99_Character
 
     protected override void Awake()
     {
-        stats = GetComponent<kangtoe99_PlayerStats>();
         base.Awake();
 
         originalScale = transform.localScale;
@@ -30,21 +29,22 @@ public class kangtoe99_Player : kangtoe99_Character
             Debug.LogWarning("[kangtoe99_Player] kangtoe99_IRotationInput 구현체가 필요합니다.");
         }
 
-        if (stats != null)
-        {
-            SetMaxHealth(stats.GetFinal(kangtoe99_StatType.MaxHP));
-            ApplyBodyScale();
-            ApplyFriction();
-            stats.OnStatChanged += OnStatChanged;
-        }
+        ApplyBodyScale();
+        ApplyFriction();
+        stats.OnStatChanged += OnStatChanged;
+    }
+
+    protected override void LoadStats()
+    {
+        stats = GetComponent<kangtoe99_PlayerStats>();
+        // maxHealth만 스냅샷 — 나머지(moveForce, rotation 등)는 GetEffective* 오버라이드로 라이브 리드.
+        // currentHealth = maxHealth 동기화는 base.Awake가 LoadStats 호출 직후 처리.
+        maxHealth = stats.GetFinal(kangtoe99_StatType.MaxHP);
     }
 
     private void OnDestroy()
     {
-        if (stats != null)
-        {
-            stats.OnStatChanged -= OnStatChanged;
-        }
+        stats.OnStatChanged -= OnStatChanged;
     }
 
     private void OnStatChanged(kangtoe99_StatType stat)
@@ -70,14 +70,12 @@ public class kangtoe99_Player : kangtoe99_Character
 
     private void ApplyBodyScale()
     {
-        if (stats == null) return;
         float scale = stats.GetFinal(kangtoe99_StatType.BodyScale);
         transform.localScale = originalScale * scale;
     }
 
     private void ApplyFriction()
     {
-        if (stats == null || rb == null) return;
         rb.linearDamping = stats.GetFinal(kangtoe99_StatType.Friction);
     }
 
@@ -93,7 +91,6 @@ public class kangtoe99_Player : kangtoe99_Character
 
     private void HandleHPRegen()
     {
-        if (stats == null) return;
         float regen = stats.GetFinal(kangtoe99_StatType.HPRegen);
         if (regen <= 0f) return;
         if (GetCurrentHealth() >= GetMaxHealth()) return;
@@ -171,10 +168,16 @@ public class kangtoe99_Player : kangtoe99_Character
     }
 
     protected override float GetEffectiveMoveForce()
-        => stats != null ? stats.GetFinal(kangtoe99_StatType.MoveForce) : base.GetEffectiveMoveForce();
+        => stats.GetFinal(kangtoe99_StatType.MoveForce);
 
     protected override float GetEffectiveMaxRotationSpeed()
-        => stats != null ? stats.GetFinal(kangtoe99_StatType.RotationSpeed) : base.GetEffectiveMaxRotationSpeed();
+        => stats.GetFinal(kangtoe99_StatType.RotationSpeed);
+
+    protected override float GetEffectiveSpeedCapOvershoot()
+        => stats.GetFinal(kangtoe99_StatType.SpeedCapOvershoot);
+
+    protected override float GetEffectiveCollisionKnockback()
+        => stats.GetFinal(kangtoe99_StatType.CollisionKnockback);
 
     // 받은 데미지를 RunStats의 "받은 총 피해량"으로 집계 (오버킬 제외).
     public override void TakeDamage(float damage, Vector2? hitPosition = null)

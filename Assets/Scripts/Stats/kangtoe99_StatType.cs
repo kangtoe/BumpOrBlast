@@ -28,5 +28,9 @@ public enum kangtoe99_StatType
 
     // 메타
     Luck,
-    Magnet
+    Magnet,
+
+    // 물리/충돌 (Character 공통)
+    SpeedCapOvershoot,
+    CollisionKnockback
 }

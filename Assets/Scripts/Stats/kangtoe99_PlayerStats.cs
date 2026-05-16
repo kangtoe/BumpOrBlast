@@ -22,15 +22,7 @@ public class kangtoe99_PlayerStats : MonoBehaviour
         if (baseValues != null) return;
 
         baseValues = new kangtoe99_StatMap();
-
-        if (baseStatProfile != null)
-        {
-            baseValues.CopyFrom(baseStatProfile.BaseStats);
-        }
-        else
-        {
-            Debug.LogWarning("[kangtoe99_PlayerStats] baseStatProfile(SO)이 할당되지 않았습니다. 모든 스탯이 0으로 시작합니다.");
-        }
+        baseValues.CopyFrom(baseStatProfile.BaseStats);
     }
 
     public float GetBase(kangtoe99_StatType stat)

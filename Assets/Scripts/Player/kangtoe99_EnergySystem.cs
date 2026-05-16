@@ -1,19 +1,14 @@
 using System;
 using UnityEngine;
 
+[RequireComponent(typeof(kangtoe99_PlayerStats))]
 public class kangtoe99_EnergySystem : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private kangtoe99_PlayerStats stats;
-
-    [Header("Fallback (stats 없을 때만 사용)")]
-    [SerializeField] private float fallbackMax = 10f;
-    [SerializeField] private float fallbackRegen = 5f;
-
     [Header("Firing Penalty")]
     [Tooltip("사격 직후 인터벌 동안 적용되는 회복 속도 배율. 0=완전 차단, 1=영향 없음.")]
     [SerializeField, Range(0f, 1f)] private float firingRegenMultiplier = 0.5f;
 
+    private kangtoe99_PlayerStats stats;
     private float current;
     private bool initialized;
     private float firingPenaltyUntil;
@@ -21,19 +16,13 @@ public class kangtoe99_EnergySystem : MonoBehaviour
     public event Action<float, float> OnEnergyChanged;
 
     public float Current => current;
-    public float Max => stats != null ? stats.GetFinal(kangtoe99_StatType.EnergyMax) : fallbackMax;
-    public float Regen => stats != null ? stats.GetFinal(kangtoe99_StatType.EnergyRegen) : fallbackRegen;
+    public float Max => stats.GetFinal(kangtoe99_StatType.EnergyMax);
+    public float Regen => stats.GetFinal(kangtoe99_StatType.EnergyRegen);
 
     private void Awake()
     {
-        if (stats == null)
-        {
-            stats = GetComponent<kangtoe99_PlayerStats>();
-        }
-        if (stats != null)
-        {
-            stats.OnStatChanged += OnStatChanged;
-        }
+        stats = GetComponent<kangtoe99_PlayerStats>();
+        stats.OnStatChanged += OnStatChanged;
     }
 
     private void Start()
@@ -45,10 +34,7 @@ public class kangtoe99_EnergySystem : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (stats != null)
-        {
-            stats.OnStatChanged -= OnStatChanged;
-        }
+        stats.OnStatChanged -= OnStatChanged;
     }
 
     private void OnStatChanged(kangtoe99_StatType stat)

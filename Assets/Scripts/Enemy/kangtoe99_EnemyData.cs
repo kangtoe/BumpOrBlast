@@ -11,7 +11,11 @@ public class kangtoe99_EnemyData : ScriptableObject
     public float damage = 10f;
     public int scoreValue = 10;
 
-    [Header("Visual")]
-    public Sprite sprite;
-    public Color color = Color.white;
+    [Header("Movement & Physics")]
+    public float moveForce = 2f;
+    public float mass = 1f;
+    public float linearDamping = 1f;
+    public float maxRotationSpeed = 180f;
+    public float speedCapOvershoot = 1.5f;
+    public float collisionKnockbackForce = 0.8f;
 }

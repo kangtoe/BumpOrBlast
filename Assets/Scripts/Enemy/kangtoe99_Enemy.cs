@@ -2,9 +2,15 @@ using UnityEngine;
 
 public class kangtoe99_Enemy : kangtoe99_Character
 {
+    [Header("Data")]
+    // 모든 스탯·물리 수치(HP, damage, score, moveForce, mass, drag)는 이 SO에서 주입된다.
+    // 프리팹 인스펙터의 값들은 fallback/디버그용으로 남겨두지만 런타임에 SO가 덮어쓴다.
+    [SerializeField] private kangtoe99_EnemyData data;
+
     [Header("Enemy Settings")]
-    [SerializeField] private float damage = 10f;
-    [SerializeField] private int scoreValue = 10;
+    // damage·scoreValue는 SO(kangtoe99_EnemyData) 주입. 인스펙터 노출 안 함.
+    private float damage = 10f;
+    private int scoreValue = 10;
     [SerializeField] private float despawnDistance = 30f;
 
     // 등급·챔피언 — 스폰 시 EnemySpawner가 적용 (둘은 별개 축).
@@ -23,6 +29,25 @@ public class kangtoe99_Enemy : kangtoe99_Character
         if (player == null)
         {
             Debug.LogWarning("Enemy: Player not found! Make sure Player has 'Player' tag.");
+        }
+    }
+
+    protected override void LoadStats()
+    {
+        if (data == null) return;
+
+        maxHealth = data.maxHealth;
+        damage = data.damage;
+        scoreValue = data.scoreValue;
+        moveForce = data.moveForce;
+        maxRotationSpeed = data.maxRotationSpeed;
+        speedCapOvershoot = data.speedCapOvershoot;
+        collisionKnockbackForce = data.collisionKnockbackForce;
+
+        if (rb != null)
+        {
+            rb.mass = data.mass;
+            rb.linearDamping = data.linearDamping;
         }
     }
 
@@ -110,24 +135,6 @@ public class kangtoe99_Enemy : kangtoe99_Character
 
         Debug.Log($"Enemy died! ScoreValue(orb): {scoreValue}, Champion: {isChampion}");
         base.Die();
-    }
-
-    public void Initialize(kangtoe99_EnemyData data)
-    {
-        if (data == null) return;
-
-        maxHealth = data.maxHealth;
-        currentHealth = maxHealth;
-        damage = data.damage;
-        scoreValue = data.scoreValue;
-
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null && data.sprite != null)
-        {
-            sr.sprite = data.sprite;
-            sr.color = data.color;
-            originalColor = data.color; // 원래 색상 저장
-        }
     }
 
     // 스폰 시 EnemySpawner가 호출 — 등급 배율을 기존 수치 위에 곱하고 시각을 등급색·크기로 바꾼다.

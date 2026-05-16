@@ -25,29 +25,9 @@ PrefabInstance:
       value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
-      propertyPath: maxSpeed
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
-      propertyPath: maxHealth
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
-      propertyPath: moveForce
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
-      propertyPath: scoreValue
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
-      propertyPath: maxRotationSpeed
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 2994297190264864704, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
-      propertyPath: collisionKnockbackForce
-      value: 0.8
-      objectReference: {fileID: 0}
+      propertyPath: data
+      value: 
+      objectReference: {fileID: 11400000, guid: b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7, type: 2}
     - target: {fileID: 4307073726107623797, guid: 8b50cf3db2e724643adb1d804cf0705c, type: 3}
       propertyPath: m_Mass
       value: 50

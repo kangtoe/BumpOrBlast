@@ -3482,11 +3482,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e00884d5bac67a54faa3ab8d7e9af11c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_Player
-  moveForce: 50
-  speedCapOvershoot: 1.5
-  maxRotationSpeed: 270
-  maxHealth: 100
-  collisionKnockbackForce: 10
   spriteRenderer: {fileID: 824165783}
   hitParticlePrefab: {fileID: 8453916313859941413, guid: fcb2d54071e449f409c23d619adbfa05, type: 3}
   deathParticlePrefab: {fileID: 8453916313859941413, guid: 761b1bb3a62bd1843b9ef0cedff18ab7, type: 3}
