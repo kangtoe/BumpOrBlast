@@ -13,8 +13,8 @@ public class kangtoe99_GameOverUI : MonoBehaviour
     [SerializeField] private Transform myRankContainer;
 
     [Header("Settings")]
-    [SerializeField] private Color normalColor = Color.white;
-    [SerializeField] private Color highlightColor = Color.yellow;
+    [Tooltip("내 행 텍스트 색 — 비-내 행은 프리팹 기본값")]
+    [SerializeField] private Color highlightTextColor = Color.yellow;
 
     private const int topCount = 5;       // 최상위 N
     private const int aroundRadius = 2;   // 내 순위 기준 위·아래로 N칸
@@ -97,14 +97,27 @@ public class kangtoe99_GameOverUI : MonoBehaviour
         }
 
         // 내 주변 ±radius — 항상 2*radius+1 슬롯. 내 순위 미확보면 전부 '-'.
+        // 경계 처리: 위/아래가 부족하면 반대편으로 윈도우를 당겨 최대한 채운다.
+        // (1등이면 위 슬롯이 비는 대신 아래를 더 보여주는 식. 총 데이터가 슬롯보다 적으면 부족분은 '-')
         if (myRankContainer != null)
         {
             int slots = 2 * aroundRadius + 1;
             if (myRankIndex >= 0)
             {
-                for (int offset = -aroundRadius; offset <= aroundRadius; offset++)
+                int start = myRankIndex - aroundRadius;
+                if (total >= slots)
                 {
-                    int idx = myRankIndex + offset;
+                    if (start < 0) start = 0;                              // 위 부족 → 아래로 당김
+                    else if (start + slots > total) start = total - slots; // 아래 부족 → 위로 당김
+                }
+                else
+                {
+                    start = 0; // 전체가 슬롯보다 작으면 0부터 시작, 나머지는 빈 슬롯
+                }
+
+                for (int i = 0; i < slots; i++)
+                {
+                    int idx = start + i;
                     if (idx >= 0 && idx < total) CreateEntry(myRankContainer, idx);
                     else CreateEmptyEntry(myRankContainer, idx + 1); // idx+1 ≤ 0 이면 SetEmpty 가 '-' 처리
                 }
@@ -120,7 +133,7 @@ public class kangtoe99_GameOverUI : MonoBehaviour
     {
         kangtoe99_LeaderboardEntry entry = Instantiate(entryPrefab, container, false);
         entry.SetEmpty(rank);
-        entry.SetColor(normalColor);
+        // 배경/텍스트 색은 프리팹 기본값 사용
     }
 
     private static int FindMyRankIndex(RankData[] ranks, int id)
@@ -154,7 +167,7 @@ public class kangtoe99_GameOverUI : MonoBehaviour
             : data.name;
 
         entry.SetData(idx + 1, displayName, data.level, data.score);
-        entry.SetColor(isMine ? highlightColor : normalColor);
+        if (isMine) entry.SetTextColor(highlightTextColor);
     }
 
     // 종합 정보 패널의 이름 편집에서 호출 — 화면을 즉시 갱신하고 서버 항목 이름도 갱신한다.
