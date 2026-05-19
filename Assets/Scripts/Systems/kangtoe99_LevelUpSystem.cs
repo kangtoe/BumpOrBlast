@@ -7,6 +7,11 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 {
     public static kangtoe99_LevelUpSystem Instance { get; private set; }
 
+    // LevelUpSystem 이 ESC 를 패널 닫기에 소비한 프레임. PauseSystem 이 같은 프레임 ESC 를 무시할 때 사용.
+    // (스크립트 실행 순서에 따라 PauseSystem 이 늦게 돌면 ClosePanel 직후 timeScale=1 이 되어
+    // CanToggleNow 통과 → 의도치 않은 Pause 진입을 막기 위함.)
+    public static int LastEscapeConsumedFrame { get; private set; } = -1;
+
     [Header("Level Settings")]
     [SerializeField] private int baseScore = 100;
     [SerializeField] private int scorePerLevel = 50;
@@ -79,7 +84,16 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         // 패널이 닫혀있고 적립된 레벨업이 있으면 키 입력으로 오픈.
         // Time.timeScale 영향 없는 Input.GetKeyDown 사용.
         if (!panelOpen && pendingLevelUps > 0 && Input.GetKeyDown(openPanelKey))
+        {
             OpenPanel();
+        }
+        // 패널이 열려있을 때 ESC 로 닫음 — pending 은 유지되어 HUD 프롬프트가 다시 표시된다.
+        // LastEscapeConsumedFrame 기록으로 PauseSystem 이 같은 프레임 늦게 돌더라도 Pause 진입 방지.
+        else if (panelOpen && Input.GetKeyDown(KeyCode.Escape))
+        {
+            LastEscapeConsumedFrame = Time.frameCount;
+            ClosePanel();
+        }
     }
 
     private void UpdateExpBar()

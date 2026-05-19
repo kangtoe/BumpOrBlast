@@ -38,6 +38,9 @@ public class kangtoe99_PauseSystem : MonoBehaviour
         // LevelUp이 timeScale=0 직접 설정 후 패널 표시 중인 동안엔 ESC 무시.
         // (이미 isPaused 상태면 무시 해제하기 위한 Resume은 허용)
         if (!isPaused && Time.timeScale == 0f) return false;
+        // LevelUp 이 같은 프레임에 ESC 로 패널을 닫았다면 같이 발생한 이 ESC 는 소비된 것으로 보고 무시.
+        // (스크립트 실행 순서에 따라 LevelUpSystem 이 먼저 돌면 timeScale 이 1 로 풀려 위 가드를 통과해버림)
+        if (kangtoe99_LevelUpSystem.LastEscapeConsumedFrame == Time.frameCount) return false;
         return true;
     }
 
