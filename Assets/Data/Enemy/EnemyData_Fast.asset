@@ -21,4 +21,4 @@ MonoBehaviour:
   linearDamping: 1
   maxRotationSpeed: 360
   speedCapOvershoot: 1.5
-  collisionKnockbackForce: 0.8
+  collisionKnockbackForce: 1.2
