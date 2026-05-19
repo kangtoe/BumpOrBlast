@@ -49,7 +49,13 @@ public class kangtoe99_ItemTooltip : MonoBehaviour
     {
         if (data == null || anchor == null) return;
         if (nameText != null) nameText.text = data.DisplayName;
-        if (rarityText != null) rarityText.text = kangtoe99_TierNames.GetDisplayName(data.Tier);
+        if (rarityText != null)
+        {
+            // 게임오버 빌드 패널에서도 호출됨 — 플레이어가 비활성이라 Include 필요
+            var inv = FindFirstObjectByType<kangtoe99_ItemInventory>(FindObjectsInactive.Include);
+            int stack = inv != null ? inv.GetStack(data) : 0;
+            rarityText.text = $"{kangtoe99_TierNames.GetDisplayName(data.Tier)} {stack}/{data.MaxStack}";
+        }
         if (descriptionText != null) descriptionText.text = data.Description;
         if (backgroundImage != null && tierPalette != null)
         {

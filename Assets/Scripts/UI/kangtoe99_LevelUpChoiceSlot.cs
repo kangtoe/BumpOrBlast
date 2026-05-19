@@ -45,11 +45,17 @@ public class kangtoe99_LevelUpChoiceSlot : MonoBehaviour
                 : nonTierColor;
         }
 
-        // 레어도 라벨 — Tier 없는 선택지는 숨김
+        // 레어도 라벨 + 현재/최대 스택 — Tier 없는 선택지는 숨김
         if (rarityText != null)
         {
             rarityText.gameObject.SetActive(hasTier);
-            if (hasTier) rarityText.text = kangtoe99_TierNames.GetDisplayName(((kangtoe99_ItemData)c).Tier);
+            if (hasTier)
+            {
+                var itemData = (kangtoe99_ItemData)c;
+                var inv = FindFirstObjectByType<kangtoe99_ItemInventory>(FindObjectsInactive.Include);
+                int stack = inv != null ? inv.GetStack(itemData) : 0;
+                rarityText.text = $"{kangtoe99_TierNames.GetDisplayName(itemData.Tier)} {stack}/{itemData.MaxStack}";
+            }
         }
 
         if (button != null)
