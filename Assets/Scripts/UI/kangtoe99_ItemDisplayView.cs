@@ -4,8 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 
 // 아이템 UI 틀. 빌드 화면 슬롯으로 배치.
-// 평소 표시: 아이콘 + 중복 수(xN).
-// 마우스 호버 시: 자식 tooltipRoot 활성화 → 이름/설명 표시.
+// 평소 표시: 아이콘 + 중복 수(xN). 호버 시: 독립 툴팁(kangtoe99_ItemTooltip) 에 표시 요청.
 public class kangtoe99_ItemDisplayView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Slot")]
@@ -15,11 +14,6 @@ public class kangtoe99_ItemDisplayView : MonoBehaviour, IPointerEnterHandler, IP
 
     [Header("Tier")]
     [SerializeField] private kangtoe99_TierColorPalette tierPalette; // 적·아이템 공용 등급 색상
-
-    [Header("Tooltip (hover)")]
-    [SerializeField] private GameObject tooltipRoot;
-    [SerializeField] private TMP_Text tooltipNameText;
-    [SerializeField] private TMP_Text tooltipDescriptionText;
 
     private kangtoe99_ItemData boundData;
 
@@ -33,25 +27,30 @@ public class kangtoe99_ItemDisplayView : MonoBehaviour, IPointerEnterHandler, IP
         }
         if (stackText != null) stackText.text = stack > 1 ? $"x{stack}" : string.Empty;
 
-        // 배경을 등급 색으로
-        if (backgroundImage != null && tierPalette != null && data != null)
+        // 배경을 등급 색으로 — 빈 슬롯(data=null)은 가장 낮은 등급(Gray) 색으로
+        if (backgroundImage != null && tierPalette != null)
         {
-            backgroundImage.color = tierPalette.Get(data.Tier);
+            var tier = data != null ? data.Tier : kangtoe99_Tier.Gray;
+            backgroundImage.color = tierPalette.Get(tier);
         }
-
-        // 툴팁 내용 미리 채워두고, 시작은 숨김
-        if (tooltipNameText != null) tooltipNameText.text = data?.DisplayName ?? string.Empty;
-        if (tooltipDescriptionText != null) tooltipDescriptionText.text = data?.Description ?? string.Empty;
-        if (tooltipRoot != null) tooltipRoot.SetActive(false);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (tooltipRoot != null && boundData != null) tooltipRoot.SetActive(true);
+        if (boundData == null) return;
+        var tt = kangtoe99_ItemTooltip.Instance;
+        if (tt != null) tt.Show(boundData, (RectTransform)transform);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (tooltipRoot != null) tooltipRoot.SetActive(false);
+        var tt = kangtoe99_ItemTooltip.Instance;
+        if (tt != null) tt.Hide();
+    }
+
+    private void OnDisable()
+    {
+        var tt = kangtoe99_ItemTooltip.Instance;
+        if (tt != null) tt.Hide();
     }
 }

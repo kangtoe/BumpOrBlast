@@ -14,6 +14,8 @@ public class kangtoe99_ItemInventory : MonoBehaviour
 
     private kangtoe99_PlayerStats stats;
     private readonly Dictionary<kangtoe99_ItemData, Entry> entries = new Dictionary<kangtoe99_ItemData, Entry>();
+    // 획득 순서를 명시적으로 유지 — Dictionary iteration 순서에 의존하지 않음
+    private readonly List<kangtoe99_ItemData> order = new List<kangtoe99_ItemData>();
 
     public event Action<kangtoe99_ItemData, int> OnItemAdded;
 
@@ -37,8 +39,12 @@ public class kangtoe99_ItemInventory : MonoBehaviour
 
     public IEnumerable<BuildEntry> GetBuildEntries()
     {
-        foreach (var kv in entries)
-            yield return new BuildEntry(kv.Key, kv.Value.stack);
+        for (int i = 0; i < order.Count; i++)
+        {
+            var data = order[i];
+            if (entries.TryGetValue(data, out var e))
+                yield return new BuildEntry(data, e.stack);
+        }
     }
 
     public int EntryCount => entries.Count;
@@ -56,6 +62,7 @@ public class kangtoe99_ItemInventory : MonoBehaviour
         {
             entry = new Entry { data = data };
             entries[data] = entry;
+            order.Add(data);
         }
         if (entry.stack >= data.MaxStack)
         {

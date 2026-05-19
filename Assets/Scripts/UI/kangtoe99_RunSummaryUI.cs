@@ -20,9 +20,7 @@ public class kangtoe99_RunSummaryUI : MonoBehaviour
     [SerializeField] private TMP_Text levelText;
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text survivalText;
-    [SerializeField] private TMP_Text killsText;
     [SerializeField] private TMP_Text damageDealtText;
-    [SerializeField] private TMP_Text damageTakenText;
 
     [Header("Hint")]
     [SerializeField] private TMP_Text hintText; // 맥락별 안내 문구 (예: "ESC로 계속" / "Enter로 랭킹")
@@ -79,10 +77,8 @@ public class kangtoe99_RunSummaryUI : MonoBehaviour
         SetRow(scoreText, "Score", scoreSys != null ? scoreSys.GetCurrentScore().ToString("N0") : "-");
 
         var stats = kangtoe99_RunStats.Instance;
-        SetRow(survivalText, "Survival Time", stats != null ? stats.GetSurvivalTimeText() : "-");
-        SetRow(killsText, "Kills", stats != null ? stats.TotalKills.ToString() : "-");
-        SetRow(damageDealtText, "Damage Dealt", stats != null ? Mathf.RoundToInt(stats.TotalDamageDealt).ToString("N0") : "-");
-        SetRow(damageTakenText, "Damage Taken", stats != null ? Mathf.RoundToInt(stats.TotalDamageTaken).ToString("N0") : "-");
+        SetRow(survivalText, "Time", stats != null ? stats.GetSurvivalTimeText() : "-");
+        SetRow(damageDealtText, "Damage", stats != null ? Mathf.RoundToInt(stats.TotalDamageDealt).ToString("N0") : "-");
 
         RefreshNameRow();
 
@@ -98,6 +94,12 @@ public class kangtoe99_RunSummaryUI : MonoBehaviour
             ? kangtoe99_GameManager.Instance.PlayerName
             : "-";
         SetRow(nameText, "Name", playerName);
+    }
+
+    // "라벨: 값" 형식으로 한 Text에 채운다.
+    private static void SetRow(TMP_Text target, string label, string value)
+    {
+        if (target != null) target.text = $"{label}: {value}";
     }
 
     // Edit 버튼 → 현재 이름을 채운 입력 패널을 연다.
@@ -137,11 +139,5 @@ public class kangtoe99_RunSummaryUI : MonoBehaviour
     private void CloseNameEdit()
     {
         if (nameEditPanel != null) nameEditPanel.SetActive(false);
-    }
-
-    // "라벨  값" 형식으로 한 Text에 채운다.
-    private static void SetRow(TMP_Text target, string label, string value)
-    {
-        if (target != null) target.text = $"{label}  {value}";
     }
 }
