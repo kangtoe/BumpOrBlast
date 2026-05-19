@@ -12,6 +12,7 @@ public class kangtoe99_DebugPanel : MonoBehaviour
     [SerializeField] private Vector2 panelPosition = new Vector2(20, 20);
     [SerializeField] private Vector2 panelSize = new Vector2(260, 380);
     [SerializeField, Min(1f)] private float damageAmount = 25f;
+    [SerializeField, Min(1)] private int xpAmount = 50;
 
     private bool isOpen;
     private float nextRefreshAt;
@@ -38,6 +39,7 @@ public class kangtoe99_DebugPanel : MonoBehaviour
         GUILayout.BeginArea(new Rect(rect.x + 8, rect.y + 24, rect.width - 16, rect.height - 32));
         GUILayout.Label(cachedInfo);
         GUILayout.Space(6);
+        if (GUILayout.Button($"Add XP (+{xpAmount})")) Action_AddXP();
         if (GUILayout.Button("Force Level Up")) Action_ForceLevelUp();
         if (GUILayout.Button("Spawn Enemy")) Action_SpawnEnemy();
         if (GUILayout.Button("Spawn Champion")) Action_SpawnChampion();
@@ -91,6 +93,12 @@ public class kangtoe99_DebugPanel : MonoBehaviour
     }
 
     // ─── 액션 ──────────────────────────────────────────────────
+
+    private void Action_AddXP()
+    {
+        if (kangtoe99_ScoreSystem.Instance == null) return;
+        kangtoe99_ScoreSystem.Instance.AddScore(xpAmount);
+    }
 
     private void Action_ForceLevelUp()
     {

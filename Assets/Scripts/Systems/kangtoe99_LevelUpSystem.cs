@@ -25,7 +25,17 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [SerializeField] private Transform slotContainer;
     [SerializeField] private kangtoe99_LevelUpChoiceSlot slotPrefab;
     [SerializeField] private Image expBar;
-    [SerializeField] private TMP_Text levelText;
+    [SerializeField] private TMP_Text pendingLevelUpsText; // 패널 내 "Pending Level-Ups: N"
+    [SerializeField] private TMP_Text hudPromptText; // 인게임 "Level Up Available! Press <Key> (xN)"
+
+    [Header("Pending / Input")]
+    [Tooltip("점수가 임계치를 넘으면 즉시 패널을 띄우지 않고 카운트만 누적, 이 키로 오픈한다.")]
+    [SerializeField] private KeyCode openPanelKey = KeyCode.Space;
+
+    [Header("Reroll")]
+    [SerializeField, Min(0)] private int startingRerollPoints = 10;
+    [SerializeField] private TMP_Text rerollPointsText;
+    [SerializeField] private Button rerollButton;
 
     [Header("SFX")]
     [SerializeField] private AudioClip levelUpSound;
@@ -34,6 +44,9 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     private int currentLevel = 0;
     private int nextLevelScore;
     private int previousLevelScore = 0;
+    private int pendingLevelUps = 0;
+    private int rerollPoints;
+    private bool panelOpen = false;
     private AudioSource audioSource;
     private readonly List<kangtoe99_LevelUpChoiceSlot> activeSlots = new List<kangtoe99_LevelUpChoiceSlot>();
 
@@ -46,17 +59,27 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         audioSource.playOnAwake = false;
 
         nextLevelScore = baseScore;
+        rerollPoints = startingRerollPoints;
 
         if (player == null) player = FindFirstObjectByType<kangtoe99_Player>();
 
         if (levelUpPanel != null) levelUpPanel.SetActive(false);
-        UpdateLevelText();
+        if (rerollButton != null) rerollButton.onClick.AddListener(Reroll);
+
+        UpdatePendingUI();
+        UpdateRerollUI();
+        UpdateHudPrompt();
     }
 
     private void Update()
     {
         CheckLevelUp();
         UpdateExpBar();
+
+        // 패널이 닫혀있고 적립된 레벨업이 있으면 키 입력으로 오픈.
+        // Time.timeScale 영향 없는 Input.GetKeyDown 사용.
+        if (!panelOpen && pendingLevelUps > 0 && Input.GetKeyDown(openPanelKey))
+            OpenPanel();
     }
 
     private void UpdateExpBar()
@@ -67,9 +90,27 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         expBar.fillAmount = Mathf.Clamp01(progress);
     }
 
-    private void UpdateLevelText()
+    private void UpdatePendingUI()
     {
-        if (levelText != null) levelText.text = $"Lv.{currentLevel}";
+        if (pendingLevelUpsText != null)
+            pendingLevelUpsText.text = $"Left Points: {pendingLevelUps}";
+    }
+
+    private void UpdateRerollUI()
+    {
+        if (rerollPointsText != null)
+            rerollPointsText.text = $"Rerolls: {rerollPoints}";
+        if (rerollButton != null)
+            rerollButton.interactable = panelOpen && rerollPoints > 0;
+    }
+
+    private void UpdateHudPrompt()
+    {
+        if (hudPromptText == null) return;
+        bool show = pendingLevelUps > 0 && !panelOpen;
+        hudPromptText.gameObject.SetActive(show);
+        if (show)
+            hudPromptText.text = $"Press [{openPanelKey}] to Upgrade! +{pendingLevelUps}";
     }
 
     private void CheckLevelUp()
@@ -79,36 +120,58 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         if (currentScore >= nextLevelScore) LevelUp();
     }
 
+    // 점수 임계치 도달 — 즉시 패널을 띄우지 않고 카운트만 누적.
+    // 플레이어가 openPanelKey 로 직접 열어야 선택지가 표시된다.
     private void LevelUp()
     {
         currentLevel++;
         previousLevelScore = nextLevelScore;
         int requiredScore = baseScore + (currentLevel - 1) * scorePerLevel;
         nextLevelScore = previousLevelScore + requiredScore;
-        UpdateLevelText();
+        pendingLevelUps++;
 
         if (levelUpSound != null && audioSource != null)
-        {
             audioSource.PlayOneShot(levelUpSound);
+
+        UpdatePendingUI();
+        UpdateHudPrompt();
+    }
+
+    private void OpenPanel()
+    {
+        if (panelOpen) return;
+        if (pendingLevelUps <= 0) return;
+        if (levelUpPanel == null || slotContainer == null || slotPrefab == null)
+        {
+            Debug.LogWarning("[kangtoe99_LevelUpSystem] levelUpPanel / slotContainer / slotPrefab 인스펙터 할당 필요");
+            return;
         }
 
         Time.timeScale = 0f;
         if (kangtoe99_GameManager.Instance != null)
             kangtoe99_GameManager.Instance.SetHudVisible(false);
+        panelOpen = true;
+
         ShowChoices();
+        UpdateRerollUI();
+        UpdateHudPrompt();
     }
 
+    private void ClosePanel()
+    {
+        panelOpen = false;
+        Time.timeScale = 1f;
+        if (kangtoe99_GameManager.Instance != null)
+            kangtoe99_GameManager.Instance.SetHudVisible(true);
+        if (levelUpPanel != null) levelUpPanel.SetActive(false);
+
+        UpdateRerollUI();
+        UpdateHudPrompt();
+    }
+
+    // 패널에 4개 슬롯을 새로 빌드. OpenPanel / OnChoiceSelected(잔여 pending) / Reroll 에서 호출.
     private void ShowChoices()
     {
-        if (levelUpPanel == null || slotContainer == null || slotPrefab == null)
-        {
-            Debug.LogWarning("[kangtoe99_LevelUpSystem] levelUpPanel / slotContainer / slotPrefab 인스펙터 할당 필요");
-            Time.timeScale = 1f;
-            if (kangtoe99_GameManager.Instance != null)
-                kangtoe99_GameManager.Instance.SetHudVisible(true);
-            return;
-        }
-
         for (int i = activeSlots.Count - 1; i >= 0; i--)
         {
             if (activeSlots[i] != null) Destroy(activeSlots[i].gameObject);
@@ -125,6 +188,14 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         }
 
         levelUpPanel.SetActive(true);
+    }
+
+    public void Reroll()
+    {
+        if (!panelOpen || rerollPoints <= 0) return;
+        rerollPoints--;
+        UpdateRerollUI();
+        ShowChoices();
     }
 
     private List<kangtoe99_ILevelUpChoice> BuildChoices()
@@ -181,19 +252,49 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     private void OnChoiceSelected(kangtoe99_ILevelUpChoice choice)
     {
         if (upgradeSound != null && audioSource != null)
-        {
             audioSource.PlayOneShot(upgradeSound);
-        }
         if (player != null) choice?.Apply(player.gameObject);
-        Time.timeScale = 1f;
-        if (kangtoe99_GameManager.Instance != null)
-            kangtoe99_GameManager.Instance.SetHudVisible(true);
-        if (levelUpPanel != null) levelUpPanel.SetActive(false);
+
+        pendingLevelUps--;
+        UpdatePendingUI();
+
+        // 남은 pending 이 있으면 패널 유지 + 새 선택지로 자동 재오픈.
+        if (pendingLevelUps > 0)
+        {
+            ShowChoices();
+            UpdateRerollUI();
+            UpdateHudPrompt();
+            return;
+        }
+        ClosePanel();
     }
 
     public int GetCurrentLevel() => currentLevel;
     public int GetNextLevelScore() => nextLevelScore;
+    public int GetPendingLevelUps() => pendingLevelUps;
+    public int GetRerollPoints() => rerollPoints;
 
     // 디버그 패널 등 외부 도구가 풀을 조회할 때 사용. 읽기 전용.
     public IReadOnlyList<kangtoe99_ItemData> GetItemPoolSnapshot() => itemPool;
+
+    // 디버그 패널용 — 즉시 패널 오픈 / pending 강제 추가 / 리롤 포인트 충전.
+    public void DebugForceOpenPanel()
+    {
+        if (pendingLevelUps <= 0) pendingLevelUps = 1;
+        UpdatePendingUI();
+        OpenPanel();
+    }
+
+    public void DebugAddPendingLevelUp(int amount = 1)
+    {
+        pendingLevelUps += Mathf.Max(1, amount);
+        UpdatePendingUI();
+        UpdateHudPrompt();
+    }
+
+    public void DebugAddRerollPoints(int amount = 5)
+    {
+        rerollPoints += Mathf.Max(1, amount);
+        UpdateRerollUI();
+    }
 }
