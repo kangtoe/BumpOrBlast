@@ -4567,6 +4567,7 @@ MonoBehaviour:
   rerollButton: {fileID: 1207109794}
   levelUpSound: {fileID: 8300000, guid: e6b430653926b204f96bfefe75ff43af, type: 3}
   upgradeSound: {fileID: 8300000, guid: 0d019d0f738854a439586afbb9717223, type: 3}
+  rerollSound: {fileID: 8300000, guid: 57c18d5ac3727274980bfc9da0fb160d, type: 3}
   levelUpFxText: LEVEL UP!
   levelUpFxColor: {r: 1, g: 1, b: 1, a: 1}
   levelUpFxBurstRadius: 3

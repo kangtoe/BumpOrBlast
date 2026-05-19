@@ -47,6 +47,7 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [Header("SFX")]
     [SerializeField] private AudioClip levelUpSound;
     [SerializeField] private AudioClip upgradeSound;
+    [SerializeField] private AudioClip rerollSound;
 
     [Header("Level Up FX")]
     [SerializeField] private string levelUpFxText = "LEVEL UP!";
@@ -231,6 +232,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     {
         if (!panelOpen || rerollPoints <= 0) return;
         rerollPoints--;
+        if (rerollSound != null && audioSource != null)
+            audioSource.PlayOneShot(rerollSound);
         UpdateRerollUI();
         ShowChoices();
     }
