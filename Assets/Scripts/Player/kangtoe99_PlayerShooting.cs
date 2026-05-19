@@ -59,21 +59,26 @@ public class kangtoe99_PlayerShooting : MonoBehaviour
     private void Update()
     {
         if (Time.timeScale == 0f) return;
-        if (kangtoe99_GameManager.Instance != null && !kangtoe99_GameManager.Instance.IsGameStarted()) return;
+
+        // 시작 전엔 에너지 무제한 — 소모와 사격 패널티를 건너뛰어 자유롭게 조작감을 익히게 한다.
+        bool started = kangtoe99_GameManager.Instance == null || kangtoe99_GameManager.Instance.IsGameStarted();
 
         float fireRate = stats.GetFinal(kangtoe99_StatType.FireRate);
         if (Input.GetMouseButton(0) && Time.time >= nextFireTime)
         {
-            float cost = stats.GetFinal(kangtoe99_StatType.EnergyCost);
-            if (!energy.TryConsume(cost))
+            if (started)
             {
-                PlayEmptyClick();
-                nextFireTime = Time.time + Mathf.Max(0.05f, fireRate);
-                return;
+                float cost = stats.GetFinal(kangtoe99_StatType.EnergyCost);
+                if (!energy.TryConsume(cost))
+                {
+                    PlayEmptyClick();
+                    nextFireTime = Time.time + Mathf.Max(0.05f, fireRate);
+                    return;
+                }
             }
 
             Shoot();
-            energy.ApplyFiringPenalty(fireRate);
+            if (started) energy.ApplyFiringPenalty(fireRate);
             nextFireTime = Time.time + Mathf.Max(0.05f, fireRate);
         }
     }

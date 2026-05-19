@@ -82,9 +82,12 @@ public class kangtoe99_Player : kangtoe99_Character
     private void Update()
     {
         if (Time.timeScale == 0f) return;
-        if (kangtoe99_GameManager.Instance != null && !kangtoe99_GameManager.Instance.IsGameStarted()) return;
 
-        HandleHPRegen();
+        // 시작 전에도 이동/회전은 허용 — 적이 안 나오는 상태에서 조작감을 미리 익힐 수 있게.
+        // HP 리젠은 게임 시작 이후에만 동작 (시작 전엔 의미가 없고, 게임 흐름 일관성 유지).
+        bool started = kangtoe99_GameManager.Instance == null || kangtoe99_GameManager.Instance.IsGameStarted();
+        if (started) HandleHPRegen();
+
         HandleInput();
         HandleRotation();
     }
