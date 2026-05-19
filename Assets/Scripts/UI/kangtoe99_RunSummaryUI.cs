@@ -47,6 +47,8 @@ public class kangtoe99_RunSummaryUI : MonoBehaviour
         if (editNameButton != null) editNameButton.onClick.AddListener(OpenNameEdit);
         if (nameEditConfirmButton != null) nameEditConfirmButton.onClick.AddListener(ConfirmNameEdit);
         if (nameEditCancelButton != null) nameEditCancelButton.onClick.AddListener(CloseNameEdit);
+        // Enter 로 입력 확정 — 확인 버튼 클릭과 동일 처리
+        if (nameEditInput != null) nameEditInput.onSubmit.AddListener(_ => ConfirmNameEdit());
     }
 
     private void OnEnable()
@@ -93,7 +95,7 @@ public class kangtoe99_RunSummaryUI : MonoBehaviour
         string playerName = kangtoe99_GameManager.Instance != null
             ? kangtoe99_GameManager.Instance.PlayerName
             : "-";
-        SetRow(nameText, "Name", playerName);
+        if (nameText != null) nameText.text = playerName;
     }
 
     // "라벨: 값" 형식으로 한 Text에 채운다.
