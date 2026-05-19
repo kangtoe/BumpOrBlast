@@ -170,10 +170,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_DropBomb
   lifetime: 30
+  blinkStartBeforeEnd: 5
+  blinkSpeed: 8
+  blinkMinAlpha: 0.2
   initialForce: 3
+  scatterRandomness: 1
+  drag: 3
+  repulsionRange: 0.7
+  repulsionForce: 8
   pickupParticlePrefab: {fileID: 7086463146503359885, guid: 761b1bb3a62bd1843b9ef0cedff18ab7, type: 3}
-  pickupColor: {r: 0.9490197, g: 0.52156866, b: 0, a: 1}
   pulseSpeed: 10
   pulseAmount: 0.05
   pickupSound: {fileID: 8300000, guid: cc7da5800bd3b4cb4b196ef674bee2e5, type: 3}
-  delayBetweenKills: 0.05
+  burstCount: 30
+  interval: 0.04
+  damage: 100
+  radius: 4
+  knockback: 0
+  overrideColor: 0
+  explosionColor: {r: 1, g: 0.7, b: 0.3, a: 1}
+  xJitterRatio: 0.1
+  yRangeRatio: 0.75
