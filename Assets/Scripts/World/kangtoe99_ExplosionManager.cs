@@ -55,7 +55,10 @@ public class kangtoe99_ExplosionManager : MonoBehaviour
 
     private kangtoe99_Explosion CreateExplosion()
     {
+        // 매니저(DontDestroyOnLoad) 자식으로 만들어 씬 리로드 시에도 살아남게 한다.
+        // 그렇지 않으면 씬 루트의 Explosion GO 들이 씬 언로드와 함께 파괴돼 풀에 죽은 참조가 남는다.
         var go = new GameObject("Explosion");
+        go.transform.SetParent(transform, worldPositionStays: false);
         go.transform.localScale = Vector3.one * baseScale;
 
         var sr = go.AddComponent<SpriteRenderer>();

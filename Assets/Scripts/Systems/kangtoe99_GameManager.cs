@@ -40,6 +40,12 @@ public class kangtoe99_GameManager : MonoBehaviour
     [SerializeField] private AudioClip gameStartSound;
     [SerializeField] private AudioClip gameOverSound;
 
+    [Header("Game Start FX")]
+    [SerializeField] private string startFxText = "START!";
+    [SerializeField] private Color startFxColor = Color.white;
+    [SerializeField] private float startFxBurstRadius = 3f;
+    [SerializeField] private float startFxBurstKnockback = 12f;
+
     private void Awake()
     {
         if (Instance == null)
@@ -140,7 +146,22 @@ public class kangtoe99_GameManager : MonoBehaviour
             kangtoe99_EnemySpawner.Instance.StartSpawning();
         }
 
+        EmitStartFx();
+
         Debug.Log("Game Started!");
+    }
+
+    private void EmitStartFx()
+    {
+        var player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null) return;
+        Vector2 pos = player.transform.position;
+
+        if (kangtoe99_FloatingTextManager.Instance != null)
+            kangtoe99_FloatingTextManager.Instance.ShowAtPlayer(startFxText, startFxColor);
+
+        if (kangtoe99_ExplosionManager.Instance != null)
+            kangtoe99_ExplosionManager.Instance.SpawnOne(pos, 0f, startFxBurstRadius, startFxBurstKnockback, startFxColor);
     }
 
     public void TriggerGameOver()

@@ -13,8 +13,10 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     public static int LastEscapeConsumedFrame { get; private set; } = -1;
 
     [Header("Level Settings")]
+    [Tooltip("레벨 1→2 에 필요한 점수.")]
     [SerializeField] private int baseScore = 100;
-    [SerializeField] private int scorePerLevel = 50;
+    [Tooltip("레벨당 요구 점수 증가 배수 (지수형, BB2와 동일). 1.5 면 100 → 150 → 225 → 338 ...")]
+    [SerializeField, Min(1f)] private float growth = 1.5f;
     [SerializeField, Min(1)] private int choiceCount = 4;
 
     [Header("Player")]
@@ -45,6 +47,12 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [Header("SFX")]
     [SerializeField] private AudioClip levelUpSound;
     [SerializeField] private AudioClip upgradeSound;
+
+    [Header("Level Up FX")]
+    [SerializeField] private string levelUpFxText = "LEVEL UP!";
+    [SerializeField] private Color levelUpFxColor = Color.white;
+    [SerializeField] private float levelUpFxBurstRadius = 3f;
+    [SerializeField] private float levelUpFxBurstKnockback = 12f;
 
     private int currentLevel = 0;
     private int nextLevelScore;
@@ -140,15 +148,30 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     {
         currentLevel++;
         previousLevelScore = nextLevelScore;
-        int requiredScore = baseScore + (currentLevel - 1) * scorePerLevel;
+        // BB2 PlayerLevel.ComputeNeeded 와 동일한 지수형 곡선.
+        int requiredScore = Mathf.Max(1, Mathf.CeilToInt(baseScore * Mathf.Pow(growth, currentLevel - 1)));
         nextLevelScore = previousLevelScore + requiredScore;
         pendingLevelUps++;
 
         if (levelUpSound != null && audioSource != null)
             audioSource.PlayOneShot(levelUpSound);
 
+        EmitLevelUpFx();
+
         UpdatePendingUI();
         UpdateHudPrompt();
+    }
+
+    private void EmitLevelUpFx()
+    {
+        if (player == null) return;
+        Vector2 pos = player.transform.position;
+
+        if (kangtoe99_FloatingTextManager.Instance != null)
+            kangtoe99_FloatingTextManager.Instance.ShowAtPlayer(levelUpFxText, levelUpFxColor);
+
+        if (kangtoe99_ExplosionManager.Instance != null)
+            kangtoe99_ExplosionManager.Instance.SpawnOne(pos, 0f, levelUpFxBurstRadius, levelUpFxBurstKnockback, levelUpFxColor);
     }
 
     private void OpenPanel()
