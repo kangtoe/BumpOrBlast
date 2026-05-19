@@ -45,6 +45,7 @@ public class kangtoe99_DebugPanel : MonoBehaviour
         if (GUILayout.Button("Heal Full")) Action_HealFull();
         if (GUILayout.Button($"Damage Player (-{damageAmount:F0})")) Action_DamagePlayer();
         if (GUILayout.Button("Add Random Item")) Action_AddRandomItem();
+        if (GUILayout.Button("Add All Dummies")) Action_AddAllDummies();
         GUILayout.EndArea();
     }
 
@@ -154,5 +155,38 @@ public class kangtoe99_DebugPanel : MonoBehaviour
             return;
         }
         inv.TryAdd(available[Random.Range(0, available.Count)]);
+    }
+
+    // 풀에 등록된 모든 더미(ItemData_Dummy* 자산)를 한 번에 추가 — 페이지네이션·xN 표시 빠른 테스트용.
+    // 각 더미마다 1~MaxStack 사이의 무작위 스택 수로 채워서 일부 아이템에 xN 텍스트가 보이도록.
+    private void Action_AddAllDummies()
+    {
+        var player = FindFirstObjectByType<kangtoe99_Player>();
+        if (player == null) return;
+        var inv = player.GetComponent<kangtoe99_ItemInventory>();
+        if (inv == null || kangtoe99_LevelUpSystem.Instance == null) return;
+        var pool = kangtoe99_LevelUpSystem.Instance.GetItemPoolSnapshot();
+        if (pool == null) return;
+
+        int addedItems = 0;
+        int addedStacks = 0;
+        for (int i = 0; i < pool.Count; i++)
+        {
+            var item = pool[i];
+            if (item == null) continue;
+            if (!item.name.StartsWith("ItemData_Dummy")) continue;
+            if (inv.IsFull(item)) continue;
+
+            int target = Random.Range(1, item.MaxStack + 1);
+            int before = addedStacks;
+            for (int s = 0; s < target; s++)
+            {
+                if (inv.IsFull(item)) break;
+                inv.TryAdd(item);
+                addedStacks++;
+            }
+            if (addedStacks > before) addedItems++;
+        }
+        Debug.Log($"[DebugPanel] 더미 {addedItems}종 / 총 {addedStacks}스택 추가");
     }
 }
