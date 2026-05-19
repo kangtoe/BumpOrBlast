@@ -1,18 +1,17 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using System.Collections;
-using System.Collections.Generic;
 
 public class kangtoe99_GameOverUI : MonoBehaviour
 {
     public static kangtoe99_GameOverUI Instance { get; private set; }
 
     [Header("Leaderboard Display")]
-    // 항목은 런타임에 프리팹으로 생성한다 — 최상위 5 + 내 주변 5(중복 허용)를 한 명단으로 표시.
+    // 항목은 런타임에 프리팹으로 생성한다 — Top N은 topContainer, 내 주변 ±radius는 myRankContainer 에 따로 그린다.
     [SerializeField] private kangtoe99_LeaderboardEntry entryPrefab;
-    [SerializeField] private Transform entryContainer;
-
-    [Header("Build Display")]
-    [SerializeField] private kangtoe99_BuildDisplayUI buildDisplay;
+    [FormerlySerializedAs("entryContainer")]
+    [SerializeField] private Transform topContainer;
+    [SerializeField] private Transform myRankContainer;
 
     [Header("Settings")]
     [SerializeField] private Color normalColor = Color.white;
@@ -56,9 +55,6 @@ public class kangtoe99_GameOverUI : MonoBehaviour
             kangtoe99_CrosshairUI.Instance.gameObject.SetActive(false);
         }
 
-        // 빌드 영역 갱신 (패널이 켜질 때 OnEnable에서도 호출되지만 명시적으로 한 번 더)
-        if (buildDisplay != null) buildDisplay.Refresh();
-
         // 서버에 랭킹 저장
         SubmitRankToServer();
     }
@@ -92,94 +88,95 @@ public class kangtoe99_GameOverUI : MonoBehaviour
 
     private IEnumerator FetchMyRankAndLeaderboard()
     {
-        // 1. 내 순위 조회
-        bool myRankDone = false;
-        StartCoroutine(kangtoe99_RankApi.Instance.GetMyRank(
-            myRankId,
-            onSuccess: (myRank) =>
-            {
-                Debug.Log($"My rank: {myRank.rank} / {myRank.total}");
-                myRankIndex = myRank.rank - 1;
-                myRankDone = true;
-            },
-            onError: (error) =>
-            {
-                Debug.LogWarning($"내 순위 조회 실패: {error}");
-                myRankDone = true;
-            }
-        ));
-
-        // 2. 전체 랭킹 조회
+        // 전체 랭킹 조회 — 내 순위는 결과에서 myRankId 로 직접 찾는다 (별도 GetMyRank 호출의 race 회피).
         RankData[] allRanks = null;
-        bool allRanksDone = false;
+        bool done = false;
         StartCoroutine(kangtoe99_RankApi.Instance.GetAllRanks(
             onSuccess: (ranks) =>
             {
                 allRanks = ranks;
-                allRanksDone = true;
+                done = true;
             },
             onError: (error) =>
             {
                 Debug.LogWarning($"전체 랭킹 조회 실패: {error}");
-                allRanksDone = true;
+                done = true;
             }
         ));
 
-        // 두 요청 모두 완료될 때까지 대기
-        yield return new WaitUntil(() => myRankDone && allRanksDone);
+        yield return new WaitUntil(() => done);
 
-        // 리더보드 UI 갱신
         allRanksData = allRanks;
+        myRankIndex = FindMyRankIndex(allRanks, myRankId);
+        Debug.Log($"My rank index: {myRankIndex} (id={myRankId}, total={allRanks?.Length ?? 0})");
+
         RenderLeaderboard();
     }
 
-    // 최상위 5 + 내 주변 5(중복 허용)를 한 명단으로 그린다.
+    // Top N 은 topContainer, 내 주변 ±radius 는 myRankContainer 에 각각 그린다. 두 영역 사이 중복은 그대로 둔다.
     private void RenderLeaderboard()
     {
-        if (entryContainer == null || entryPrefab == null) return;
+        if (entryPrefab == null) return;
 
-        // 기존 항목 제거
-        for (int i = entryContainer.childCount - 1; i >= 0; i--)
-        {
-            Destroy(entryContainer.GetChild(i).gameObject);
-        }
+        ClearContainer(topContainer);
+        ClearContainer(myRankContainer);
 
         if (allRanksData == null) return;
 
-        // 표시할 인덱스 목록 구성: 최상위 N → 내 주변(±radius). 겹쳐도 중복 그대로 둔다.
-        List<int> indices = new List<int>();
-
-        for (int i = 0; i < topCount && i < allRanksData.Length; i++)
+        // Top N
+        if (topContainer != null)
         {
-            indices.Add(i);
+            for (int i = 0; i < topCount && i < allRanksData.Length; i++)
+            {
+                CreateEntry(topContainer, i);
+            }
         }
 
-        if (myRankIndex >= 0)
+        // 내 주변 ±radius
+        if (myRankContainer != null && myRankIndex >= 0)
         {
             for (int i = myRankIndex - aroundRadius; i <= myRankIndex + aroundRadius; i++)
             {
                 if (i >= 0 && i < allRanksData.Length)
                 {
-                    indices.Add(i);
+                    CreateEntry(myRankContainer, i);
                 }
             }
         }
+    }
 
-        // 항목 생성
-        foreach (int idx in indices)
+    private static int FindMyRankIndex(RankData[] ranks, int id)
+    {
+        if (ranks == null || id <= 0) return -1;
+        for (int i = 0; i < ranks.Length; i++)
         {
-            RankData data = allRanksData[idx];
-            kangtoe99_LeaderboardEntry entry = Instantiate(entryPrefab, entryContainer, false);
-
-            // 내 항목 이름은 항상 로컬 PlayerName으로 표시 — 서버 저장/PATCH 타이밍과 무관하게 일관되게.
-            bool isMine = data.id == myRankId;
-            string displayName = isMine && kangtoe99_GameManager.Instance != null
-                ? kangtoe99_GameManager.Instance.PlayerName
-                : data.name;
-
-            entry.SetData(idx + 1, displayName, data.level, data.score);
-            entry.SetColor(isMine ? highlightColor : normalColor);
+            if (ranks[i].id == id) return i;
         }
+        return -1;
+    }
+
+    private static void ClearContainer(Transform container)
+    {
+        if (container == null) return;
+        for (int i = container.childCount - 1; i >= 0; i--)
+        {
+            Destroy(container.GetChild(i).gameObject);
+        }
+    }
+
+    private void CreateEntry(Transform container, int idx)
+    {
+        RankData data = allRanksData[idx];
+        kangtoe99_LeaderboardEntry entry = Instantiate(entryPrefab, container, false);
+
+        // 내 항목 이름은 항상 로컬 PlayerName으로 표시 — 서버 저장/PATCH 타이밍과 무관하게 일관되게.
+        bool isMine = data.id == myRankId;
+        string displayName = isMine && kangtoe99_GameManager.Instance != null
+            ? kangtoe99_GameManager.Instance.PlayerName
+            : data.name;
+
+        entry.SetData(idx + 1, displayName, data.level, data.score);
+        entry.SetColor(isMine ? highlightColor : normalColor);
     }
 
     // 종합 정보 패널의 이름 편집에서 호출 — 화면을 즉시 갱신하고 서버 항목 이름도 갱신한다.
