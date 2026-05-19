@@ -15,6 +15,7 @@ public class kangtoe99_GameManager : MonoBehaviour
     [SerializeField] private kangtoe99_RunSummaryUI infoPanel; // 게임오버 1단계: 공용 종합 정보 창 (일시정지와 공유)
     [SerializeField] private GameObject gameOverPanel; // 게임오버 2단계: 랭킹(리더보드)
     [SerializeField] private kangtoe99_GameOverUI gameOverUI;
+    [SerializeField] private GameObject hudPanel; // 인게임 HUD — 게임 플레이 중에만 표시
 
     // 이름은 시작 화면이 아니라 종합 정보 패널(RunSummaryUI)에서 보고 수정한다.
     // 로컬(PlayerPrefs)에 저장돼 다음 실행에도 유지된다.
@@ -72,6 +73,9 @@ public class kangtoe99_GameManager : MonoBehaviour
         {
             gameOverPanel.SetActive(false);
         }
+
+        // 시작 전엔 HUD 숨김 — StartGame 에서 표시
+        SetHudVisible(false);
     }
 
     private void Start()
@@ -128,6 +132,8 @@ public class kangtoe99_GameManager : MonoBehaviour
             startPanel.SetActive(false);
         }
 
+        SetHudVisible(true);
+
         // 적 스포너 시작
         if (kangtoe99_EnemySpawner.Instance != null)
         {
@@ -148,6 +154,8 @@ public class kangtoe99_GameManager : MonoBehaviour
         {
             kangtoe99_EnemySpawner.Instance.StopSpawning();
         }
+
+        SetHudVisible(false);
 
         // 슬로우 모션 효과 후 게임 오버 패널 표시
         StartCoroutine(GameOverSequence());
@@ -220,6 +228,12 @@ public class kangtoe99_GameManager : MonoBehaviour
 
     public bool IsGameStarted() => isGameStarted;
     public bool IsGameOver() => isGameOver;
+
+    // 일시정지/레벨업 등 게임 흐름이 멈추는 상태에서 HUD 를 토글하기 위한 외부 진입점.
+    public void SetHudVisible(bool visible)
+    {
+        if (hudPanel != null) hudPanel.SetActive(visible);
+    }
 
     private void ToggleHelp()
     {

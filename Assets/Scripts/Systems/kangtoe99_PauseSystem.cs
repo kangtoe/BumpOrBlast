@@ -46,6 +46,9 @@ public class kangtoe99_PauseSystem : MonoBehaviour
         isPaused = !isPaused;
         Time.timeScale = isPaused ? 0f : 1f;
 
+        if (kangtoe99_GameManager.Instance != null)
+            kangtoe99_GameManager.Instance.SetHudVisible(!isPaused);
+
         if (infoPanel == null) return;
         if (isPaused) infoPanel.Show(pauseTitle, pauseHint);
         else infoPanel.Hide();

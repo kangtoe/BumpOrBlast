@@ -93,6 +93,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         }
 
         Time.timeScale = 0f;
+        if (kangtoe99_GameManager.Instance != null)
+            kangtoe99_GameManager.Instance.SetHudVisible(false);
         ShowChoices();
     }
 
@@ -102,6 +104,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         {
             Debug.LogWarning("[kangtoe99_LevelUpSystem] levelUpPanel / slotContainer / slotPrefab 인스펙터 할당 필요");
             Time.timeScale = 1f;
+            if (kangtoe99_GameManager.Instance != null)
+                kangtoe99_GameManager.Instance.SetHudVisible(true);
             return;
         }
 
@@ -182,6 +186,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         }
         if (player != null) choice?.Apply(player.gameObject);
         Time.timeScale = 1f;
+        if (kangtoe99_GameManager.Instance != null)
+            kangtoe99_GameManager.Instance.SetHudVisible(true);
         if (levelUpPanel != null) levelUpPanel.SetActive(false);
     }
 
