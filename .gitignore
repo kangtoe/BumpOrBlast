@@ -81,3 +81,6 @@ crashlytics-build.properties
 
 # Claude Code
 .claude/
+
+# JetBrains/Rider/VS project cache
+*.lscache
