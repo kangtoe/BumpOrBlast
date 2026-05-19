@@ -26,6 +26,7 @@ public class kangtoe99_ItemTooltip : MonoBehaviour
     [SerializeField] private GameObject root; // 토글할 패널 루트 (비우면 이 GameObject 자체)
     [SerializeField] private Image backgroundImage; // 등급 색으로 칠해짐 (알파는 기존 값 유지)
     [SerializeField] private TMP_Text nameText;
+    [SerializeField] private TMP_Text rarityText; // 레어도 라벨 (Common/Uncommon/Rare/Epic/Legendary)
     [SerializeField] private TMP_Text descriptionText;
     [SerializeField] private kangtoe99_TierColorPalette tierPalette;
     [SerializeField] private Vector2 offsetFromAnchor = new Vector2(0f, 0f); // 슬롯 좌상단 코너 + 픽셀
@@ -48,6 +49,7 @@ public class kangtoe99_ItemTooltip : MonoBehaviour
     {
         if (data == null || anchor == null) return;
         if (nameText != null) nameText.text = data.DisplayName;
+        if (rarityText != null) rarityText.text = kangtoe99_TierNames.GetDisplayName(data.Tier);
         if (descriptionText != null) descriptionText.text = data.Description;
         if (backgroundImage != null && tierPalette != null)
         {
