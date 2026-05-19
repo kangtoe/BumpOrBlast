@@ -343,6 +343,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1483341777288237422}
   - component: {fileID: 5441050086191207422}
+  - component: {fileID: 3897231387806155317}
+  - component: {fileID: 8068409991766055456}
   m_Layer: 0
   m_Name: Viewport
   m_TagString: Untagged
@@ -384,6 +386,44 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RectMask2D
   m_Padding: {x: 0, y: 0, z: 0, w: 0}
   m_Softness: {x: 0, y: 0}
+--- !u!222 &3897231387806155317
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5042261444597241019}
+  m_CullTransparentMesh: 1
+--- !u!114 &8068409991766055456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5042261444597241019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &6212163838552374884
 GameObject:
   m_ObjectHideFlags: 0
@@ -473,6 +513,7 @@ GameObject:
   - component: {fileID: 5622118966790630220}
   - component: {fileID: 5566187698552085784}
   - component: {fileID: 2854927228039905941}
+  - component: {fileID: 4532088079255704080}
   m_Layer: 0
   m_Name: LevelUpChoiceSlot
   m_TagString: Untagged
@@ -618,6 +659,25 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4532088079255704080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6689174554990169116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95b093f9343d78f46ab7a625cf2ac799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::kangtoe99_UIScaleFX
+  baseScale: {x: 1, y: 1, z: 1}
+  playBoingOnEnable: 1
+  boingDuration: 0.45
+  boingStartScale: 0.5
+  useHover: 1
+  hoverScale: 1.08
+  hoverDuration: 0.12
 --- !u!1 &7077364288305486614
 GameObject:
   m_ObjectHideFlags: 0
