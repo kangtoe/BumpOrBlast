@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using System.Collections;
 
 public class kangtoe99_GameManager : MonoBehaviour
@@ -24,8 +25,9 @@ public class kangtoe99_GameManager : MonoBehaviour
     public string PlayerName { get; private set; }
 
     [Header("Game Over Settings")]
-    [SerializeField] private float slowMotionScale = 0.2f;
-    [SerializeField] private float timeRecoveryDuration = 1.5f;
+    [Tooltip("플레이어 격파 후 정보 패널이 뜨기까지의 호흡 시간(실시간).")]
+    [FormerlySerializedAs("timeRecoveryDuration")]
+    [SerializeField] private float gameOverDelay = 3f;
     [SerializeField] private string summaryTitle = "Game Over";
     [SerializeField] private string summaryHint = "Press Enter / Space for Ranking";
 
@@ -82,6 +84,22 @@ public class kangtoe99_GameManager : MonoBehaviour
 
         // 시작 전엔 HUD 숨김 — StartGame 에서 표시
         SetHudVisible(false);
+
+        // 슬롯 prefab 인스턴스화 비용을 로딩 구간에서 미리 지불 — 게임오버/일시정지
+        // 패널 첫 활성화 시 발생하는 hitch 완화. 비활성 패널 내부 컴포넌트도 포함해 찾는다.
+        WarmUpBuildDisplays();
+    }
+
+    private void WarmUpBuildDisplays()
+    {
+        var displays = FindObjectsByType<kangtoe99_BuildDisplayUI>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < displays.Length; i++)
+        {
+            var d = displays[i];
+            if (d == null) continue;
+            d.WarmUp(d.Columns * d.Rows);
+        }
     }
 
     private void Start()
@@ -178,7 +196,7 @@ public class kangtoe99_GameManager : MonoBehaviour
 
         SetHudVisible(false);
 
-        // 슬로우 모션 효과 후 게임 오버 패널 표시
+        // 격파 후 호흡 시간을 두고 정보 패널을 띄운다 (슬로모션 없음).
         StartCoroutine(GameOverSequence());
 
         Debug.Log("Game Over!");
@@ -186,19 +204,8 @@ public class kangtoe99_GameManager : MonoBehaviour
 
     private IEnumerator GameOverSequence()
     {
-        // 즉시 슬로우 모션 시작하고 서서히 Time.timeScale을 1로 복원
-        Time.timeScale = slowMotionScale;
-        float elapsedTime = 0f;
-        while (elapsedTime < timeRecoveryDuration)
-        {
-            elapsedTime += Time.unscaledDeltaTime;
-            float t = elapsedTime / timeRecoveryDuration;
-            Time.timeScale = Mathf.Lerp(slowMotionScale, 1f, t);
-            yield return null;
-        }
-
-        // 정확히 1로 설정
-        Time.timeScale = 1f;
+        // 실시간 딜레이 — Time.timeScale 은 건드리지 않는다.
+        yield return new WaitForSecondsRealtime(gameOverDelay);
 
         // 게임 오버 사운드 재생
         if (gameOverSound != null)

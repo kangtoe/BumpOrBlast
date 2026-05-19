@@ -39,6 +39,7 @@ public class kangtoe99_BuildDisplayUI : MonoBehaviour, IScrollHandler
     [SerializeField, Min(1)] private int previewPages = 4;
 
     private readonly List<kangtoe99_ItemDisplayView> activeSlots = new List<kangtoe99_ItemDisplayView>();
+    private readonly Stack<kangtoe99_ItemDisplayView> pooledSlots = new Stack<kangtoe99_ItemDisplayView>();
     private readonly List<Button> activeDots = new List<Button>();
     private readonly List<kangtoe99_ItemInventory.BuildEntry> entryBuffer = new List<kangtoe99_ItemInventory.BuildEntry>();
     private int currentPage;
@@ -123,8 +124,14 @@ public class kangtoe99_BuildDisplayUI : MonoBehaviour, IScrollHandler
     {
         if (slotContainer == null || slotPrefab == null) return;
 
+        // 활성 슬롯들을 풀로 반환 — Destroy/Instantiate 사이클 회피.
         for (int i = activeSlots.Count - 1; i >= 0; i--)
-            if (activeSlots[i] != null) Destroy(activeSlots[i].gameObject);
+        {
+            var s = activeSlots[i];
+            if (s == null) continue;
+            s.gameObject.SetActive(false);
+            pooledSlots.Push(s);
+        }
         activeSlots.Clear();
 
         if (inventory == null)
@@ -145,7 +152,7 @@ public class kangtoe99_BuildDisplayUI : MonoBehaviour, IScrollHandler
         int end = Mathf.Min(start + PageSize, total);
         for (int i = start; i < end; i++)
         {
-            var slot = Instantiate(slotPrefab, slotContainer);
+            var slot = AcquireSlot();
             slot.Bind(entryBuffer[i].data, entryBuffer[i].stack);
             activeSlots.Add(slot);
         }
@@ -155,6 +162,34 @@ public class kangtoe99_BuildDisplayUI : MonoBehaviour, IScrollHandler
         UpdateDots(total);
 
         if (emptyStateLabel != null) emptyStateLabel.SetActive(total == 0);
+    }
+
+    // 씬 시작 시 미리 호출하면 슬롯 prefab Instantiate 비용을 로딩 구간에 지불 — 게임오버/일시정지
+    // 패널 첫 활성화 시 발생하는 hitch 를 줄인다. 풀에는 비활성 상태로 보관.
+    public void WarmUp(int count)
+    {
+        if (slotContainer == null || slotPrefab == null) return;
+        count = Mathf.Max(0, count);
+        while (pooledSlots.Count + activeSlots.Count < count)
+        {
+            var slot = Instantiate(slotPrefab, slotContainer);
+            slot.gameObject.SetActive(false);
+            pooledSlots.Push(slot);
+        }
+    }
+
+    private kangtoe99_ItemDisplayView AcquireSlot()
+    {
+        kangtoe99_ItemDisplayView slot;
+        while (pooledSlots.Count > 0)
+        {
+            slot = pooledSlots.Pop();
+            if (slot == null) continue; // 씬 리로드 등으로 죽은 참조 스킵
+            slot.gameObject.SetActive(true);
+            return slot;
+        }
+        slot = Instantiate(slotPrefab, slotContainer);
+        return slot;
     }
 
     // GridLayoutGroup 대신 수동 배치 — 슬롯 prefab 사이즈 그대로 존중.

@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Serialization;
-using System.Collections;
 
 public class kangtoe99_GameOverUI : MonoBehaviour
 {
@@ -55,65 +54,29 @@ public class kangtoe99_GameOverUI : MonoBehaviour
             kangtoe99_CrosshairUI.Instance.gameObject.SetActive(false);
         }
 
-        // 서버에 랭킹 저장
-        SubmitRankToServer();
+        // 임시 로컬 랭킹 저장 — 서버 /rank/around 엔드포인트 추가 후 RankApi 경로로 복귀 예정.
+        SubmitRankLocal();
     }
 
-    private void SubmitRankToServer()
+    private void SubmitRankLocal()
     {
-        if (kangtoe99_RankApi.Instance == null) return;
-
         string playerName = kangtoe99_GameManager.Instance != null
             ? kangtoe99_GameManager.Instance.PlayerName
             : "Player";
 
-        StartCoroutine(kangtoe99_RankApi.Instance.CreateRank(
-            currentLevel,
-            playerName,
-            currentScore,
-            onSuccess: (rankData) =>
-            {
-                Debug.Log($"Rank created - id: {rankData.id}, name: {rankData.name}, level: {rankData.level}, score: {rankData.score}");
-                myRankId = rankData.id;
+        var rank = kangtoe99_LocalRankStore.Create(currentLevel, playerName, currentScore);
+        myRankId = rank.id;
+        Debug.Log($"Rank created (local) - id: {rank.id}, name: {rank.name}, level: {rank.level}, score: {rank.score}");
 
-                // 내 순위 조회 → 전체 랭킹 조회
-                StartCoroutine(FetchMyRankAndLeaderboard());
-            },
-            onError: (error) =>
-            {
-                Debug.LogWarning($"랭킹 서버 저장 실패: {error}");
-            }
-        ));
-    }
-
-    private IEnumerator FetchMyRankAndLeaderboard()
-    {
-        // 전체 랭킹 조회 — 내 순위는 결과에서 myRankId 로 직접 찾는다 (별도 GetMyRank 호출의 race 회피).
-        RankData[] allRanks = null;
-        bool done = false;
-        StartCoroutine(kangtoe99_RankApi.Instance.GetAllRanks(
-            onSuccess: (ranks) =>
-            {
-                allRanks = ranks;
-                done = true;
-            },
-            onError: (error) =>
-            {
-                Debug.LogWarning($"전체 랭킹 조회 실패: {error}");
-                done = true;
-            }
-        ));
-
-        yield return new WaitUntil(() => done);
-
-        allRanksData = allRanks;
-        myRankIndex = FindMyRankIndex(allRanks, myRankId);
-        Debug.Log($"My rank index: {myRankIndex} (id={myRankId}, total={allRanks?.Length ?? 0})");
+        allRanksData = kangtoe99_LocalRankStore.GetAllSorted();
+        myRankIndex = FindMyRankIndex(allRanksData, myRankId);
+        Debug.Log($"My rank index: {myRankIndex} (id={myRankId}, total={allRanksData?.Length ?? 0})");
 
         RenderLeaderboard();
     }
 
     // Top N 은 topContainer, 내 주변 ±radius 는 myRankContainer 에 각각 그린다. 두 영역 사이 중복은 그대로 둔다.
+    // 데이터가 없는 슬롯은 '-' 로 채워 슬롯 개수는 항상 일정하게 유지.
     private void RenderLeaderboard()
     {
         if (entryPrefab == null) return;
@@ -121,28 +84,43 @@ public class kangtoe99_GameOverUI : MonoBehaviour
         ClearContainer(topContainer);
         ClearContainer(myRankContainer);
 
-        if (allRanksData == null) return;
+        int total = allRanksData != null ? allRanksData.Length : 0;
 
-        // Top N
+        // Top N — 항상 topCount 슬롯 채움.
         if (topContainer != null)
         {
-            for (int i = 0; i < topCount && i < allRanksData.Length; i++)
+            for (int i = 0; i < topCount; i++)
             {
-                CreateEntry(topContainer, i);
+                if (i < total) CreateEntry(topContainer, i);
+                else CreateEmptyEntry(topContainer, i + 1);
             }
         }
 
-        // 내 주변 ±radius
-        if (myRankContainer != null && myRankIndex >= 0)
+        // 내 주변 ±radius — 항상 2*radius+1 슬롯. 내 순위 미확보면 전부 '-'.
+        if (myRankContainer != null)
         {
-            for (int i = myRankIndex - aroundRadius; i <= myRankIndex + aroundRadius; i++)
+            int slots = 2 * aroundRadius + 1;
+            if (myRankIndex >= 0)
             {
-                if (i >= 0 && i < allRanksData.Length)
+                for (int offset = -aroundRadius; offset <= aroundRadius; offset++)
                 {
-                    CreateEntry(myRankContainer, i);
+                    int idx = myRankIndex + offset;
+                    if (idx >= 0 && idx < total) CreateEntry(myRankContainer, idx);
+                    else CreateEmptyEntry(myRankContainer, idx + 1); // idx+1 ≤ 0 이면 SetEmpty 가 '-' 처리
                 }
             }
+            else
+            {
+                for (int i = 0; i < slots; i++) CreateEmptyEntry(myRankContainer, 0);
+            }
         }
+    }
+
+    private void CreateEmptyEntry(Transform container, int rank)
+    {
+        kangtoe99_LeaderboardEntry entry = Instantiate(entryPrefab, container, false);
+        entry.SetEmpty(rank);
+        entry.SetColor(normalColor);
     }
 
     private static int FindMyRankIndex(RankData[] ranks, int id)

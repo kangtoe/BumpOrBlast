@@ -15,17 +15,18 @@
 |------|------|
 | [`GameDesign.md`](./GameDesign.md) | 게임 규칙, 전투, 진행, 레벨업 |
 | [`TechnicalSpec.md`](./TechnicalSpec.md) | 기술 구조, 스크립트 구성, 최적화 |
-| [`DevelopmentPlan.md`](./DevelopmentPlan.md) | 개발 단계별 계획 |
-| [`SystemsRework.md`](./SystemsRework.md) | 시스템 심화 설계(에너지·스탯·아이템·적 등급·오픈필드) + 단계별 로드맵 |
+| [`DevelopmentPlan.md`](./DevelopmentPlan.md) | 개발 단계별 계획 + 현재 로드맵 (R6b/R8b/R9/R10/R11) + 미결정 사항 |
+| [`Balance.md`](./Balance.md) | 수치 튜닝 (스탯·드롭·스폰) |
 | [`CommitGuide.md`](./CommitGuide.md) | 커밋 메시지 규약 |
 | [`DevelopmentGuide.md`](./DevelopmentGuide.md) | 본 문서 — 개발 방법론 인덱스 |
 
+> 과거 `SystemsRework.md` (시스템 심화 리워크 작업 문서) 는 2026-05-19 폐기. 잔여 로드맵은 `DevelopmentPlan.md` 로 이동, 변경 결정 이력은 git log 가 진리원천.
+
 **향후 추가 예정 (TBD)**:
-- `Upgrades.md` — 무기/패시브 종류와 레벨업 효과 (현재는 SystemsRework에 포함)
-- `Items.md` — 아이템 시스템 (현재는 SystemsRework에 포함)
-- `Enemy.md` — 적 시스템 (현재는 SystemsRework에 포함)
+- `Upgrades.md` — 무기/패시브 종류와 레벨업 효과
+- `Items.md` — 아이템 시스템
+- `Enemy.md` — 적 시스템
 - `EditorAutomation.md` — 에디터 자동화 카테고리
-- `Roadmap.md` — 전체 Phase 체크리스트 (현재는 SystemsRework "단계별 구현 계획" 참조)
 
 **기획 변경 시**: 관련 문서부터 업데이트 → 커밋 → 구현.
 

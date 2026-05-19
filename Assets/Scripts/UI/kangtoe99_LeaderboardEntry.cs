@@ -41,11 +41,12 @@ public class kangtoe99_LeaderboardEntry : MonoBehaviour
         }
     }
 
-    public void SetEmpty(int rank)
+    // rank<=0 이면 순위도 알 수 없는 경우(예: 내 순위 미확보) — "-" 로 표시.
+    public void SetEmpty(int rank = 0)
     {
         if (rankText != null)
         {
-            rankText.text = $"#{rank}";
+            rankText.text = rank > 0 ? $"#{rank}" : "-";
         }
 
         if (nameText != null)

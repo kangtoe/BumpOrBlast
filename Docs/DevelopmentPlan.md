@@ -76,3 +76,47 @@
 ## 참고사항
 - 간단하고 재미있는 게임플레이에 집중
 - 각 Phase가 완료될 때마다 테스트 플레이 수행
+
+---
+
+## 현재 로드맵 (시스템 리워크 잔여, 2026-05-19~)
+
+> Phase 1~5 는 모두 완료 또는 시스템 리워크 과정에서 흡수됨. 아래는 진행 중·미착수 항목.
+
+### R6b — 아이템 트리거 효과 (미착수)
+1. `TriggerEffectData` 추상 SO + `Subscribe(player)` / `Unsubscribe(player)` 인터페이스
+2. 구현체 2~3종 선정 (후보: OnLowHpDamageBoost / OnKillSpawnProjectile / OnEnergyFullCritical). OnBumpExplode 는 Bump 양방향 폐기로 부적합
+3. `ItemData` 에 `List<TriggerEffectData> triggers` 필드, `ItemInventory.TryAdd` / 제거 경로에서 Subscribe / Unsubscribe 연결
+4. **수용 기준**: 트리거 효과 보유 아이템 획득 시 해당 이벤트에서 효과 발동
+
+### R8b — LevelUp 풀 확장 (R8a 완료 후)
+1. 풀 가중치 · Luck 스탯이 고등급 ItemData 풀 확률에 반영
+2. 같은 선택지 연속 등장 방지 (직전 LevelUp 기억)
+3. 회복 카테고리 (별도 `ILevelUpChoice` 구현 — HpRestoreChoice 등)
+4. 아이콘 · 등급 색상 표시 (`StatIconRegistry` + Tier 컬러 활용)
+5. **수용 기준**: 매 레벨업마다 다양한 카테고리·등급 등장, 빌드 다양성 체감
+
+### R9 — 무기 프레임워크 확장
+1. `WeaponBase` 추상 + `WeaponData` SO
+2. `ForwardWeapon` (현 PlayerShooting 리팩터) + `AutoAimNearestWeapon` 구현
+3. 아이템에 "무기 슬롯 추가" 카테고리 통합
+4. **수용 기준**: 새 무기 획득 시 동시 발사, 같은 무기 재선택 시 레벨업
+
+### R10 — 밸런싱 & 폴리싱 (PC 완성)
+추진력 · 마찰 · 회전속도 튜닝, 등급 스폰 곡선, 아이템 가중치 조정
+
+### R11 — 모바일 대응
+`JoystickRotationInput` + 이동 · 사격 가상 컨트롤, 세로 UI 재배치
+
+### 랭킹 서버 복귀 (보류)
+서버에 `GET /rank/around/:id?radius=N` 엔드포인트 추가 후 현재의 PlayerPrefs 로컬 스토어 (`kangtoe99_LocalRankStore`) 를 `kangtoe99_RankApi` 경로로 되돌림. 응답 스펙: `{ data: [{rank, id, level, name, score}, ...] }`, 1-based 절대 순위, 경계 자동 자름. 로컬 데이터 마이그레이션 여부는 그 시점 결정.
+
+## 미결정 사항
+
+- `maxSpeed` 클램프 제거 후 플레이 감각 (어색하면 부활 검토)
+- 에너지 0 일 때 빈클릭 사운드 유지 여부
+- R6b 트리거 효과 첫 풀 구체 선정
+- 등급별 스폰 곡선 곡률 (선형 / 지수형)
+- Luck 효과 곱: 1포인트당 드롭률 +X%, 고등급 가중치 +Y배 — 수치 미정
+- 카메라 부드러운 추적: 현재 직접 고정, 추후 Cinemachine 검토
+- 구 문서 갱신: `GameDesign.md` / `TechnicalSpec.md` 가 리워크 이전 상태로 남음 — 시간 날 때 현재 상태로 갱신
