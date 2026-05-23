@@ -54,7 +54,12 @@ public class kangtoe99_ItemTooltip : MonoBehaviour
             // 게임오버 빌드 패널에서도 호출됨 — 플레이어가 비활성이라 Include 필요
             var inv = FindFirstObjectByType<kangtoe99_ItemInventory>(FindObjectsInactive.Include);
             int stack = inv != null ? inv.GetStack(data) : 0;
-            rarityText.text = $"{kangtoe99_TierNames.GetDisplayName(data.Tier)} {stack}/{data.MaxStack}";
+            int tierUsed = inv != null ? inv.GetTierStackCount(data.Tier) : 0;
+            int tierMax = inv != null ? inv.GetTierStackLimit(data.Tier) : 0;
+            string tierName = kangtoe99_TierNames.GetDisplayName(data.Tier);
+            rarityText.text = stack > 0
+                ? $"{tierName} ×{stack}  ({tierUsed}/{tierMax})"
+                : $"{tierName}  ({tierUsed}/{tierMax})";
         }
         if (descriptionText != null) descriptionText.text = data.Description;
         if (backgroundImage != null && tierPalette != null)

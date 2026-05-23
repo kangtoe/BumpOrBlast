@@ -42,17 +42,22 @@ public class kangtoe99_PlayerStats : MonoBehaviour
     {
         float baseVal = GetBase(stat);
         float additive = 0f;
-        float multiplicative = 1f;
+        float multPercentSum = 0f;
 
         for (int i = 0; i < modifiers.Count; i++)
         {
             var m = modifiers[i];
             if (m.Stat != stat) continue;
             if (m.Kind == kangtoe99_ModifierKind.Additive) additive += m.Value;
-            else multiplicative *= (1f + m.Value);
+            else multPercentSum += m.Value;
         }
 
-        return (baseVal + additive) * multiplicative;
+        // 곱연산 모디파이어끼리 퍼센트를 합산 후 한 번에 적용(복리 X).
+        float result = (baseVal + additive) * (1f + multPercentSum / 100f);
+        return Mathf.Clamp(
+            result,
+            kangtoe99_StatBoundsRegistry.GetMin(stat),
+            kangtoe99_StatBoundsRegistry.GetMax(stat));
     }
 
     public void AddModifier(kangtoe99_IStatModifier modifier)

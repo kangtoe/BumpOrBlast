@@ -23,9 +23,13 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     [SerializeField] private kangtoe99_Player player;
 
     [Header("Choice Pool")]
-    [SerializeField] private List<kangtoe99_ItemData> itemPool = new List<kangtoe99_ItemData>();
+    // Assets/Resources/Items/ 하위의 모든 ItemData를 Awake에서 자동 수집. 인스펙터 할당 불필요.
+    // 새 아이템은 Resources/Items/Tier{N}_*/ 폴더에 자산만 드롭하면 자동 포함된다.
+    private readonly List<kangtoe99_ItemData> itemPool = new List<kangtoe99_ItemData>();
     [Tooltip("아이템 풀이 부족할 때 슬롯을 채우는 폴백. 현재 구현 드롭 3종(XP/HP/Bomb) 권장.")]
     [SerializeField] private List<kangtoe99_InstantDropItemData> instantDropPool = new List<kangtoe99_InstantDropItemData>();
+    [Tooltip("티어별 등장 가중치(레벨 비례). 미할당이면 균등 추첨으로 폴백.")]
+    [SerializeField] private kangtoe99_TierDropTable tierDropTable;
 
     [Header("UI")]
     [SerializeField] private GameObject levelUpPanel;
@@ -75,6 +79,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         nextLevelScore = baseScore;
         rerollPoints = startingRerollPoints;
 
+        LoadItemPool();
+
         if (player == null) player = FindFirstObjectByType<kangtoe99_Player>();
 
         if (levelUpPanel != null) levelUpPanel.SetActive(false);
@@ -83,6 +89,36 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         UpdatePendingUI();
         UpdateRerollUI();
         UpdateHudPrompt();
+    }
+
+    // 티어 폴더 경로 — 인덱스 = (int)kangtoe99_Tier.
+    // 새 티어 추가 시 이 배열과 kangtoe99_Tier enum, kangtoe99_TierStackLimits 함께 갱신.
+    private static readonly string[] TierFolderPaths = {
+        "Items/Tier0_Gray",
+        "Items/Tier1_Green",
+        "Items/Tier2_Blue",
+        "Items/Tier3_Purple",
+        "Items/Tier4_Orange",
+    };
+
+    // 티어 폴더별 ItemData 자산을 로드하고 ItemTierRegistry에 등록.
+    // 새 아이템 추가 = 해당 티어 폴더에 .asset 드롭만 하면 끝. tier 필드 따로 설정 불필요.
+    private void LoadItemPool()
+    {
+        itemPool.Clear();
+        kangtoe99_ItemTierRegistry.Clear();
+        for (int t = 0; t < TierFolderPaths.Length; t++)
+        {
+            var tier = (kangtoe99_Tier)t;
+            var loaded = Resources.LoadAll<kangtoe99_ItemData>(TierFolderPaths[t]);
+            for (int i = 0; i < loaded.Length; i++)
+            {
+                if (loaded[i] == null) continue;
+                kangtoe99_ItemTierRegistry.Register(loaded[i], tier);
+                itemPool.Add(loaded[i]);
+            }
+        }
+        Debug.Log($"[LevelUpSystem] itemPool 로드 — {itemPool.Count}개 (Resources/Items, 티어 폴더별)");
     }
 
     private void Update()
@@ -242,8 +278,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     {
         GameObject playerGo = player != null ? player.gameObject : null;
 
-        // 사용 가능한 ItemData 풀
-        var itemCandidates = new List<kangtoe99_ILevelUpChoice>();
+        // 사용 가능한 ItemData 풀 (티어 가중 추첨을 위해 ItemData로 타입 보유)
+        var itemCandidates = new List<kangtoe99_ItemData>();
         for (int i = 0; i < itemPool.Count; i++)
         {
             var item = itemPool[i];
@@ -256,10 +292,15 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
 
         if (itemCandidates.Count > 0)
         {
-            // ItemData 풀에 1개라도 남아있으면 ItemData만 노출 (1~choiceCount개).
-            Shuffle(itemCandidates);
+            // 티어 가중 독립 추첨. 같은 아이템은 중복 금지(뽑힌 항목은 후보에서 제거).
             int take = Mathf.Min(choiceCount, itemCandidates.Count);
-            for (int i = 0; i < take; i++) result.Add(itemCandidates[i]);
+            for (int i = 0; i < take; i++)
+            {
+                int pickedIdx = PickWeightedIndex(itemCandidates);
+                if (pickedIdx < 0) break;
+                result.Add(itemCandidates[pickedIdx]);
+                itemCandidates.RemoveAt(pickedIdx);
+            }
         }
         else
         {
@@ -278,6 +319,31 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         }
 
         return result;
+    }
+
+    // 티어 가중치 기반 인덱스 추첨. tierDropTable 미할당 또는 합계 0이면 균등 폴백.
+    private int PickWeightedIndex(List<kangtoe99_ItemData> candidates)
+    {
+        if (candidates.Count == 0) return -1;
+        if (tierDropTable == null)
+            return Random.Range(0, candidates.Count);
+
+        int level = Mathf.Max(1, currentLevel);
+        float total = 0f;
+        for (int i = 0; i < candidates.Count; i++)
+            total += tierDropTable.Evaluate(candidates[i].Tier, level);
+
+        if (total <= 0f)
+            return Random.Range(0, candidates.Count);
+
+        float r = Random.value * total;
+        float acc = 0f;
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            acc += tierDropTable.Evaluate(candidates[i].Tier, level);
+            if (r <= acc) return i;
+        }
+        return candidates.Count - 1;
     }
 
     private static void Shuffle<T>(List<T> list)

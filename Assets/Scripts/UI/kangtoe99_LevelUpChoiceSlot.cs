@@ -54,7 +54,12 @@ public class kangtoe99_LevelUpChoiceSlot : MonoBehaviour
                 var itemData = (kangtoe99_ItemData)c;
                 var inv = FindFirstObjectByType<kangtoe99_ItemInventory>(FindObjectsInactive.Include);
                 int stack = inv != null ? inv.GetStack(itemData) : 0;
-                rarityText.text = $"{kangtoe99_TierNames.GetDisplayName(itemData.Tier)} {stack}/{itemData.MaxStack}";
+                int tierUsed = inv != null ? inv.GetTierStackCount(itemData.Tier) : 0;
+                int tierMax = inv != null ? inv.GetTierStackLimit(itemData.Tier) : 0;
+                string tierName = kangtoe99_TierNames.GetDisplayName(itemData.Tier);
+                rarityText.text = stack > 0
+                    ? $"{tierName} ×{stack}  ({tierUsed}/{tierMax})"
+                    : $"{tierName}  ({tierUsed}/{tierMax})";
             }
         }
 
