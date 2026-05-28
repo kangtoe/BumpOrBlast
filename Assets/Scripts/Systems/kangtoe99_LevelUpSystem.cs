@@ -67,6 +67,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
     private bool panelOpen = false;
     private AudioSource audioSource;
     private readonly List<kangtoe99_LevelUpChoiceSlot> activeSlots = new List<kangtoe99_LevelUpChoiceSlot>();
+    // 현재 패널에 표시 중인 선택지 캐시. 리롤 / 선택 시에만 새로 추첨하고, 단순 재오픈(ESC 후 다시 열기) 시에는 유지한다.
+    private List<kangtoe99_ILevelUpChoice> currentChoices = new List<kangtoe99_ILevelUpChoice>();
 
     private void Awake()
     {
@@ -226,7 +228,10 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
             kangtoe99_GameManager.Instance.SetHudVisible(false);
         panelOpen = true;
 
-        ShowChoices();
+        // 캐시된 선택지가 있으면 그대로 유지(단순 재오픈), 없을 때만 새로 추첨한다.
+        if (currentChoices == null || currentChoices.Count == 0)
+            RegenerateChoices();
+        DisplayChoices();
         UpdateRerollUI();
         UpdateHudPrompt();
     }
@@ -243,8 +248,14 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         UpdateHudPrompt();
     }
 
-    // 패널에 4개 슬롯을 새로 빌드. OpenPanel / OnChoiceSelected(잔여 pending) / Reroll 에서 호출.
-    private void ShowChoices()
+    // 선택지를 새로 추첨해 캐시에 저장. 리롤 / 선택 후에만 호출 — 단순 재오픈 시에는 호출하지 않아 선택지가 유지된다.
+    private void RegenerateChoices()
+    {
+        currentChoices = BuildChoices();
+    }
+
+    // 캐시된 선택지(currentChoices)로 슬롯을 다시 빌드하고 패널을 표시.
+    private void DisplayChoices()
     {
         for (int i = activeSlots.Count - 1; i >= 0; i--)
         {
@@ -252,12 +263,10 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         }
         activeSlots.Clear();
 
-        var chosen = BuildChoices();
-
-        for (int i = 0; i < chosen.Count; i++)
+        for (int i = 0; i < currentChoices.Count; i++)
         {
             var slot = Instantiate(slotPrefab, slotContainer);
-            slot.Bind(chosen[i], OnChoiceSelected);
+            slot.Bind(currentChoices[i], OnChoiceSelected);
             activeSlots.Add(slot);
         }
 
@@ -271,7 +280,8 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         if (rerollSound != null && audioSource != null)
             audioSource.PlayOneShot(rerollSound);
         UpdateRerollUI();
-        ShowChoices();
+        RegenerateChoices();
+        DisplayChoices();
     }
 
     private List<kangtoe99_ILevelUpChoice> BuildChoices()
@@ -367,11 +377,14 @@ public class kangtoe99_LevelUpSystem : MonoBehaviour
         // 남은 pending 이 있으면 패널 유지 + 새 선택지로 자동 재오픈.
         if (pendingLevelUps > 0)
         {
-            ShowChoices();
+            RegenerateChoices();
+            DisplayChoices();
             UpdateRerollUI();
             UpdateHudPrompt();
             return;
         }
+        // 모든 pending 소진 — 캐시를 비워 다음 오픈 시 새 선택지를 추첨한다.
+        currentChoices.Clear();
         ClosePanel();
     }
 
